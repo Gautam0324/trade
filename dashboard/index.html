@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day Trader Cockpit | Executive Portfolio Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header>
+    <div class="brand">
+      <span class="brand-badge" id="exchangeBadge">NSE (INR)</span>
+      <h1>Trading Cockpit Pro</h1>
+    </div>
+    <div class="header-meta">
+      <div style="display: flex; gap: 0.5rem; align-items: center; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">MARKET:</span>
+        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnNSE" onclick="switchMarket('NSE', 'RELIANCE.NS')">NSE (₹)</button>
+        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnBSE" onclick="switchMarket('BSE', 'TCS.BO')">BSE (₹)</button>
+        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnUS" onclick="switchMarket('US', 'TSLA')">US ($)</button>
+      </div>
+
+      <div class="badge pulse" id="modeBadge">LIVE MONITORING</div>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); font-weight: 600;" id="clockDisplay">--:--:-- IST</div>
+      <button class="btn-primary" onclick="refreshDashboard()" id="refreshBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync
+      </button>
+    </div>
+  </header>
+
+  <!-- TOP HERO STATS STRIP: TOTAL AMOUNT, HOLDING AMOUNT, DAY P&L, TRADES COUNT -->
+  <div class="hero-stats-strip">
+    
+    <!-- 1. TOTAL ACCOUNT CAPITAL -->
+    <div class="hero-stat-card card-total">
+      <div class="hero-stat-title">
+        <span>Total Net Portfolio</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+      </div>
+      <div class="hero-stat-value" id="topTotalCapital" style="color: #fff;">₹1,00,453.80</div>
+      <div class="hero-stat-sub">
+        <span>Available Free Cash:</span>
+        <strong style="color: var(--accent-cyan);" id="topFreeCash">₹7,161.40</strong>
+      </div>
+    </div>
+
+    <!-- 2. HOLDING DEPLOYED AMOUNT -->
+    <div class="hero-stat-card card-holding">
+      <div class="hero-stat-title">
+        <span>Active Holding Amount</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div class="hero-stat-value" id="topHoldingAmount" style="color: var(--accent-amber);">₹93,292.40</div>
+      <div class="hero-stat-sub">
+        <span>Deployed across:</span>
+        <strong style="color: #fff;" id="topActivePositionsCount">2 Open Positions</strong>
+      </div>
+    </div>
+
+    <!-- 3. REALIZED P&L OF THE DAY -->
+    <div class="hero-stat-card card-pnl">
+      <div class="hero-stat-title">
+        <span>Day's Realized P&L</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="hero-stat-value green" id="topRealizedPnl" style="color: var(--accent-green);">+₹453.80</div>
+      <div class="hero-stat-sub">
+        <span>Strategy Win Rate:</span>
+        <strong style="color: var(--accent-green);" id="topWinRate">100% Locked</strong>
+      </div>
+    </div>
+
+    <!-- 4. TOTAL TRADES EXECUTED -->
+    <div class="hero-stat-card card-trades">
+      <div class="hero-stat-title">
+        <span>Daily Trades Executed</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="hero-stat-value" id="topTradeCount" style="color: var(--accent-purple);">2 / 4</div>
+      <div class="hero-stat-sub">
+        <span>Target:</span>
+        <strong style="color: #fff;">Max 4 Trades / Day</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Grid Layout -->
+  <main>
+
+    <!-- LEFT COLUMN: Plan & Setup Metrics -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Current Setup Card -->
+      <section class="glass-panel" id="planPanel">
+        <div class="panel-header">
+          <span class="panel-title">Active Strategy Setup</span>
+          <span class="badge" id="setupTag">EMA 5/9/33 PRO</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="display: flex; align-items: baseline; gap: 0.6rem;">
+            <h2 style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-mono); color: #fff;" id="tickerDisplay">RELIANCE.NS</h2>
+            <span style="color: var(--accent-green); font-weight: 700; font-size: 1rem;" id="sideDisplay">BUY</span>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--accent-cyan); font-family: var(--font-mono);" id="exchangeLabel">NSE (India)</span>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-label">Entry Level</div>
+            <div class="stat-value cyan" id="entryVal">₹1,196.70</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Stop-Loss (33 Low)</div>
+            <div class="stat-value red" id="stopVal">₹1,189.90</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Take-Profit (1R)</div>
+            <div class="stat-value green" id="targetVal">₹1,203.50</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Risk Per Share</div>
+            <div class="stat-value amber" id="riskVal">₹6.80</div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; border-top: 1px solid var(--border-subtle); padding-top: 0.5rem;">
+          <div><strong style="color: var(--text-secondary);">Strategy:</strong> <span style="color: #fff;">EMA5 > EMA9 & Breakout Above 33 High</span></div>
+          <div><strong style="color: var(--text-secondary);">Squareoff:</strong> <span id="flatByTime" style="color: var(--accent-amber);">15:20 IST (Auto-exit)</span></div>
+        </div>
+      </section>
+
+      <!-- Quick Stock Selector -->
+      <section class="glass-panel">
+        <div class="panel-header">
+          <span class="panel-title">Liquid Market Watchlist</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.45rem;" id="quickTickers">
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('RELIANCE.NS')">RELIANCE</button>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('TCS.NS')">TCS</button>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('HDFCBANK.NS')">HDFC BANK</button>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('INFY.NS')">INFOSYS</button>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('SBIN.NS')">SBI</button>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('ICICIBANK.NS')">ICICI BANK</button>
+        </div>
+      </section>
+
+      <!-- Telegram Bot Configuration -->
+      <section class="glass-panel">
+        <div class="panel-header">
+          <span class="panel-title">Telegram Alerts</span>
+          <span class="badge" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.3);">CONNECTED</span>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+          Bot: <strong style="color: #fff;">@Tradesbaba_bot</strong><br>
+          Alerts: <span style="color: var(--accent-green);">Instant Entry, Trailing Exit & Balance</span>
+        </div>
+
+        <button class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 0.2rem;" onclick="sendTelegramTest()">
+          📲 Send Ping to Telegram
+        </button>
+      </section>
+
+    </div>
+
+    <!-- CENTER COLUMN: Visual Chart & Projections -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Chart Area -->
+      <section class="glass-panel">
+        <div class="panel-header">
+          <span class="panel-title">Live Dynamic Price & Indicator Channels</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">EMA 5, 9, 33 High, 33 Low</span>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="fanChartCanvas"></canvas>
+        </div>
+
+        <!-- Strategy Status Indicators -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; padding-top: 0.5rem;">
+          <div class="stat-box" style="padding: 0.6rem;">
+            <div class="stat-label">EMA 5 (Fast)</div>
+            <div class="stat-value cyan" style="font-size: 1.05rem;" id="chartEma5">₹1,196.55</div>
+          </div>
+          <div class="stat-box" style="padding: 0.6rem;">
+            <div class="stat-label">EMA 9 (Signal)</div>
+            <div class="stat-value" style="font-size: 1.05rem;" id="chartEma9">₹1,196.00</div>
+          </div>
+          <div class="stat-box" style="padding: 0.6rem;">
+            <div class="stat-label">33 Band High</div>
+            <div class="stat-value green" style="font-size: 1.05rem;" id="chartEma33H">₹1,194.74</div>
+          </div>
+          <div class="stat-box" style="padding: 0.6rem;">
+            <div class="stat-label">33 Band Low</div>
+            <div class="stat-value red" style="font-size: 1.05rem;" id="chartEma33L">₹1,189.90</div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.5rem; border-top: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">
+            Exit Rule: <strong style="color: var(--accent-amber);">Immediate exit on candle close below EMA 5 / Peak Drop</strong>
+          </div>
+          <button class="btn-secondary" onclick="fetchLiveQuoteData()">Fetch Live Bar</button>
+        </div>
+      </section>
+
+      <!-- System Log Feed -->
+      <section class="glass-panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">System Execution & Risk Feed</span>
+        </div>
+        <pre id="systemLog" style="font-family: var(--font-mono); font-size: 0.78rem; color: #a7f3d0; background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 10px; overflow-x: auto; white-space: pre-wrap; height: 160px;">[INIT] Trading Cockpit Pro initialized.
+[STATUS] Active monitoring on NSE / BSE tickers.
+[AUTOMATION] Background scanner daemon active (every 15s).
+[BALANCE] Available cash updated automatically on every buy/sell.</pre>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Active Holdings & Closed History -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Live Active Holdings -->
+      <section class="glass-panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">Active Market Holdings</span>
+          <span class="badge" id="openPosBadge" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border-color: rgba(59, 130, 246, 0.3);">2 OPEN</span>
+        </div>
+        <div id="activePositionsList" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 250px; overflow-y: auto;">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Completed Trades History -->
+      <section class="glass-panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">Closed Trades (Profit Booked)</span>
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-green);" id="historyCount">2 Trades</span>
+        </div>
+        <div id="tradeHistoryList" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 250px; overflow-y: auto;">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

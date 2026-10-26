@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-19",
+  "now_new_york": "2026-10-19 10:15",
+  "paper": true,
+  "results": [
+    {
+      "index": 1,
+      "symbol": "TSLA",
+      "side": "buy",
+      "kind": "entry",
+      "amount": "8 shares",
+      "value_usd": 2913.44,
+      "entry_ref": 364.18,
+      "entry_ref_from": "plan",
+      "stop": 358.32,
+      "target": 370.04,
+      "risk_per_share": 5.86,
+      "max_loss": 46.88,
+      "reward_risk": 1.0,
+      "fingerprint": "c38dc9bf3e621b26",
+      "verdict": "PASS",
+      "reasons": [],
+      "warnings": [],
+      "info": [
+        "entry 364.18 (the plan's entry), stop 358.32, target 370.04: risk 5.86 a share",
+        "max loss $46.88 (limit $50), reward:risk 1.00 (min 1)",
+        "today before this: 0 of 3 trades, $0 of $150 daily loss"
+      ]
+    }
+  ],
+  "pass": 1,
+  "block": 0,
+  "warnings": [],
+  "cash_after": 2086.56,
+  "today": {
+    "orders_placed": 0,
+    "entries_placed": 0,
+    "loss_at_risk": 0.0,
+    "day_trades_5d": null
+  },
+  "checked_at": "2026-10-26T06:13:57Z",
+  "orders_file": "trader/orders.json"
+}
