@@ -24,6 +24,15 @@
   "sec_user_agent": "Your Name you@example.com",
   "currency": "INR",
   "market": "NSE",
+  "strategy_mode": "EMA_CHANNEL",
+  "enabled_strategies": ["EMA_CHANNEL", "VWAP_PULLBACK", "ORB", "TREND_MOMENTUM"],
+  "min_confluence_score": 65.0,
+  "enable_partial_profit": true,
+  "partial_profit_ratio": 0.50,
+  "atr_period": 14,
+  "atr_trailing_multiplier": 1.5,
+  "peak_reversal_threshold": 0.002,
+  "orb_minutes": 15,
   "telegram_bot_token": "8916950436:AAHY9Oft4ORf6WASvm9AP9d3yoCw465LTr0",
   "telegram_chat_id": "1081536667"
 }

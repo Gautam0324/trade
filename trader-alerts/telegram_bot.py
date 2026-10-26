@@ -105,14 +105,17 @@ def send_trade_alert(trade_data):
     # Entry Date & Time (IST)
     entry_datetime = trade_data.get("entry_time") or datetime.datetime.now().strftime("%d-%b-%Y  |  %I:%M:%S %p IST")
 
+    strategy_name = trade_data.get("strategy", "EMA_CHANNEL")
+
     msg = (
-        f"🚨 <b>DAY TRADER ALERT: {side} {sym} ({exchange})</b>\n\n"
+        f"🚨 <b>DAY TRADER ALERT: {side} {sym} ({exchange})</b>\n"
+        f"🧠 <b>Strategy:</b> <code>{strategy_name}</code>\n\n"
         f"📅 <b>Entry Date & Time:</b> <code>{entry_datetime}</code>\n"
         f"💰 <b>Total Trade Amount:</b> {sym_icon}{total_amount:,.2f}\n"
         f"📦 <b>Quantity:</b> {qty_num} Shares\n\n"
         f"🎯 <b>Entry Price:</b> {sym_icon}{entry:,.2f}\n"
         f"🛑 <b>Stop-Loss:</b> {sym_icon}{stop:,.2f}  (-{sym_icon}{max_loss:,.2f})\n"
-        f"🏁 <b>Target (1R):</b> {sym_icon}{target:,.2f}  (+{sym_icon}{expected_profit:,.2f})\n\n"
+        f"🏁 <b>Target (1.5R):</b> {sym_icon}{target:,.2f}  (+{sym_icon}{expected_profit:,.2f})\n\n"
         f"{ema_block}"
         f"⚠️ <b>Max Risk:</b> {sym_icon}{max_loss:,.2f} (Capped at 1% of budget)\n"
         f"⏰ <b>Intraday Auto Square-Off:</b> 15:20 IST\n"

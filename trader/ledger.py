@@ -86,10 +86,23 @@ def record_trade_entry(symbol, side, qty, price, exchange="NSE", entry_reason="E
     save_ledger(ledger)
     return True, position
 
-def record_trade_exit(symbol, exit_price, reason="Exit trigger"):
+def update_open_position(symbol, updated_data):
     """
-    Called when a trade is closed:
+    Atomically updates trailing stop, peak price or quantity for an open position.
+    """
+    ledger = get_ledger()
+    for pos in ledger["open_positions"]:
+        if pos["symbol"] == symbol:
+            pos.update(updated_data)
+            save_ledger(ledger)
+            return True
+    return False
+
+def record_trade_exit(symbol, exit_price, reason="Exit trigger", exit_qty=None):
+    """
+    Called when a trade is closed (full or partial):
     Returns deployed money + profit (or minus loss) back to free cash.
+    If exit_qty is provided and is less than position qty, handles partial exit.
     """
     ledger = get_ledger()
     exit_price = float(exit_price)
@@ -103,32 +116,40 @@ def record_trade_exit(symbol, exit_price, reason="Exit trigger"):
     if matching_idx is None:
         return False, f"No open position found for {symbol}"
 
-    pos = ledger["open_positions"].pop(matching_idx)
-    qty = pos["qty"]
-    entry_price = pos["entry_price"]
-    initial_amount = pos["amount"]
-    entry_reason = pos.get("entry_reason", "EMA 5 > EMA 9 above EMA 33 High")
+    pos = ledger["open_positions"][matching_idx]
+    current_qty = int(pos["qty"])
+    closing_qty = int(exit_qty) if exit_qty and int(exit_qty) < current_qty else current_qty
 
-    # Sell revenue
-    exit_amount = round(qty * exit_price, 2)
-    pnl = round(exit_amount - initial_amount, 2)
+    entry_price = float(pos["entry_price"])
+    portion_invested = round(closing_qty * entry_price, 2)
+    exit_amount = round(closing_qty * exit_price, 2)
+    pnl = round(exit_amount - portion_invested, 2)
 
     # Return capital + P&L to free cash
-    ledger["deployed_cash"] = round(max(0.0, ledger["deployed_cash"] - initial_amount), 2)
+    ledger["deployed_cash"] = round(max(0.0, ledger["deployed_cash"] - portion_invested), 2)
     ledger["free_cash"] = round(ledger["free_cash"] + exit_amount, 2)
     ledger["realized_pnl"] = round(ledger["realized_pnl"] + pnl, 2)
+
+    # If partial exit, reduce position qty & amount
+    if closing_qty < current_qty:
+        pos["qty"] = current_qty - closing_qty
+        pos["amount"] = round(pos["qty"] * entry_price, 2)
+        pos["partial_exited"] = True
+    else:
+        # Full exit
+        ledger["open_positions"].pop(matching_idx)
 
     history_item = {
         "id": pos["id"],
         "symbol": symbol,
-        "qty": qty,
+        "qty": closing_qty,
         "entry_price": entry_price,
         "exit_price": exit_price,
         "entry_time": pos["entry_time"],
         "exit_time": datetime.datetime.now().strftime("%H:%M:%S IST"),
-        "entry_reason": entry_reason,
+        "entry_reason": pos.get("entry_reason", "Strategy Entry"),
         "exit_reason": reason,
-        "invested": initial_amount,
+        "invested": portion_invested,
         "returned": exit_amount,
         "pnl": pnl,
         "reason": reason

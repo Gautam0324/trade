@@ -26,6 +26,24 @@ import telegram_bot
 import ema_strategy
 import ledger
 
+from strategy_engine import StrategyEngine
+from risk_engine import RiskEngine
+from exit_engine import PositionManager
+
+# Load unified configuration
+CONFIG_PATH = BASE_DIR / "trader" / "config.json"
+app_config = {}
+if os.path.exists(CONFIG_PATH):
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            app_config = json.load(f)
+    except Exception:
+        pass
+
+strategy_eng = StrategyEngine(app_config)
+risk_eng = RiskEngine(app_config)
+position_mgr = PositionManager(app_config)
+
 WATCHLIST = [
     "RELIANCE.NS",
     "TCS.NS",
@@ -57,7 +75,7 @@ def monitor_cycle():
 
     print(f"\n[SCAN] Starting cycle. Free Balance: Rs. {free_cash:,.2f} | Active Positions: {len(open_positions)}")
 
-    # 1. First, check open positions for EMA5 Exit / Trailing Profit-Lock
+    # 1. First, check open positions using Centralized PositionManager
     for pos in list(open_positions):
         sym = pos["symbol"]
         quotes = fetch_candles(sym)
@@ -65,33 +83,39 @@ def monitor_cycle():
             continue
 
         closes = [c for c in quotes["close"] if c is not None]
+        highs = [h for h in quotes.get("high", []) if h is not None]
+        lows = [l for l in quotes.get("low", []) if l is not None]
         if not closes:
             continue
 
         cur_price = closes[-1]
-        entry_price = pos["entry_price"]
-        peak_price = pos.get("peak_price", max(entry_price, cur_price))
-        if cur_price > peak_price:
-            peak_price = cur_price
-            pos["peak_price"] = peak_price
-
         ema_eval = ema_strategy.evaluate_ema_setup(quotes)
         ema5 = ema_eval.get("ema5", cur_price)
         ema9 = ema_eval.get("ema9", cur_price)
 
-        exit_check = ema_strategy.check_trailing_profit_exit(entry_price, peak_price, cur_price, ema5, ema9)
-        if exit_check["should_exit"]:
-            print(f"[EXIT] {sym} triggered exit: {exit_check['reason']}")
-            ok, exit_item = ledger.record_trade_exit(sym, cur_price, exit_check["reason"])
+        exit_res = position_mgr.evaluate_exit(
+            pos,
+            current_price=cur_price,
+            current_ema5=ema5,
+            current_ema9=ema9
+        )
+
+        # Update trailing position metrics in ledger
+        ledger.update_open_position(sym, exit_res["updated_position"])
+
+        if exit_res["action"] in ("PARTIAL_EXIT", "FULL_EXIT"):
+            exit_qty = exit_res["exit_qty"]
+            print(f"[{exit_res['action']}] {sym}: {exit_res['reason']} (Qty: {exit_qty})")
+            ok, exit_item = ledger.record_trade_exit(sym, cur_price, exit_res["reason"], exit_qty=exit_qty)
             if ok:
                 updated_leg = ledger.get_ledger()
                 exit_payload = {
                     "symbol": sym,
-                    "qty": pos["qty"],
-                    "entry_price": entry_price,
-                    "peak_price": peak_price,
+                    "qty": exit_qty,
+                    "entry_price": pos["entry_price"],
+                    "peak_price": exit_res["updated_position"].get("peak_price", cur_price),
                     "exit_price": cur_price,
-                    "reason": exit_check["reason"],
+                    "reason": exit_res["reason"],
                     "currency": "INR",
                     "exchange": pos.get("exchange", "NSE"),
                     "free_cash": updated_leg["free_cash"],
@@ -99,13 +123,13 @@ def monitor_cycle():
                 }
                 telegram_bot.send_exit_alert(exit_payload)
 
-    # 2. Check for New Entries if cash is available and open positions < 3, ONLY before 15:20 IST
+    # 2. Check for New Entries if cash is available and open positions < max_open_positions, ONLY before 15:20 IST
     cur_time = datetime.datetime.now().strftime("%H:%M")
     if cur_time >= "15:20":
         return
 
     updated_leg = ledger.get_ledger()
-    if updated_leg["free_cash"] >= 10000 and len(updated_leg["open_positions"]) < 3:
+    if updated_leg["free_cash"] >= 10000 and len(updated_leg["open_positions"]) < risk_eng.max_open_positions:
         for sym in WATCHLIST:
             # Skip if already holding
             if any(p["symbol"] == sym for p in updated_leg["open_positions"]):
@@ -115,38 +139,50 @@ def monitor_cycle():
             if not quotes:
                 continue
 
-            ema_eval = ema_strategy.evaluate_ema_setup(quotes)
-            if ema_eval.get("signal") == "BUY":
-                cur_price = ema_eval["close"]
-                stop_price = ema_eval["ema33_low"]
-                risk_per_share = max(0.50, round(cur_price - stop_price, 2))
+            signal_payload = strategy_eng.evaluate_all(sym, quotes)
+            if signal_payload and signal_payload.get("signal") == "BUY":
+                cur_price = signal_payload["entry_reference_price"]
+                stop_price = signal_payload["stop_loss"]
+                target_price = signal_payload["target_price"]
 
-                # Position sizing for ₹1,000 risk capped at available cash
-                max_risk = 1000.0
-                qty = max(1, int(max_risk / risk_per_share))
-                cost = qty * cur_price
+                risk_eval = risk_eng.evaluate_order_risk(
+                    symbol=sym,
+                    side="BUY",
+                    entry_price=cur_price,
+                    stop_loss=stop_price,
+                    target_price=target_price,
+                    available_cash=updated_leg["free_cash"],
+                    daily_realized_loss=min(0.0, updated_leg["realized_pnl"]),
+                    current_trades_count=len(updated_leg["trade_history"]),
+                    current_open_positions_count=len(updated_leg["open_positions"])
+                )
 
-                # Cap to available cash
-                if cost > (updated_leg["free_cash"] * 0.75):
-                    qty = max(1, int((updated_leg["free_cash"] * 0.75) / cur_price))
+                if risk_eval["passed"] and risk_eval["quantity"] > 0:
+                    qty = risk_eval["quantity"]
                     cost = qty * cur_price
 
-                if cost <= updated_leg["free_cash"]:
-                    ok, pos = ledger.record_trade_entry(sym, "BUY", qty, cur_price, "BSE" if ".BO" in sym else "NSE")
+                    ok, pos = ledger.record_trade_entry(
+                        sym, "BUY", qty, cur_price,
+                        "BSE" if ".BO" in sym else "NSE",
+                        entry_reason=f"[{signal_payload['strategy_name']}] {signal_payload['signal_reason']}"
+                    )
                     if ok:
                         latest_leg = ledger.get_ledger()
                         trade_payload = {
                             "symbol": sym,
+                            "strategy": signal_payload["strategy_name"],
                             "side": "BUY",
                             "qty": str(qty),
                             "entry": cur_price,
                             "stop": stop_price,
-                            "target": round(cur_price + (risk_per_share * 1.0), 2),
+                            "target": target_price,
                             "currency": "INR",
                             "exchange": "BSE" if ".BO" in sym else "NSE",
-                            "ema_info": ema_eval,
+                            "ema_info": signal_payload.get("indicator_values", {}),
                             "free_cash": latest_leg["free_cash"]
                         }
+                        telegram_bot.send_trade_alert(trade_payload)
+                        break  # Take one trade per scan tick
                         telegram_bot.send_trade_alert(trade_payload)
                         break  # Take one trade per scan tick
 
