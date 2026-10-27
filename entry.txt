@@ -1,0 +1,155 @@
+# ==============================================================================
+# TRADING SYSTEM: COMPLETE ENTRY & EXIT LOGIC SPECIFICATION
+# (Covering Price Action, Classical Setups & Technical Indicators)
+# ==============================================================================
+
+# ==============================================================================
+# PART 1: CORE / CLASSICAL SETUPS (trader-entry & trader-exit)
+# ==============================================================================
+
+Trade Direction:
+  - Long Side ONLY (v2 strictly plans longs; short selling is not supported).
+
+1. Opening Range Breakout (ORB) [Default Setup]:
+   - Opening Range Duration: First 15 minutes of session (9:30 AM to 9:45 AM ET).
+   - Range Grid: Three 5-min bars (9:30, 9:35, 9:40) or fifteen 1-min bars.
+   - Benchmark Level: Range High (highest high of the 15-minute window).
+   - Trigger Condition: The first COMPLETED bar after 9:45 AM that CLOSES strictly above Range High.
+     * Intraday wicks or high pokes above Range High do NOT count.
+     * Candle close equal to Range High does NOT trigger.
+   - Stop Loss Options:
+     * `or-mid` (Default): (Range High + Range Low) / 2, rounded down to nearest cent.
+     * `or-low`: Range Low, rounded down.
+   - Target Options:
+     * `2R` (Default): Entry + (2 * (Entry - Stop)).
+     * `1R` / `1.5R`: Entry + (R * (Entry - Stop)).
+
+2. Fixed Price Level Breakout:
+   - Level Source: Scanner output (e.g., 20-day high, key pivot resistance).
+   - Trigger Condition: First COMPLETED bar closing strictly above `--level <PRICE>`.
+   - Stop Loss: Must be explicitly provided (`price:X`, `pct:X`, or `atr:K`).
+
+3. Volume Confirmation Filter (Optional):
+   - Flag: `--min-volume-x X` (e.g. 1.5).
+   - Trigger bar volume must be >= X times the average volume of opening range bars.
+
+4. Session Timing Constraints:
+   - No entries before: 09:45 AM ET.
+   - No entries after: 15:30 PM ET (Early close days: 12:30 PM ET).
+   - Mandatory EOD Square-Off (`flat_by`): 15:55 PM ET (Early close days: 12:55 PM ET).
+
+
+# ==============================================================================
+# PART 2: INDICATOR-BASED ENTRY STRATEGIES (trader/strategy_engine.py)
+# ==============================================================================
+
+1. Strategy A: EMA 5 / 9 / 33 Channel Breakout
+   - Indicators Used:
+     * EMA 5 (Short-term momentum on Close)
+     * EMA 9 (Fast trend baseline on Close)
+     * EMA 33 Channel High (EMA 33 calculated on candle Highs)
+     * EMA 33 Channel Low (EMA 33 calculated on candle Lows)
+   - Entry Condition (Long):
+     1. Current Candle Close > EMA 33 High (Bullish breakout above channel).
+     2. Bullish EMA Crossover / Alignment: EMA 5 > EMA 9.
+     3. Completed candle confirmation (no intra-candle entries).
+   - Stop Loss Logic:
+     * Structural stop at EMA 33 Low OR Dynamic ATR stop: Entry - (2.0 * ATR 14).
+     * Stop loss = max(EMA 33 Low, Entry - 2.0 * ATR 14).
+   - Target Logic:
+     * Target = Entry + 1.5 * Risk (Minimum 1.5R target).
+
+2. Strategy B: Intraday VWAP Pullback Entry
+   - Indicators Used:
+     * Session-anchored VWAP (Volume Weighted Average Price)
+     * EMA 9 and EMA 33 (Trend direction)
+     * ATR 14 (Volatility cushion)
+   - Entry Condition (Long):
+     1. Primary Trend Filter: EMA 9 > EMA 33 OR Price > VWAP.
+     2. Healthy Pullback Proximity:
+        * Recent candle low dips close to VWAP (distance between -1.0% to +0.8% of VWAP).
+     3. Bullish Rejection Confirmation:
+        * Completed candle closes bullish: Close >= Open AND Close >= VWAP.
+     4. Extension Filter (Anti-FOMO):
+        * Price must NOT be overextended (Distance from VWAP <= 2.0%).
+   - Stop Loss Logic:
+     * Stop Loss = min(Candle Low, VWAP) - (0.5 * ATR 14), rounded down.
+     * Alternative: 0.4% below VWAP (VWAP * 0.996).
+   - Target Logic:
+     * Target = Entry + (1.5 * Risk).
+
+3. Strategy C: Trend + Momentum Confirmation
+   - Indicators Used:
+     * EMA 9 & EMA 33 (Trend alignment)
+     * RSI 14 (Wilder's smoothed Relative Strength Index)
+     * ADX 14, +DI, -DI (Directional movement & Trend strength)
+     * ATR 14 (Volatility buffer)
+   - Entry Condition (Long):
+     1. Trend Filter: EMA 9 > EMA 33.
+     2. Momentum Zone: RSI 14 between 48.0 and 78.0 (Active momentum, not overbought).
+     3. Trend Strength Filter:
+        * ADX 14 >= 16.0 to 22.0 (Confirms a genuine trend, avoiding choppy market).
+        * Directional Bias: +DI > -DI (Positive directional force).
+     4. Candle Confirmation: Confirmed on completed bar.
+   - Stop Loss Logic:
+     * Dynamic Volatility Stop: Entry - (1.5 * ATR 14).
+   - Target Logic:
+     * Target = Entry + (1.5 * Risk) or (2.0 * Risk).
+
+4. Market Regime & No-Trade Filters:
+   - "TRENDING_BULL": EMA 9 > EMA 33, ADX > 22, RSI > 52  --> Valid for Long Entries.
+   - "CHOPPY_SIDEWAYS": ADX < 20  --> NO TRADE (Prevents false whipsaw breakouts).
+   - "HIGH_VOLATILITY": ATR > 2.5x 20-period average ATR --> Halt or reduce position size.
+
+
+# ==============================================================================
+# PART 3: ADVANCED DYNAMIC EXIT LOGIC (trader/exit_engine.py)
+# ==============================================================================
+
+1. Hard Initial Stop Loss:
+   - Position closes immediately if Current Price <= Initial Stop Loss.
+   - Stop is rounded down to the cent away from entry.
+
+2. Multi-Stage Profit Booking & Breakeven Mechanism:
+   - Target 1 (+1.0R):
+     * When price reaches Entry + 1.0R: Book 50% partial profit (close 50% quantity).
+     * Move Stop Loss of remaining 50% shares to Breakeven (Entry Price + transaction cost buffer).
+     * Guarantees trade cannot turn into a loss once +1R is touched.
+   - Target 2 (+1.5R to +2.0R):
+     * Exit remaining shares at fixed 1.5R / 2.0R or allow trailing.
+
+3. ATR Dynamic Trailing Stop (Ratchet Mechanism):
+   - Activates when position is in profit (Current Price > Entry Price).
+   - Formula: Candidate Stop = Peak Price - (1.5 * ATR 14).
+   - Ratchet Rule: New Stop = max(Current Stop, Candidate Stop).
+     * Stop only moves UPWARDS; it is NEVER loosened or moved down.
+
+4. Peak Reversal Profit-Lock Exit:
+   - If position is in profit and price falls by >= 0.2% from highest reached peak (Peak Price):
+     * Immediate full exit to protect and lock accumulated intraday profits.
+
+5. EMA Momentum Breakdown Exit:
+   - If position is in profit:
+     * If Current Price drops below EMA 5: Exit position.
+     * If Fast EMA 5 crosses below EMA 9: Exit position (momentum reversal signal).
+
+6. Intraday Session Square-off Cutoff:
+   - NSE/Indian Market: 15:20 IST auto-squareoff.
+   - US Market: 15:55 ET auto-squareoff.
+   - All open positions are liquidated automatically, regardless of profit or loss.
+
+
+# ==============================================================================
+# SUMMARY TABLE
+# ==============================================================================
+Setup / Indicator   | Entry Trigger Condition             | Exit / Stop Loss Trigger
+--------------------+-------------------------------------+---------------------------------------
+ORB (15-min)        | 5m Close > Range High               | Stop: OR-Mid / OR-Low | Target: 2R / 1R
+EMA Channel         | Close > EMA33 High & EMA5 > EMA9    | Stop: EMA33 Low or 2*ATR | Target: 1.5R
+VWAP Pullback       | Price near VWAP + Bullish Rebound   | Stop: min(Low, VWAP) - 0.5*ATR | Target: 1.5R
+Trend + Momentum    | EMA9 > EMA33 + RSI(48-78) + ADX>20  | Stop: Entry - 1.5*ATR | Target: 1.5R-2R
+ATR Trailing Stop   | In profit (Price > Entry)           | Peak Price - (1.5 * ATR) [Only ratchets UP]
+Partial Booking     | At +1.0R gain                       | Book 50% qty & move Stop to Breakeven
+Peak Reversal       | In profit & price falls 0.2% from peak | Immediate Full Exit (Profit locked)
+EMA Exit            | Price < EMA 5 or EMA 5 < EMA 9      | Immediate Full Exit (Momentum loss)
+Time Cutoff         | Session end reached (15:20/15:55)   | 100% Full Market Exit (No overnight hold)
