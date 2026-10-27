@@ -1,0 +1,97 @@
+//@version=6
+indicator("Multi-EMA + Supertrend + MACD Combo", overlay=true, timeframe="", timeframe_gaps=true)
+
+//----------------------------------------------------
+// 🔹 1️⃣ MULTI-EMA SECTION
+//----------------------------------------------------
+ema1_len = input.int(33,  "EMA 1 Length", minval=1)
+ema1_src = input.source(close, "EMA 1 Source")
+
+ema2_len = input.int(50,  "EMA 2 Length", minval=1)
+ema2_src = input.source(hl2, "EMA 2 Source")
+
+ema3_len = input.int(100, "EMA 3 Length", minval=1)
+ema3_src = input.source(open, "EMA 3 Source")
+
+ema4_len = input.int(200, "EMA 4 Length", minval=1)
+ema4_src = input.source(close, "EMA 4 Source")
+
+show_ema1 = input.bool(true, "Show EMA 1")
+show_ema2 = input.bool(true, "Show EMA 2")
+show_ema3 = input.bool(true, "Show EMA 3")
+show_ema4 = input.bool(true, "Show EMA 4")
+
+// === EMA Calculations ===
+ema1 = ta.ema(ema1_src, ema1_len)
+ema2 = ta.ema(ema2_src, ema2_len)
+ema3 = ta.ema(ema3_src, ema3_len)
+ema4 = ta.ema(ema4_src, ema4_len)
+
+// === Helper Function (single-line) ===
+f_trend(_ema) =>
+    [_ema > _ema[1], _ema < _ema[1],
+     (_ema > _ema[1] and not (_ema[1] > _ema[2])),
+     (_ema < _ema[1] and not (_ema[1] < _ema[2]))]
+
+// === Apply ===
+[e1_rising, e1_falling, e1_start_rising, e1_start_falling] = f_trend(ema1)
+[e2_rising, e2_falling, e2_start_rising, e2_start_falling] = f_trend(ema2)
+[e3_rising, e3_falling, e3_start_rising, e3_start_falling] = f_trend(ema3)
+[e4_rising, e4_falling, e4_start_rising, e4_start_falling] = f_trend(ema4)
+
+// === Plot EMAs ===
+plot(show_ema1 ? ema1 : na, color=e1_rising ? color.lime   : color.red,     linewidth=2, title="EMA 1")
+plot(show_ema2 ? ema2 : na, color=e2_rising ? color.aqua   : color.orange,  linewidth=2, title="EMA 2")
+plot(show_ema3 ? ema3 : na, color=e3_rising ? color.teal   : color.fuchsia, linewidth=2, title="EMA 3")
+plot(show_ema4 ? ema4 : na, color=e4_rising ? color.green  : color.maroon,  linewidth=2, title="EMA 4")
+
+// === EMA Highlights ===
+any_start_rise = e1_start_rising or e2_start_rising or e3_start_rising or e4_start_rising
+any_start_fall = e1_start_falling or e2_start_falling or e3_start_falling or e4_start_falling
+barcolor(any_start_rise ? color.lime : any_start_fall ? color.red : na)
+bgcolor(any_start_rise ? color.new(color.lime, 85) : any_start_fall ? color.new(color.red, 85) : na)
+
+//----------------------------------------------------
+// 🔹 2️⃣ SUPERTREND SECTION
+//----------------------------------------------------
+show_supertrend = input.bool(true, "Show Supertrend")
+atrPeriod = input.int(10, "ATR Length", minval=1)
+factor    = input.float(3.0, "Factor", minval=0.01, step=0.01)
+
+[supertrend, direction] = ta.supertrend(factor, atrPeriod)
+supertrend := barstate.isfirst ? na : supertrend
+
+plot(show_supertrend and direction < 0 ? supertrend : na,
+     "Up Trend", color=color.new(color.green, 0), style=plot.style_linebr)
+plot(show_supertrend and direction >= 0 ? supertrend : na,
+     "Down Trend", color=color.new(color.red, 0), style=plot.style_linebr)
+
+//----------------------------------------------------
+// 🔹 3️⃣ MACD SECTION (Separate Panel)
+//----------------------------------------------------
+show_macd = input.bool(true, "Show MACD Panel (Lower)")
+
+fast_length   = input.int(12, "MACD Fast Length")
+slow_length   = input.int(26, "MACD Slow Length")
+signal_length = input.int(9,  "Signal Smoothing")
+macd_src      = input.source(close, "MACD Source")
+sma_source    = input.string("EMA", "Oscillator MA Type", options=["SMA", "EMA"])
+sma_signal    = input.string("EMA", "Signal Line MA Type", options=["SMA", "EMA"])
+
+fast_ma = sma_source == "SMA" ? ta.sma(macd_src, fast_length) : ta.ema(macd_src, fast_length)
+slow_ma = sma_source == "SMA" ? ta.sma(macd_src, slow_length) : ta.ema(macd_src, slow_length)
+macd    = fast_ma - slow_ma
+signal  = sma_signal == "SMA" ? ta.sma(macd, signal_length) : ta.ema(macd, signal_length)
+hist    = macd - signal
+
+alertcondition(hist[1] >= 0 and hist < 0, title="Rising → Falling", message="MACD histogram switched from rising to falling")
+alertcondition(hist[1] <= 0 and hist > 0, title="Falling → Rising", message="MACD histogram switched from falling to rising")
+
+// === MACD Plot ===
+macd_color = hist >= 0 ? (hist[1] < hist ? #26A69A : #B2DFDB) : (hist[1] < hist ? #FFCDD2 : #FF5252)
+
+// These plots always exist (no local scope). Visibility handled by ternary to na.
+hline(0, "Zero Line", color=color.new(#787B86, 50), display=show_macd ? display.all : display.none)
+plot(show_macd ? hist   : na, title="MACD Histogram", style=plot.style_columns, color=macd_color)
+plot(show_macd ? macd   : na, title="MACD Line", color=#2962FF)
+plot(show_macd ? signal : na, title="Signal Line", color=#FF6D00)

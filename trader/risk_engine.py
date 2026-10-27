@@ -23,7 +23,7 @@ class RiskEngine:
         # Support *_inr keys with fallback to *_usd
         self.max_loss_per_trade = float(cfg.get("max_loss_per_trade_inr", cfg.get("max_loss_per_trade_usd", 1000.0)))
         self.max_daily_loss = float(cfg.get("max_daily_loss_inr", cfg.get("max_daily_loss_usd", 1000.0)))
-        self.max_position_pct = float(cfg.get("max_position_pct", 75.0)) / 100.0
+        self.max_position_pct = float(cfg.get("max_position_pct", 40.0)) / 100.0
         self.max_trades_per_day = int(cfg.get("max_trades_per_day", 3))
         self.max_open_positions = int(cfg.get("max_open_positions", 3))
         self.min_reward_risk = float(cfg.get("min_reward_risk", 1.0))
@@ -137,13 +137,25 @@ class RiskEngine:
         max_position_cash = available_cash * self.max_position_pct
         cash_quantity = math.floor(max_position_cash / entry_p)
 
-        quantity = min(risk_quantity, cash_quantity)
+        # Lot sizing check for options/derivatives
+        lot_size = 1
+        if is_derivative or any(k in sym_upper for k in ("CE", "PE", "NIFTY", "BANKNIFTY")):
+            if "BANKNIFTY" in sym_upper:
+                lot_size = 15
+            elif "NIFTY" in sym_upper:
+                lot_size = 25
+
+        raw_qty = min(risk_quantity, cash_quantity)
+        if lot_size > 1:
+            quantity = (raw_qty // lot_size) * lot_size
+        else:
+            quantity = raw_qty
 
         if quantity <= 0:
             return {
                 "passed": False,
                 "quantity": 0,
-                "reasons": [f"Calculated risk quantity is 0 (Risk budget ₹{risk_budget:,.2f}, Risk/shr ₹{risk_per_share:.2f}, Cash limit {cash_quantity})"]
+                "reasons": [f"Calculated risk quantity is 0 (Risk budget ₹{risk_budget:,.2f}, Risk/shr ₹{risk_per_share:.2f}, Lot size {lot_size}, Cash limit {cash_quantity})"]
             }
 
         allocated_capital = round(quantity * entry_p, 2)

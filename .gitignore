@@ -19,6 +19,7 @@ trader/reports/
 *.db
 
 # Historical download cache
+historical_data/
 trader/historical_data/*.csv
 trader/historical_data/*.json
 

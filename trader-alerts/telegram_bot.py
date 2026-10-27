@@ -72,6 +72,58 @@ def send_telegram_message(text, parse_mode="HTML"):
         print(f"[TELEGRAM] Error sending message: {e}")
         return False, str(e)
 
+def send_signal_alert(signal_data):
+    """
+    Stage 1: Sends a Telegram alert immediately when a SIGNAL CANDLE completes.
+    Notifies that setup criteria are met and watching for Confirmation Candle.
+    """
+    sym = signal_data.get("symbol", "N/A")
+    side = signal_data.get("side", "BUY").upper()
+    spot_price = float(signal_data.get("spot_price", signal_data.get("entry_reference_price", 0.0)))
+    trigger_level = float(signal_data.get("trigger_level", signal_data.get("candle_high", spot_price)))
+    sl_level = float(signal_data.get("stop_loss", signal_data.get("candle_low", spot_price * 0.99)))
+    strategy = signal_data.get("strategy_name", "CONFLUENCE")
+    opt_contract = signal_data.get("option_contract", "")
+    candle_time = signal_data.get("candle_time") or datetime.datetime.now().strftime("%I:%M %p IST")
+
+    opt_line = f"🎯 <b>Watchlist Option:</b> <code>{opt_contract}</code>\n" if opt_contract else ""
+
+    msg = (
+        f"🟡 <b>[STAGE 1: SIGNAL CANDLE FORMED]</b> 🟡\n"
+        f"🏷️ <b>Asset:</b> {sym} ({side})\n"
+        f"🧠 <b>Strategy:</b> <code>{strategy}</code>\n"
+        f"🕒 <b>Candle Time:</b> <code>{candle_time}</code>\n"
+        f"📍 <b>Signal Close:</b> ₹{spot_price:,.2f}\n"
+        f"{opt_line}"
+        f"----------------------------------------\n"
+        f"👀 <b>Confirmation Condition:</b>\n"
+        f"  • Waiting for next 5-min candle to cross above <b>₹{trigger_level:,.2f}</b>\n"
+        f"  • Setup SL Benchmark: <b>₹{sl_level:,.2f}</b>\n\n"
+        f"⏳ <i>NO ENTRY YET. Waiting for Confirmation Candle close before placing order!</i>"
+    )
+    return send_telegram_message(msg)
+
+def send_signal_cancelled_alert(cancel_data):
+    """
+    Sends an alert when a signal candle does not receive confirmation
+    within the allowed window or if price invalidates the setup.
+    """
+    sym = cancel_data.get("symbol", "N/A")
+    reason = cancel_data.get("reason", "Price failed to cross trigger level / Timed out")
+    trigger_level = float(cancel_data.get("trigger_level", 0.0))
+    candle_time = cancel_data.get("candle_time") or datetime.datetime.now().strftime("%I:%M %p IST")
+
+    msg = (
+        f"⚪ <b>[SIGNAL INVALIDATED / CANCELLED]</b> ⚪\n"
+        f"🏷️ <b>Asset:</b> {sym}\n"
+        f"🕒 <b>Time:</b> <code>{candle_time}</code>\n"
+        f"⚠️ <b>Reason:</b> {reason}\n"
+        f"🎯 <b>Unmet Trigger Level:</b> ₹{trigger_level:,.2f}\n"
+        f"----------------------------------------\n"
+        f"🛡️ <i>No trade taken. Capital 100% safe! Waiting for fresh 1-min setup.</i>"
+    )
+    return send_telegram_message(msg)
+
 def send_trade_alert(trade_data):
     """
     Format and send a trade alert to Telegram with clean emojis and key levels,
