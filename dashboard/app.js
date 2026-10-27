@@ -682,13 +682,45 @@ function exportTradeCSV() {
   window.open('/api/trades', '_blank');
 }
 
+// Auto-Refresh Controller (5-Second High-Frequency Live Sync)
+let autoRefreshEnabled = true;
+let autoRefreshTimer = null;
+let refreshCountdown = 5;
+
+function toggleAutoRefresh() {
+  autoRefreshEnabled = !autoRefreshEnabled;
+  const badge = document.getElementById('liveSyncBadge');
+  if (badge) {
+    if (autoRefreshEnabled) {
+      badge.className = "status-badge running";
+      badge.innerHTML = `<span class="status-dot"></span> LIVE AUTO-UPDATE (<span id="autoRefreshCountdown">${refreshCountdown}s</span>)`;
+    } else {
+      badge.className = "status-badge closed";
+      badge.innerHTML = `<span class="status-dot"></span> PAUSED (Click to Resume)`;
+    }
+  }
+}
+
+function startAutoRefreshLoop() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  refreshCountdown = 5;
+
+  autoRefreshTimer = setInterval(async () => {
+    if (!autoRefreshEnabled) return;
+    refreshCountdown--;
+
+    const countdownEl = document.getElementById('autoRefreshCountdown');
+    if (countdownEl) countdownEl.textContent = `${refreshCountdown}s`;
+
+    if (refreshCountdown <= 0) {
+      refreshCountdown = 5;
+      await refreshCurrentView();
+    }
+  }, 1000);
+}
+
 // Initial Boot
 window.addEventListener('DOMContentLoaded', () => {
   loadOverviewData();
-  // Auto refresh overview every 15 seconds
-  setInterval(() => {
-    if (activeView === 'overview') {
-      loadOverviewData();
-    }
-  }, 15000);
+  startAutoRefreshLoop();
 });

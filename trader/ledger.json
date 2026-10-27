@@ -17,7 +17,7 @@
       "date": "2026-10-27",
       "entry_date": "2026-10-27",
       "entry_time": "10:13:55 IST",
-      "current_r": -0.26
+      "current_r": -0.32
     },
     {
       "id": "POS-75",
@@ -31,7 +31,7 @@
       "date": "2026-10-27",
       "entry_date": "2026-10-27",
       "entry_time": "10:15:23 IST",
-      "current_r": -0.27
+      "current_r": -0.33
     },
     {
       "id": "POS-75",
@@ -45,7 +45,7 @@
       "date": "2026-10-27",
       "entry_date": "2026-10-27",
       "entry_time": "10:50:41 IST",
-      "current_r": 0.01
+      "current_r": -0.02
     }
   ],
   "trade_history": [
@@ -1017,5 +1017,5 @@
       "reason": "EMA momentum breakdown (Price 1397.30 < EMA5 1397.31)"
     }
   ],
-  "last_updated": "2026-10-27T10:55:26.826921"
+  "last_updated": "2026-10-27T10:57:01.628789"
 }
