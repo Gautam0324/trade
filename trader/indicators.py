@@ -256,3 +256,162 @@ def calculate_relative_volume(volumes, period=20):
         else:
             rvol[i] = 1.0
     return rvol
+
+def calculate_macd(closes, fast_period=12, slow_period=26, signal_period=9):
+    """
+    Moving Average Convergence Divergence (MACD).
+    MACD Line = Fast EMA - Slow EMA
+    Signal Line = EMA of MACD Line
+    Histogram = MACD Line - Signal Line
+    """
+    n = len(closes)
+    fast_ema = calculate_ema(closes, fast_period)
+    slow_ema = calculate_ema(closes, slow_period)
+
+    macd_line = [None] * n
+    for i in range(n):
+        if fast_ema[i] is not None and slow_ema[i] is not None:
+            macd_line[i] = fast_ema[i] - slow_ema[i]
+
+    # Compute Signal Line (EMA of valid MACD values)
+    valid_macd_indices = [i for i, v in enumerate(macd_line) if v is not None]
+    signal_line = [None] * n
+    hist = [None] * n
+
+    if len(valid_macd_indices) >= signal_period:
+        valid_vals = [macd_line[i] for i in valid_macd_indices]
+        sig_sub = calculate_ema(valid_vals, signal_period)
+        for sub_idx, orig_idx in enumerate(valid_macd_indices):
+            signal_line[orig_idx] = sig_sub[sub_idx]
+            if macd_line[orig_idx] is not None and signal_line[orig_idx] is not None:
+                hist[orig_idx] = macd_line[orig_idx] - signal_line[orig_idx]
+
+    return {
+        "macd": macd_line,
+        "signal": signal_line,
+        "hist": hist
+    }
+
+def calculate_supertrend(highs, lows, closes, period=10, multiplier=3.0):
+    """
+    Supertrend Indicator (period=10, multiplier=3.0).
+    Upper Band = (High + Low) / 2 + Multiplier * ATR
+    Lower Band = (High + Low) / 2 - Multiplier * ATR
+    Direction: 1 for Bullish (Price > Upper Band), -1 for Bearish (Price < Lower Band)
+    """
+    n = len(closes)
+    atr = calculate_atr(highs, lows, closes, period)
+
+    supertrend = [None] * n
+    direction = [None] * n  # 1 = Bullish, -1 = Bearish
+    upper_band = [None] * n
+    lower_band = [None] * n
+
+    for i in range(n):
+        if atr[i] is None:
+            continue
+
+        hl2 = (float(highs[i]) + float(lows[i])) / 2.0
+        basic_upper = hl2 + (multiplier * atr[i])
+        basic_lower = hl2 - (multiplier * atr[i])
+
+        if i == 0 or upper_band[i - 1] is None:
+            upper_band[i] = basic_upper
+            lower_band[i] = basic_lower
+            direction[i] = 1 if float(closes[i]) >= basic_upper else -1
+            supertrend[i] = lower_band[i] if direction[i] == 1 else upper_band[i]
+            continue
+
+        # Smooth upper band
+        if basic_upper < upper_band[i - 1] or float(closes[i - 1]) > upper_band[i - 1]:
+            upper_band[i] = basic_upper
+        else:
+            upper_band[i] = upper_band[i - 1]
+
+        # Smooth lower band
+        if basic_lower > lower_band[i - 1] or float(closes[i - 1]) < lower_band[i - 1]:
+            lower_band[i] = basic_lower
+        else:
+            lower_band[i] = lower_band[i - 1]
+
+        # Determine direction
+        if direction[i - 1] == 1:
+            if float(closes[i]) < lower_band[i]:
+                direction[i] = -1
+                supertrend[i] = upper_band[i]
+            else:
+                direction[i] = 1
+                supertrend[i] = lower_band[i]
+        else:
+            if float(closes[i]) > upper_band[i]:
+                direction[i] = 1
+                supertrend[i] = lower_band[i]
+            else:
+                direction[i] = -1
+                supertrend[i] = upper_band[i]
+
+    return {
+        "supertrend": supertrend,
+        "direction": direction,
+        "upper_band": upper_band,
+        "lower_band": lower_band
+    }
+
+def validate_ohlcv_bars(bars_dict):
+    """
+    Validates completed OHLCV candle bars:
+    - High >= Low
+    - High >= Open, High >= Close
+    - Low <= Open, Low <= Close
+    - Volume >= 0
+    - No None/NaN values in completed sequence
+    - Rejects invalid bars instead of silently forward-filling
+    Returns: (is_valid: bool, cleaned_dict: dict, error_msg: str)
+    """
+    opens = bars_dict.get("open", [])
+    highs = bars_dict.get("high", [])
+    lows = bars_dict.get("low", [])
+    closes = bars_dict.get("close", [])
+    volumes = bars_dict.get("volume", [])
+
+    length = len(closes)
+    if length == 0 or len(opens) != length or len(highs) != length or len(lows) != length:
+        return False, {}, "Mismatched or empty bar series lengths"
+
+    valid_o, valid_h, valid_l, valid_c, valid_v = [], [], [], [], []
+
+    for i in range(length):
+        o = opens[i]
+        h = highs[i]
+        l = lows[i]
+        c = closes[i]
+        v = volumes[i] if i < len(volumes) and volumes[i] is not None else 0.0
+
+        if None in (o, h, l, c):
+            return False, {}, f"Invalid None value at bar index {i}"
+
+        o, h, l, c, v = float(o), float(h), float(l), float(c), float(v)
+
+        if h < l:
+            return False, {}, f"High ({h}) < Low ({l}) at bar {i}"
+        if h < max(o, c) - 1e-4:
+            return False, {}, f"High ({h}) < max(Open, Close) at bar {i}"
+        if l > min(o, c) + 1e-4:
+            return False, {}, f"Low ({l}) > min(Open, Close) at bar {i}"
+        if v < 0:
+            return False, {}, f"Negative volume ({v}) at bar {i}"
+
+        valid_o.append(o)
+        valid_h.append(h)
+        valid_l.append(l)
+        valid_c.append(c)
+        valid_v.append(v)
+
+    return True, {
+        "open": valid_o,
+        "high": valid_h,
+        "low": valid_l,
+        "close": valid_c,
+        "volume": valid_v
+    }, ""
+

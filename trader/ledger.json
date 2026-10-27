@@ -1,53 +1,10 @@
 {
   "starting_capital": 100000.0,
   "currency": "INR",
-  "free_cash": 6220.65,
-  "deployed_cash": 94228.5,
-  "realized_pnl": 449.15,
-  "open_positions": [
-    {
-      "id": "POS-74",
-      "symbol": "SBIN.NS",
-      "side": "BUY",
-      "qty": 20,
-      "entry_price": 964.8,
-      "amount": 19296.0,
-      "exchange": "NSE",
-      "entry_reason": "[EMA_CHANNEL] Close 964.80 > EMA33 High 961.04 with EMA5 (963.96) > EMA9 (963.25)",
-      "date": "2026-10-27",
-      "entry_date": "2026-10-27",
-      "entry_time": "10:13:55 IST",
-      "current_r": -0.32
-    },
-    {
-      "id": "POS-75",
-      "symbol": "ICICIBANK.NS",
-      "side": "BUY",
-      "qty": 43,
-      "entry_price": 1397.3,
-      "amount": 60083.9,
-      "exchange": "NSE",
-      "entry_reason": "[EMA_CHANNEL] Close 1397.30 > EMA33 High 1397.29 with EMA5 (1397.33) > EMA9 (1397.15)",
-      "date": "2026-10-27",
-      "entry_date": "2026-10-27",
-      "entry_time": "10:15:23 IST",
-      "current_r": -0.33
-    },
-    {
-      "id": "POS-75",
-      "symbol": "INFY.NS",
-      "side": "BUY",
-      "qty": 13,
-      "entry_price": 1142.2,
-      "amount": 14848.6,
-      "exchange": "NSE",
-      "entry_reason": "[EMA_CHANNEL] Close 1142.20 > EMA33 High 1142.01 with EMA5 (1139.38) > EMA9 (1137.82)",
-      "date": "2026-10-27",
-      "entry_date": "2026-10-27",
-      "entry_time": "10:50:41 IST",
-      "current_r": -0.02
-    }
-  ],
+  "free_cash": 93219.45,
+  "deployed_cash": 0.0,
+  "realized_pnl": 72.65,
+  "open_positions": [],
   "trade_history": [
     {
       "id": "POS-1",
@@ -60,7 +17,11 @@
       "invested": 74152.0,
       "returned": 74617.0,
       "pnl": 465.0,
-      "reason": "Price reached target / EMA5 peak reversal"
+      "reason": "Price reached target / EMA5 peak reversal",
+      "legacy_id": "POS-1",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-2",
@@ -73,10 +34,14 @@
       "invested": 19430.6,
       "returned": 19419.4,
       "pnl": -11.2,
-      "reason": "Price dropped below EMA 9 baseline (1387.18)"
+      "reason": "Price dropped below EMA 9 baseline (1387.18)",
+      "legacy_id": "POS-2",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-2",
+      "id": "POS-3",
       "symbol": "RELIANCE.NS",
       "qty": 62,
       "entry_price": 1196.7,
@@ -86,7 +51,11 @@
       "invested": 74195.4,
       "returned": 74232.6,
       "pnl": 37.2,
-      "reason": "Price (1197.300048828125) crossed below EMA 5 (1197.53) \u2014 Profit Locked"
+      "reason": "Price (1197.300048828125) crossed below EMA 5 (1197.53) \u2014 Profit Locked",
+      "legacy_id": "POS-2",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-4",
@@ -99,7 +68,11 @@
       "invested": 59865.0,
       "returned": 59870.0,
       "pnl": 5.0,
-      "reason": "Price (1197.4000244140625) crossed below EMA 5 (1197.57) \u2014 Profit Locked"
+      "reason": "Price (1197.4000244140625) crossed below EMA 5 (1197.57) \u2014 Profit Locked",
+      "legacy_id": "POS-4",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-5",
@@ -112,7 +85,11 @@
       "invested": 59870.0,
       "returned": 59835.0,
       "pnl": -35.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.75)"
+      "reason": "Price dropped below EMA 9 baseline (1196.75)",
+      "legacy_id": "POS-5",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-6",
@@ -125,7 +102,11 @@
       "invested": 49064.7,
       "returned": 49068.8,
       "pnl": 4.1,
-      "reason": "Price (1196.800048828125) crossed below EMA 5 (1197.1) \u2014 Profit Locked"
+      "reason": "Price (1196.800048828125) crossed below EMA 5 (1197.1) \u2014 Profit Locked",
+      "legacy_id": "POS-6",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-7",
@@ -138,7 +119,11 @@
       "invested": 49072.9,
       "returned": 49064.7,
       "pnl": -8.2,
-      "reason": "Price dropped below EMA 9 baseline (1196.7)"
+      "reason": "Price dropped below EMA 9 baseline (1196.7)",
+      "legacy_id": "POS-7",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-8",
@@ -151,10 +136,14 @@
       "invested": 49064.7,
       "returned": 49060.6,
       "pnl": -4.1,
-      "reason": "Price dropped below EMA 9 baseline (1196.68)"
+      "reason": "Price dropped below EMA 9 baseline (1196.68)",
+      "legacy_id": "POS-8",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-5",
+      "id": "POS-9",
       "symbol": "ICICIBANK.NS",
       "qty": 11,
       "entry_price": 1388.4,
@@ -164,10 +153,14 @@
       "invested": 15272.4,
       "returned": 15257.0,
       "pnl": -15.4,
-      "reason": "Price dropped below EMA 9 baseline (1387.18)"
+      "reason": "Price dropped below EMA 9 baseline (1387.18)",
+      "legacy_id": "POS-5",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-9",
+      "id": "POS-10",
       "symbol": "RELIANCE.NS",
       "qty": 41,
       "entry_price": 1196.6,
@@ -177,7 +170,11 @@
       "invested": 49060.6,
       "returned": 49072.9,
       "pnl": 12.3,
-      "reason": "Price (1196.9000244140625) crossed below EMA 5 (1197.16) \u2014 Profit Locked"
+      "reason": "Price (1196.9000244140625) crossed below EMA 5 (1197.16) \u2014 Profit Locked",
+      "legacy_id": "POS-9",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-11",
@@ -190,7 +187,11 @@
       "invested": 59845.0,
       "returned": 59850.0,
       "pnl": 5.0,
-      "reason": "Price (1197.0) crossed below EMA 5 (1197.19) \u2014 Profit Locked"
+      "reason": "Price (1197.0) crossed below EMA 5 (1197.19) \u2014 Profit Locked",
+      "legacy_id": "POS-11",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-12",
@@ -203,7 +204,11 @@
       "invested": 59850.0,
       "returned": 59825.0,
       "pnl": -25.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.72)"
+      "reason": "Price dropped below EMA 9 baseline (1196.72)",
+      "legacy_id": "POS-12",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-13",
@@ -216,7 +221,11 @@
       "invested": 59825.0,
       "returned": 59790.0,
       "pnl": -35.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.58)"
+      "reason": "Price dropped below EMA 9 baseline (1196.58)",
+      "legacy_id": "POS-13",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-14",
@@ -229,7 +238,11 @@
       "invested": 59790.0,
       "returned": 59800.0,
       "pnl": 10.0,
-      "reason": "Price (1196.0) crossed below EMA 5 (1196.79) \u2014 Profit Locked"
+      "reason": "Price (1196.0) crossed below EMA 5 (1196.79) \u2014 Profit Locked",
+      "legacy_id": "POS-14",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-15",
@@ -242,7 +255,11 @@
       "invested": 59800.0,
       "returned": 59775.0,
       "pnl": -25.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.33)"
+      "reason": "Price dropped below EMA 9 baseline (1196.33)",
+      "legacy_id": "POS-15",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-16",
@@ -255,7 +272,11 @@
       "invested": 59775.0,
       "returned": 59785.0,
       "pnl": 10.0,
-      "reason": "Price (1195.699951171875) crossed below EMA 5 (1196.43) \u2014 Profit Locked"
+      "reason": "Price (1195.699951171875) crossed below EMA 5 (1196.43) \u2014 Profit Locked",
+      "legacy_id": "POS-16",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-17",
@@ -268,7 +289,11 @@
       "invested": 59785.0,
       "returned": 59775.0,
       "pnl": -10.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.33)"
+      "reason": "Price dropped below EMA 9 baseline (1196.33)",
+      "legacy_id": "POS-17",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-18",
@@ -281,7 +306,11 @@
       "invested": 59775.0,
       "returned": 59815.0,
       "pnl": 40.0,
-      "reason": "Price (1196.300048828125) crossed below EMA 5 (1196.63) \u2014 Profit Locked"
+      "reason": "Price (1196.300048828125) crossed below EMA 5 (1196.63) \u2014 Profit Locked",
+      "legacy_id": "POS-18",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-19",
@@ -294,7 +323,11 @@
       "invested": 59815.0,
       "returned": 59795.0,
       "pnl": -20.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.43)"
+      "reason": "Price dropped below EMA 9 baseline (1196.43)",
+      "legacy_id": "POS-19",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-20",
@@ -307,7 +340,11 @@
       "invested": 59790.0,
       "returned": 59770.0,
       "pnl": -20.0,
-      "reason": "Price dropped below EMA 9 baseline (1196.33)"
+      "reason": "Price dropped below EMA 9 baseline (1196.33)",
+      "legacy_id": "POS-20",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-21",
@@ -320,10 +357,14 @@
       "invested": 59688.3,
       "returned": 59632.4,
       "pnl": -55.9,
-      "reason": "Price dropped below EMA 9 baseline (1387.26)"
+      "reason": "Price dropped below EMA 9 baseline (1387.26)",
+      "legacy_id": "POS-21",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-3",
+      "id": "POS-22",
       "symbol": "SBIN.NS",
       "qty": 20,
       "entry_price": 954.85,
@@ -333,7 +374,11 @@
       "invested": 19097.0,
       "returned": 19067.0,
       "pnl": -30.0,
-      "reason": "Price dropped below EMA 9 baseline (953.68)"
+      "reason": "Price dropped below EMA 9 baseline (953.68)",
+      "legacy_id": "POS-3",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-23",
@@ -346,7 +391,11 @@
       "invested": 19148.8,
       "returned": 19131.2,
       "pnl": -17.6,
-      "reason": "Price dropped below EMA 9 baseline (1196.01)"
+      "reason": "Price dropped below EMA 9 baseline (1196.01)",
+      "legacy_id": "POS-23",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-24",
@@ -359,7 +408,11 @@
       "invested": 19145.6,
       "returned": 19219.2,
       "pnl": 73.6,
-      "reason": "Price (1201.199951171875) crossed below EMA 5 (1201.24) \u2014 Profit Locked"
+      "reason": "Price (1201.199951171875) crossed below EMA 5 (1201.24) \u2014 Profit Locked",
+      "legacy_id": "POS-24",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-25",
@@ -372,10 +425,14 @@
       "invested": 19219.2,
       "returned": 19219.2,
       "pnl": 0.0,
-      "reason": "Manual Breakeven Exit requested by user"
+      "reason": "Manual Breakeven Exit requested by user",
+      "legacy_id": "POS-25",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-23",
+      "id": "POS-26",
       "symbol": "INFY.NS",
       "qty": 65,
       "entry_price": 1144.55,
@@ -385,10 +442,14 @@
       "invested": 74395.75,
       "returned": 74636.25,
       "pnl": 240.5,
-      "reason": "Manual Profit Exit requested by user"
+      "reason": "Manual Profit Exit requested by user",
+      "legacy_id": "POS-23",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-26",
+      "id": "POS-27",
       "symbol": "RELIANCE.NS",
       "qty": 16,
       "entry_price": 1201.9,
@@ -398,7 +459,11 @@
       "invested": 19230.4,
       "returned": 19243.2,
       "pnl": 12.8,
-      "reason": "Manual Profit Exit requested by user"
+      "reason": "Manual Profit Exit requested by user",
+      "legacy_id": "POS-26",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-28",
@@ -411,10 +476,14 @@
       "invested": 74573.6,
       "returned": 74573.6,
       "pnl": 0.0,
-      "reason": "Flatten account"
+      "reason": "Flatten account",
+      "legacy_id": "POS-28",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-28",
+      "id": "POS-29",
       "symbol": "TCS.NS",
       "qty": 7,
       "entry_price": 2528.3,
@@ -424,7 +493,11 @@
       "invested": 17698.1,
       "returned": 17698.1,
       "pnl": 0.0,
-      "reason": "Flatten account"
+      "reason": "Flatten account",
+      "legacy_id": "POS-28",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-30",
@@ -437,7 +510,11 @@
       "invested": 74610.8,
       "returned": 74468.2,
       "pnl": -142.6,
-      "reason": "Price dropped below EMA 9 baseline (1201.12)"
+      "reason": "Price dropped below EMA 9 baseline (1201.12)",
+      "legacy_id": "POS-30",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-31",
@@ -450,7 +527,11 @@
       "invested": 61230.6,
       "returned": 61240.8,
       "pnl": 10.2,
-      "reason": "Price (1200.800048828125) crossed below EMA 5 (1201.71) \u2014 Profit Locked"
+      "reason": "Price (1200.800048828125) crossed below EMA 5 (1201.71) \u2014 Profit Locked",
+      "legacy_id": "POS-31",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-32",
@@ -463,7 +544,11 @@
       "invested": 61240.8,
       "returned": 61251.0,
       "pnl": 10.2,
-      "reason": "Price (1201.0) crossed below EMA 5 (1201.78) \u2014 Profit Locked"
+      "reason": "Price (1201.0) crossed below EMA 5 (1201.78) \u2014 Profit Locked",
+      "legacy_id": "POS-32",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-33",
@@ -476,10 +561,14 @@
       "invested": 61251.0,
       "returned": 61281.6,
       "pnl": 30.6,
-      "reason": "Price (1201.5999755859375) crossed below EMA 5 (1201.73) \u2014 Profit Locked"
+      "reason": "Price (1201.5999755859375) crossed below EMA 5 (1201.73) \u2014 Profit Locked",
+      "legacy_id": "POS-33",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-30",
+      "id": "POS-34",
       "symbol": "TCS.NS",
       "qty": 7,
       "entry_price": 2526.6,
@@ -489,10 +578,14 @@
       "invested": 17686.2,
       "returned": 17706.5,
       "pnl": 20.3,
-      "reason": "Price (2529.5) crossed below EMA 5 (2529.66) \u2014 Profit Locked"
+      "reason": "Price (2529.5) crossed below EMA 5 (2529.66) \u2014 Profit Locked",
+      "legacy_id": "POS-30",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-34",
+      "id": "POS-35",
       "symbol": "RELIANCE.NS",
       "qty": 51,
       "entry_price": 1201.9,
@@ -502,7 +595,11 @@
       "invested": 61296.9,
       "returned": 61302.0,
       "pnl": 5.1,
-      "reason": "Price (1202.0) crossed below EMA 5 (1202.09) \u2014 Profit Locked"
+      "reason": "Price (1202.0) crossed below EMA 5 (1202.09) \u2014 Profit Locked",
+      "legacy_id": "POS-34",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-36",
@@ -515,7 +612,11 @@
       "invested": 74524.0,
       "returned": 74474.4,
       "pnl": -49.6,
-      "reason": "Price dropped below EMA 9 baseline (1201.87)"
+      "reason": "Price dropped below EMA 9 baseline (1201.87)",
+      "legacy_id": "POS-36",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-37",
@@ -528,7 +629,11 @@
       "invested": 73352.6,
       "returned": 73288.8,
       "pnl": -63.8,
-      "reason": "Price dropped below EMA 9 baseline (2528.45)"
+      "reason": "Price dropped below EMA 9 baseline (2528.45)",
+      "legacy_id": "POS-37",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-38",
@@ -541,7 +646,11 @@
       "invested": 58141.7,
       "returned": 58148.6,
       "pnl": 6.9,
-      "reason": "Price (2528.199951171875) crossed below EMA 5 (2529.32) \u2014 Profit Locked"
+      "reason": "Price (2528.199951171875) crossed below EMA 5 (2529.32) \u2014 Profit Locked",
+      "legacy_id": "POS-38",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-39",
@@ -554,7 +663,11 @@
       "invested": 26467.0,
       "returned": 26467.0,
       "pnl": 0.0,
-      "reason": "Price dropped below EMA 9 baseline (1393.35)"
+      "reason": "Price dropped below EMA 9 baseline (1393.35)",
+      "legacy_id": "POS-39",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-40",
@@ -567,7 +680,11 @@
       "invested": 26467.0,
       "returned": 26470.8,
       "pnl": 3.8,
-      "reason": "Price (1393.199951171875) crossed below EMA 5 (1393.74) \u2014 Profit Locked"
+      "reason": "Price (1393.199951171875) crossed below EMA 5 (1393.74) \u2014 Profit Locked",
+      "legacy_id": "POS-40",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-41",
@@ -580,7 +697,11 @@
       "invested": 26470.8,
       "returned": 26474.6,
       "pnl": 3.8,
-      "reason": "Price (1393.4000244140625) crossed below EMA 5 (1393.81) \u2014 Profit Locked"
+      "reason": "Price (1393.4000244140625) crossed below EMA 5 (1393.81) \u2014 Profit Locked",
+      "legacy_id": "POS-41",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-42",
@@ -593,7 +714,11 @@
       "invested": 26474.6,
       "returned": 26474.6,
       "pnl": 0.0,
-      "reason": "Price (1393.4000244140625) crossed below EMA 5 (1393.81) \u2014 Profit Locked"
+      "reason": "Price (1393.4000244140625) crossed below EMA 5 (1393.81) \u2014 Profit Locked",
+      "legacy_id": "POS-42",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-43",
@@ -606,7 +731,11 @@
       "invested": 25288.0,
       "returned": 25288.0,
       "pnl": 0.0,
-      "reason": "Price (2528.800048828125) crossed below EMA 5 (2528.9) \u2014 Profit Locked"
+      "reason": "Price (2528.800048828125) crossed below EMA 5 (2528.9) \u2014 Profit Locked",
+      "legacy_id": "POS-43",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-44",
@@ -619,7 +748,11 @@
       "invested": 25288.0,
       "returned": 25293.0,
       "pnl": 5.0,
-      "reason": "Price (2529.300048828125) crossed below EMA 5 (2529.42) \u2014 Profit Locked"
+      "reason": "Price (2529.300048828125) crossed below EMA 5 (2529.42) \u2014 Profit Locked",
+      "legacy_id": "POS-44",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-45",
@@ -632,7 +765,11 @@
       "invested": 25293.0,
       "returned": 25281.0,
       "pnl": -12.0,
-      "reason": "Price dropped below EMA 9 baseline (2528.62)"
+      "reason": "Price dropped below EMA 9 baseline (2528.62)",
+      "legacy_id": "POS-45",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-46",
@@ -645,7 +782,11 @@
       "invested": 25283.0,
       "returned": 25284.0,
       "pnl": 1.0,
-      "reason": "Price (2528.39990234375) crossed below EMA 5 (2529.12) \u2014 Profit Locked"
+      "reason": "Price (2528.39990234375) crossed below EMA 5 (2529.12) \u2014 Profit Locked",
+      "legacy_id": "POS-46",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-47",
@@ -658,7 +799,11 @@
       "invested": 25284.0,
       "returned": 25280.0,
       "pnl": -4.0,
-      "reason": "Price dropped below EMA 9 baseline (2528.49)"
+      "reason": "Price dropped below EMA 9 baseline (2528.49)",
+      "legacy_id": "POS-47",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-48",
@@ -671,7 +816,11 @@
       "invested": 25280.0,
       "returned": 25287.0,
       "pnl": 7.0,
-      "reason": "Price (2528.699951171875) crossed below EMA 5 (2529.07) \u2014 Profit Locked"
+      "reason": "Price (2528.699951171875) crossed below EMA 5 (2529.07) \u2014 Profit Locked",
+      "legacy_id": "POS-48",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-49",
@@ -684,10 +833,14 @@
       "invested": 26450.6,
       "returned": 26433.0,
       "pnl": -17.6,
-      "reason": "Price dropped below EMA 9 baseline (1201.95)"
+      "reason": "Price dropped below EMA 9 baseline (1201.95)",
+      "legacy_id": "POS-49",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-37",
+      "id": "POS-50",
       "symbol": "INFY.NS",
       "qty": 17,
       "entry_price": 1150.7,
@@ -697,7 +850,11 @@
       "invested": 19561.9,
       "returned": 19567.85,
       "pnl": 5.95,
-      "reason": "Price (1151.050048828125) crossed below EMA 5 (1151.07) \u2014 Profit Locked"
+      "reason": "Price (1151.050048828125) crossed below EMA 5 (1151.07) \u2014 Profit Locked",
+      "legacy_id": "POS-37",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-51",
@@ -710,7 +867,11 @@
       "invested": 20719.8,
       "returned": 20721.6,
       "pnl": 1.8,
-      "reason": "Price (1151.199951171875) crossed below EMA 5 (1151.26) \u2014 Profit Locked"
+      "reason": "Price (1151.199951171875) crossed below EMA 5 (1151.26) \u2014 Profit Locked",
+      "legacy_id": "POS-51",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-52",
@@ -723,23 +884,14 @@
       "invested": 20239.2,
       "returned": 20263.2,
       "pnl": 24.0,
-      "reason": "Price (2532.89990234375) crossed below EMA 5 (2533.3) \u2014 Profit Locked"
+      "reason": "Price (2532.89990234375) crossed below EMA 5 (2533.3) \u2014 Profit Locked",
+      "legacy_id": "POS-52",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-NIFTY-1",
-      "symbol": "NIFTY 50 (Index Futures)",
-      "qty": 25,
-      "entry_price": 22660.1,
-      "exit_price": 22660.1,
-      "entry_time": "13:38:59 IST",
-      "exit_time": "15:20:04 IST",
-      "invested": 45000.0,
-      "returned": 45000.0,
-      "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
-    },
-    {
-      "id": "POS-50",
+      "id": "POS-54",
       "symbol": "ICICIBANK.NS",
       "qty": 19,
       "entry_price": 1396.5,
@@ -749,10 +901,14 @@
       "invested": 26533.5,
       "returned": 26533.5,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-50",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
-      "id": "POS-53",
+      "id": "POS-55",
       "symbol": "RELIANCE.NS",
       "qty": 18,
       "entry_price": 1201.6,
@@ -762,7 +918,11 @@
       "invested": 21628.8,
       "returned": 21628.8,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-53",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-56",
@@ -775,7 +935,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-56",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-57",
@@ -788,7 +952,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-57",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-58",
@@ -801,7 +969,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-58",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-59",
@@ -814,7 +986,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-59",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-60",
@@ -827,7 +1003,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-60",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-61",
@@ -840,7 +1020,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-61",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-62",
@@ -853,7 +1037,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-62",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-63",
@@ -866,7 +1054,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-63",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-64",
@@ -879,7 +1071,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-64",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-65",
@@ -892,7 +1088,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-65",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-66",
@@ -905,7 +1105,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-66",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-67",
@@ -918,7 +1122,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-67",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-68",
@@ -931,7 +1139,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-68",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-69",
@@ -944,7 +1156,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-69",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-70",
@@ -957,7 +1173,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-70",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-71",
@@ -970,7 +1190,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-71",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-72",
@@ -983,7 +1207,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-72",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-73",
@@ -996,7 +1224,11 @@
       "invested": 409745.6,
       "returned": 409745.6,
       "pnl": 0.0,
-      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+      "reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "legacy_id": "POS-73",
+      "entry_date": "2026-10-26",
+      "date": "2026-10-26",
+      "exit_date": "2026-10-26"
     },
     {
       "id": "POS-74",
@@ -1014,8 +1246,185 @@
       "invested": 74056.9,
       "returned": 74056.9,
       "pnl": 0.0,
-      "reason": "EMA momentum breakdown (Price 1397.30 < EMA5 1397.31)"
+      "reason": "EMA momentum breakdown (Price 1397.30 < EMA5 1397.31)",
+      "legacy_id": "POS-74"
+    },
+    {
+      "id": "POS-75",
+      "symbol": "INFY.NS",
+      "qty": 6,
+      "entry_price": 1142.2,
+      "exit_price": 1155.300048828125,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "10:50:41 IST",
+      "exit_time": "11:44:39 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 1142.20 > EMA33 High 1142.01 with EMA5 (1139.38) > EMA9 (1137.82)",
+      "exit_reason": "Partial profit booked at +1R (1155.30). Stop moved to breakeven (1142.20)",
+      "invested": 6853.2,
+      "returned": 6931.8,
+      "pnl": 78.6,
+      "reason": "Partial profit booked at +1R (1155.30). Stop moved to breakeven (1142.20)",
+      "legacy_id": "POS-75"
+    },
+    {
+      "id": "POS-78",
+      "legacy_id": "POS-75",
+      "symbol": "INFY.NS",
+      "qty": 1,
+      "entry_price": 1142.2,
+      "exit_price": 1162.800048828125,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "10:50:41 IST",
+      "exit_time": "12:44:36 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 1142.20 > EMA33 High 1142.01 with EMA5 (1139.38) > EMA9 (1137.82)",
+      "exit_reason": "EMA momentum breakdown (Price 1162.80 < EMA5 1162.90)",
+      "invested": 1142.2,
+      "returned": 1162.8,
+      "pnl": 20.6,
+      "reason": "EMA momentum breakdown (Price 1162.80 < EMA5 1162.90)"
+    },
+    {
+      "id": "POS-76",
+      "legacy_id": "POS-74",
+      "symbol": "SBIN.NS",
+      "qty": 20,
+      "entry_price": 964.8,
+      "exit_price": 956.1,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "10:13:55 IST",
+      "exit_time": "12:49:27 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 964.80 > EMA33 High 961.04 with EMA5 (963.96) > EMA9 (963.25)",
+      "exit_reason": "Manual Squareoff Requested by User",
+      "invested": 19296.0,
+      "returned": 19122.0,
+      "pnl": -174.0,
+      "reason": "Manual Squareoff Requested by User"
+    },
+    {
+      "id": "POS-77",
+      "legacy_id": "POS-75",
+      "symbol": "ICICIBANK.NS",
+      "qty": 43,
+      "entry_price": 1397.3,
+      "exit_price": 1386.8,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "10:15:23 IST",
+      "exit_time": "12:49:28 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 1397.30 > EMA33 High 1397.29 with EMA5 (1397.33) > EMA9 (1397.15)",
+      "exit_reason": "Manual Squareoff Requested by User",
+      "invested": 60083.9,
+      "returned": 59632.4,
+      "pnl": -451.5,
+      "reason": "Manual Squareoff Requested by User"
+    },
+    {
+      "id": "POS-80",
+      "legacy_id": "POS-80",
+      "symbol": "INFY.NS",
+      "qty": 16,
+      "entry_price": 1162.45,
+      "exit_price": 1162.6500244140625,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "14:28:28 IST",
+      "exit_time": "14:46:19 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 1162.45 > EMA33 High 1159.34 with EMA5 (1161.67) > EMA9 (1161.31)",
+      "exit_reason": "EMA momentum breakdown (Price 1162.65 < EMA5 1162.86)",
+      "invested": 18599.2,
+      "returned": 18602.4,
+      "pnl": 3.2,
+      "reason": "EMA momentum breakdown (Price 1162.65 < EMA5 1162.86)"
+    },
+    {
+      "id": "POS-79",
+      "legacy_id": "POS-79",
+      "symbol": "TCS.NS",
+      "qty": 27,
+      "entry_price": 2498.4,
+      "exit_price": 2502.89990234375,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "14:28:23 IST",
+      "exit_time": "14:47:54 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 2498.40 > EMA33 High 2497.80 with EMA5 (2497.61) > EMA9 (2497.13)",
+      "exit_reason": "EMA momentum breakdown (Price 2502.90 < EMA5 2503.03)",
+      "invested": 67456.8,
+      "returned": 67578.3,
+      "pnl": 121.5,
+      "reason": "EMA momentum breakdown (Price 2502.90 < EMA5 2503.03)"
+    },
+    {
+      "id": "POS-81",
+      "legacy_id": "POS-81",
+      "symbol": "TCS.BO",
+      "qty": 27,
+      "entry_price": 2501.35,
+      "exit_price": 2502.75,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "14:50:11 IST",
+      "exit_time": "15:02:49 IST",
+      "entry_reason": "[CONFLUENCE_V3] EMA33 Channel Breakout (2501.35 > 2498.04) | EMA 5 > EMA 9 (2499.64 > 2498.48) | Supertrend Bullish (2490.12) | MACD Bullish Cross (Hist: 0.38) | RSI Momentum Zone (59.0)",
+      "exit_reason": "EMA momentum breakdown (Price 2502.75 < EMA5 2502.90)",
+      "invested": 67536.45,
+      "returned": 67574.25,
+      "pnl": 37.8,
+      "reason": "EMA momentum breakdown (Price 2502.75 < EMA5 2502.90)"
+    },
+    {
+      "id": "POS-82",
+      "legacy_id": "POS-82",
+      "symbol": "TCS.NS",
+      "qty": 7,
+      "entry_price": 2504.4,
+      "exit_price": 2500.300048828125,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "14:55:15 IST",
+      "exit_time": "15:20:07 IST",
+      "entry_reason": "[CONFLUENCE_V3] EMA33 Channel Breakout (2504.40 > 2500.06) | EMA 5 > EMA 9 (2503.63 > 2502.27) | Supertrend Bullish (2493.99) | MACD Bullish Cross (Hist: 0.66) | RSI Momentum Zone (60.5)",
+      "exit_reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "invested": 17530.8,
+      "returned": 17502.1,
+      "pnl": -28.7,
+      "reason": "Intraday EOD 15:20 Auto-Squareoff"
+    },
+    {
+      "id": "POS-83",
+      "legacy_id": "POS-83",
+      "symbol": "ICICIBANK.NS",
+      "qty": 40,
+      "entry_price": 1386.5,
+      "exit_price": 1386.9000244140625,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "15:05:09 IST",
+      "exit_time": "15:20:22 IST",
+      "entry_reason": "[CONFLUENCE_V3] EMA33 Channel Breakout (1386.50 > 1385.24) | EMA 5 > EMA 9 (1385.77 > 1384.72) | Supertrend Bullish (1378.81) | MACD Bullish Cross (Hist: 0.94) | RSI Momentum Zone (58.6) | ADX/DI Bullish (+DI > -DI, ADX: 28.3)",
+      "exit_reason": "Intraday EOD 15:20 Auto-Squareoff",
+      "invested": 55460.0,
+      "returned": 55476.0,
+      "pnl": 16.0,
+      "reason": "Intraday EOD 15:20 Auto-Squareoff"
     }
   ],
-  "last_updated": "2026-10-27T10:57:01.628789"
+  "last_updated": "2026-10-27T15:20:22.789161",
+  "next_position_seq": 84,
+  "realized_pnl_by_day": {
+    "2026-10-26": 449.15,
+    "2026-10-27": -376.5
+  }
 }

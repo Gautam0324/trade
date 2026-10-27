@@ -45,13 +45,13 @@ class TestDashboardService(unittest.TestCase):
     def test_sanitize_config_masks_telegram_token(self):
         raw_cfg = {
             "budget": 100000.0,
-            "telegram_bot_token": "8916950436:AAHY9Oft4ORf6WASvm9AP9d3yoCw465LTr0",
+            "telegram_bot_token": "123456:TEST",
             "sec_user_agent": "secret-agent"
         }
         safe_cfg = service.sanitize_config(raw_cfg)
         self.assertNotEqual(safe_cfg["telegram_bot_token"], raw_cfg["telegram_bot_token"])
         self.assertTrue("••••" in safe_cfg["telegram_bot_token"])
-        self.assertFalse("8916950436:AAHY9Oft4ORf6WASvm9AP9d3yoCw465LTr0" in json.dumps(safe_cfg))
+        self.assertFalse("123456:TEST" in json.dumps(safe_cfg))
 
     def test_risk_audit_evaluation(self):
         risk = service.get_risk_audit()
@@ -68,5 +68,42 @@ class TestDashboardService(unittest.TestCase):
             self.assertIn("win_rate", s)
             self.assertIn("net_pnl", s)
 
+    def test_post_with_foreign_origin_gets_403(self):
+        import server
+        # Create a mock handler
+        class DummyRequest:
+            def makefile(self, *args, **kwargs):
+                import io
+                return io.BytesIO(b"")
+
+        handler = server.PremiumDashboardHandler.__new__(server.PremiumDashboardHandler)
+        handler.headers = {
+            "Host": "evil.com",
+            "Origin": "http://evil.com"
+        }
+        handler.send_error = lambda code, msg: setattr(handler, "_sent_code", code)
+        self.assertFalse(handler.validate_host_and_origin())
+        self.assertEqual(handler._sent_code, 403)
+
+    def test_post_without_token_gets_401(self):
+        import server
+        handler = server.PremiumDashboardHandler.__new__(server.PremiumDashboardHandler)
+        handler.headers = {
+            "Host": "localhost:8080"
+        }
+        handler.send_json = lambda data, status=200: setattr(handler, "_sent_code", status)
+        self.assertFalse(handler.validate_api_token())
+        self.assertEqual(handler._sent_code, 401)
+
+    def test_get_config_never_returns_raw_token(self):
+        cfg = {
+            "telegram_bot_token": "123456:TEST_TOKEN",
+            "api_token": "my-secret-api-token"
+        }
+        sanitized = service.sanitize_config(cfg)
+        self.assertNotIn("123456:TEST_TOKEN", json.dumps(sanitized))
+        self.assertNotIn("my-secret-api-token", json.dumps(sanitized))
+
 if __name__ == "__main__":
     unittest.main()
+

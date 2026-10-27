@@ -2,6 +2,16 @@
 let equityChartInstance = null;
 let activeView = "overview";
 let cachedDashboardData = null;
+let dashboardApiToken = "";
+
+// Helper for authenticated POST requests
+async function authFetch(url, options = {}) {
+  options.headers = options.headers || {};
+  if (dashboardApiToken) {
+    options.headers['X-API-Token'] = dashboardApiToken;
+  }
+  return fetch(url, options);
+}
 
 // Clock with exact IST (Asia/Kolkata) formatting
 function updateClock() {
@@ -106,6 +116,9 @@ async function loadOverviewData() {
     const res = await fetch('/api/overview');
     const data = await res.json();
     cachedDashboardData = data;
+    if (data.api_token) {
+      dashboardApiToken = data.api_token;
+    }
 
     // Header Badges
     const mkt = data.market_status || "UNKNOWN";
@@ -552,7 +565,7 @@ async function loadControlData() {
 async function startBotDaemon() {
   if (!confirm("Confirm launching the automated day trading bot daemon?")) return;
   try {
-    const res = await fetch('/api/bot/start', { method: 'POST' });
+    const res = await authFetch('/api/bot/start', { method: 'POST' });
     const data = await res.json();
     alert(data.message);
     loadControlData();
@@ -565,7 +578,7 @@ async function startBotDaemon() {
 async function stopBotDaemon() {
   if (!confirm("WARNING: Stop the trading daemon? Open positions will NOT be automatically closed unless instructed.")) return;
   try {
-    const res = await fetch('/api/bot/stop', { method: 'POST' });
+    const res = await authFetch('/api/bot/stop', { method: 'POST' });
     const data = await res.json();
     alert(data.message);
     loadControlData();
@@ -658,7 +671,7 @@ function promptClosePosition(symbol, qty) {
 
   document.getElementById('modalConfirmBtn').onclick = async () => {
     try {
-      const res = await fetch('/api/positions/close', {
+      const res = await authFetch('/api/positions/close', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: pendingCloseSymbol })

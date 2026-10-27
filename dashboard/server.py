@@ -26,11 +26,53 @@ import service
 
 PORT = 8080
 
+import secrets
+
+# Generate a random API token at startup
+DASHBOARD_API_TOKEN = os.environ.get("DASHBOARD_API_TOKEN") or secrets.token_hex(16)
+print(f"\n[SECURITY] Dashboard API Token: {DASHBOARD_API_TOKEN}\n")
+
 class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DASHBOARD_DIR), **kwargs)
 
+    def validate_host_and_origin(self):
+        """
+        Validates Host and Origin against localhost, 127.0.0.1, or local Wi-Fi IP (10.10.0.199).
+        """
+        host = self.headers.get("Host", "").split(":")[0].lower()
+        allowed = ("localhost", "127.0.0.1", "10.10.0.199", "0.0.0.0")
+        if host not in allowed and not host.startswith("10.10.0.") and not host.startswith("192.168."):
+            self.send_error(403, "Forbidden Host")
+            return False
+
+        origin = self.headers.get("Origin")
+        if origin:
+            parsed = urllib.parse.urlparse(origin)
+            origin_host = (parsed.hostname or "").lower()
+            if origin_host not in allowed and not origin_host.startswith("10.10.0.") and not origin_host.startswith("192.168."):
+                self.send_error(403, "Forbidden Origin")
+                return False
+        return True
+
+    def validate_api_token(self):
+        """
+        Requires DASHBOARD_API_TOKEN on every POST request (via X-API-Token or Authorization).
+        """
+        token = self.headers.get("X-API-Token")
+        if not token:
+            auth = self.headers.get("Authorization", "")
+            if auth.startswith("Bearer "):
+                token = auth[7:].strip()
+        if not token or token != DASHBOARD_API_TOKEN:
+            self.send_json({"error": "Unauthorized: Invalid or missing API token"}, status=401)
+            return False
+        return True
+
     def do_GET(self):
+        if not self.validate_host_and_origin():
+            return
+
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
@@ -46,6 +88,11 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
+        if not self.validate_host_and_origin():
+            return
+        if not self.validate_api_token():
+            return
+
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
         content_length = int(self.headers.get("Content-Length", 0))
@@ -64,10 +111,11 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def do_OPTIONS(self):
+        if not self.validate_host_and_origin():
+            return
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-API-Token")
         self.end_headers()
 
     def send_json(self, data, status=200):
@@ -75,9 +123,8 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(response_bytes)))
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-API-Token")
         self.end_headers()
         self.wfile.write(response_bytes)
 
@@ -96,7 +143,8 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
                 "ist_time": ist_time,
                 "bot_status": daemon_info,
                 "kpis": kpis,
-                "config": service.sanitize_config(config)
+                "config": service.sanitize_config(config),
+                "api_token": DASHBOARD_API_TOKEN
             })
 
         elif path == "/api/equity_curve":
@@ -173,13 +221,28 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             config = service.read_json_file(TRADER_DIR / "config.json", default={})
             self.send_json({"config": service.sanitize_config(config)})
 
-        elif path == "/api/quote":
+        elif path == "/api/signals":
+            # Return evaluated signals, scores, weights and rejections
+            import db_v3
+            conn = db_v3.get_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM signals_audit ORDER BY id DESC LIMIT 50")
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            self.send_json({"signals": rows})
+
+        elif path == "/api/backtest":
+            from backtest import BacktestEngine
+            import daemon
             symbol = query.get("symbol", ["RELIANCE.NS"])[0].upper()
-            quote = service.fetch_live_quote_data(symbol)
-            if quote:
-                self.send_json(quote)
+            strat = query.get("strategy", ["CONFLUENCE"])[0].upper()
+            quotes = daemon.fetch_candles(symbol)
+            if quotes and len(quotes.get("close", [])) >= 40:
+                bt = BacktestEngine(starting_capital=100000.0)
+                res = bt.run_strategy(quotes, strategy_name=strat)
+                self.send_json({"symbol": symbol, "result": res})
             else:
-                self.send_json({"error": f"Quote unavailable for {symbol}"}, status=404)
+                self.send_json({"error": "Insufficient candle data for backtest"}, status=400)
 
         else:
             self.send_error(404, "API endpoint not found")
@@ -269,9 +332,10 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "API endpoint not found")
 
 def run(port=PORT):
-    server_address = ("", port)
+    host = os.environ.get("DASHBOARD_HOST", "0.0.0.0")
+    server_address = (host, port)
     httpd = http.server.HTTPServer(server_address, PremiumDashboardHandler)
-    print(f"Institutional Algo Trading Terminal running on http://localhost:{port}")
+    print(f"Institutional Algo Trading Terminal running on http://{host}:{port}")
     httpd.serve_forever()
 
 if __name__ == "__main__":
@@ -282,3 +346,4 @@ if __name__ == "__main__":
         except ValueError:
             pass
     run(p)
+

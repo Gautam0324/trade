@@ -121,9 +121,9 @@ def check_trailing_profit_exit(entry_price, peak_price, current_price, current_e
     if is_in_profit and (below_ema5 or peak_reversal):
         should_exit = True
         if below_ema5:
-            reason = f"Price ({cur}) crossed below EMA 5 ({current_ema5}) — Profit Locked"
+            reason = f"Price ({cur}) crossed below EMA 5 ({current_ema5}) - Profit Locked"
         else:
-            reason = f"Price reversed from peak {peak} to {cur} — Profit Locked"
+            reason = f"Price reversed from peak {peak} to {cur} - Profit Locked"
     elif cur < current_ema9:
         should_exit = True
         reason = f"Price dropped below EMA 9 baseline ({current_ema9})"

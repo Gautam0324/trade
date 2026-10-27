@@ -79,6 +79,8 @@ def generate_daily_trade_csv(report_date=None):
         writer.writerow(headers)
 
         for h in history:
+            if h.get("status") == "void_pending_review":
+                continue
             qty = int(h.get("qty", 0))
             in_p = float(h.get("entry_price", 0.0))
             out_p = float(h.get("exit_price", 0.0))
@@ -89,10 +91,7 @@ def generate_daily_trade_csv(report_date=None):
 
             entry_reason = h.get("entry_reason")
             if not entry_reason:
-                if "NIFTY" in h.get("symbol", ""):
-                    entry_reason = "Manual / User request Nifty 50 Futures"
-                else:
-                    entry_reason = "EMA 5 > EMA 9 above EMA 33 Channel Breakout"
+                entry_reason = "EMA 5 > EMA 9 above EMA 33 Channel Breakout"
 
             exit_reason = h.get("exit_reason") or h.get("reason", "Trailing profit / Stop triggered")
 

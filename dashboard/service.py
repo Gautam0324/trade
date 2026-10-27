@@ -95,7 +95,7 @@ def is_market_open():
 
 def check_daemon_status():
     """
-    Checks if trader-scanner/daemon.py is currently running.
+    Checks if trader-scanner/daemon.py is currently running by reading trader/state/daemon.lock.
     """
     global daemon_process
     if daemon_process is not None:
@@ -105,21 +105,40 @@ def check_daemon_status():
         else:
             daemon_process = None
 
-    # Check via OS process list
+    lock_path = STATE_DIR / "daemon.lock"
+    if os.path.exists(lock_path):
+        try:
+            with open(lock_path, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content.isdigit():
+                    pid = int(content)
+                    if is_pid_running(pid):
+                        return {"status": "RUNNING", "pid": pid, "managed": False}
+                    else:
+                        # Stale lock file
+                        try:
+                            os.remove(lock_path)
+                        except OSError:
+                            pass
+        except Exception:
+            pass
+    return {"status": "STOPPED", "pid": None, "managed": False}
+
+def is_pid_running(pid):
     try:
         if os.name == "nt":
-            cmd = 'powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"Name = \'python.exe\'\\" | Where-Object { $_.CommandLine -like \'*daemon.py*\' } | Select-Object -ExpandProperty ProcessId"'
-            out = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
-            if out and out.split()[0].isdigit():
-                return {"status": "RUNNING", "pid": int(out.split()[0]), "managed": False}
+            import ctypes
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            if h:
+                ctypes.windll.kernel32.CloseHandle(h)
+                return True
+            return False
         else:
-            cmd = "pgrep -f 'trader-scanner/daemon.py'"
-            out = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL)
-            if out.strip():
-                return {"status": "RUNNING", "pid": int(out.strip().split()[0]), "managed": False}
+            os.kill(pid, 0)
+            return True
     except Exception:
-        pass
-    return {"status": "STOPPED", "pid": None, "managed": False}
+        return False
 
 def fetch_live_quote_data(symbol):
     now_ts = time.time()
@@ -149,6 +168,10 @@ def fetch_live_quote_data(symbol):
 
     # Indicator calculation
     import ema_strategy
+    from strategy_engine import StrategyEngine
+    strat_eng = StrategyEngine({"strategy_mode": "CONFLUENCE"})
+    confluence_res = strat_eng.evaluate_all(symbol, quotes)
+
     ema_eval = ema_strategy.evaluate_ema_setup(quotes)
 
     data = {
@@ -161,11 +184,19 @@ def fetch_live_quote_data(symbol):
         "low": min(lows) if lows else cur_p,
         "open": opens[-1] if opens else cur_p,
         "volume": volumes[-1] if volumes else 0,
-        "signal": ema_eval.get("signal", "HOLD"),
+        "signal": confluence_res.get("signal", "HOLD"),
+        "confluence_score": confluence_res.get("confluence_score", 0.0),
+        "confluence_weights": confluence_res.get("component_weights", {}),
+        "rejections": confluence_res.get("rejections", []),
         "ema5": ema_eval.get("ema5", cur_p),
         "ema9": ema_eval.get("ema9", cur_p),
         "ema33_high": ema_eval.get("ema33_high", cur_p),
         "ema33_low": ema_eval.get("ema33_low", cur_p),
+        "supertrend": confluence_res.get("indicator_values", {}).get("supertrend"),
+        "rsi": confluence_res.get("indicator_values", {}).get("rsi"),
+        "adx": confluence_res.get("indicator_values", {}).get("adx"),
+        "vwap": confluence_res.get("indicator_values", {}).get("vwap"),
+        "rvol": confluence_res.get("indicator_values", {}).get("rvol"),
         "last_updated": get_ist_now().strftime("%H:%M:%S IST")
     }
 
@@ -220,7 +251,7 @@ def compute_dashboard_metrics():
     return_pct = round((total_net_pnl / starting_cap) * 100, 2) if starting_cap > 0 else 0.0
 
     # Trade statistics
-    closed_trades = [t for t in trade_history if "pnl" in t]
+    closed_trades = [t for t in trade_history if "pnl" in t and t.get("status") != "void_pending_review"]
     wins = [t for t in closed_trades if float(t["pnl"]) > 0]
     losses = [t for t in closed_trades if float(t["pnl"]) < 0]
     breakeven = [t for t in closed_trades if float(t["pnl"]) == 0]
@@ -246,11 +277,11 @@ def compute_dashboard_metrics():
         if dd > max_dd:
             max_dd = dd
 
-    max_daily_loss = float(config.get("max_daily_loss_usd", 1000.0))
+    max_daily_loss = float(config.get("max_daily_loss_inr", config.get("max_daily_loss_usd", 1000.0)))
     daily_loss_utilization = round((abs(min(0.0, realized_pnl)) / max_daily_loss) * 100, 1) if max_daily_loss > 0 else 0.0
 
     today_str = get_ist_now().strftime("%Y-%m-%d")
-    today_trades = [t for t in trade_history if t.get("date") == today_str or t.get("exit_date") == today_str]
+    today_trades = [t for t in trade_history if (t.get("date") == today_str or t.get("exit_date") == today_str) and t.get("status") != "void_pending_review"]
     today_realized_pnl = sum(float(t.get("pnl", 0.0)) for t in today_trades)
 
     return {
@@ -384,15 +415,15 @@ def get_risk_audit():
     ledger = read_json_file(TRADER_DIR / "ledger.json", default={})
 
     budget = float(config.get("budget", 100000.0))
-    max_daily_loss = float(config.get("max_daily_loss_usd", 1000.0))
+    max_daily_loss = float(config.get("max_daily_loss_inr", config.get("max_daily_loss_usd", 1000.0)))
     max_trades_per_day = int(config.get("max_trades_per_day", 3))
     max_open_positions = int(config.get("max_open_positions", 3))
     max_pos_pct = float(config.get("max_position_pct", 75))
 
     today_str = get_ist_now().strftime("%Y-%m-%d")
-    today_trades = [t for t in ledger.get("trade_history", []) if t.get("date") == today_str or t.get("exit_date") == today_str]
-    today_trades_count = len(today_trades)
-    today_realized_loss = abs(min(0.0, sum(float(t.get("pnl", 0.0)) for t in today_trades)))
+    import ledger as ledger_mod
+    today_trades_count = ledger_mod.get_today_entries_count(today_str)
+    today_realized_loss = abs(min(0.0, ledger_mod.get_today_realized_loss(today_str)))
     open_positions = ledger.get("open_positions", [])
 
     alerts = []
@@ -492,6 +523,7 @@ def get_system_logs(filter_level=None, limit=100):
 def sanitize_config(cfg):
     """
     Sanitizes configuration dictionary by masking Telegram bot token and secrets.
+    Never returns raw tokens or secret credentials.
     """
     safe_cfg = dict(cfg)
     if "telegram_bot_token" in safe_cfg:
@@ -500,6 +532,8 @@ def sanitize_config(cfg):
             safe_cfg["telegram_bot_token"] = token[:4] + "••••••••" + token[-4:]
         else:
             safe_cfg["telegram_bot_token"] = "••••••••"
+    if "api_token" in safe_cfg:
+        safe_cfg["api_token"] = "••••••••"
     if "sec_user_agent" in safe_cfg:
         safe_cfg["sec_user_agent"] = "Configured (Protected)"
     return safe_cfg

@@ -226,21 +226,21 @@ class DayTradeChecks(unittest.TestCase):
 
     def test_entry_window_new_york_time(self):
         cases = [("2026-10-19 09:44", "no new entries before 09:45 New York (it is 09:44)"),
-                 ("2026-10-19 15:31", "no new entries after 15:30 New York (it is 15:31)"),
+                 ("2026-10-19 15:31", "no new entries after 15:15 New York (it is 15:31)"),
                  ("2026-10-19 08:00", "the market is closed (Mon 2026-10-19 08:00"),
                  ("2026-10-19 16:05", "the market is closed"),
                  ("2026-10-17 10:15", "the market is closed today (weekend"),
                  ("2026-11-26 10:15", "the market is closed today (NYSE holiday: Thanksgiving Day"),
-                 ("2026-11-27 12:31", "no new entries after 12:30 New York"),
+                 ("2026-11-27 12:31", "no new entries after 12:15 New York"),
                  ("2026-11-27 13:05", "the market is closed"),
                  ("2026-11-02T14:40:00Z", "no new entries before 09:45 New York (it is 09:40)")]
         for now, want in cases:
             res = self.one(tsla(), now=now)
             self.assertIn("window: " + want, reasons(res), now)
-        for now in ("2026-10-19 09:45", "2026-10-19 15:30", "2026-11-27 12:30", "2026-11-02T15:15:00Z",
+        for now in ("2026-10-19 09:45", "2026-10-19 15:15", "2026-11-27 12:15", "2026-11-02T15:15:00Z",
                     "2026-10-30T14:40:00Z", "2026-03-09T13:50:00Z"):
             self.assertEqual(verdicts(self.one(tsla(), now=now)), ["PASS"], now)
-        self.assertIn("early close", " ".join(self.one(tsla(), now="2026-11-27 12:30")["warnings"]))
+        self.assertIn("early close", " ".join(self.one(tsla(), now="2026-11-27 12:15")["warnings"]))
         res = self.one(tsla(), now="2026-10-17 10:15", no_entries_before=None, no_entries_after=None)
         self.assertEqual(verdicts(res), ["PASS"])
         with self.assertRaises(check.RiskError):

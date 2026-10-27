@@ -14,12 +14,22 @@ import urllib.request
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+SECRETS_PATH = BASE_DIR / "trader" / "secrets.json"
 CONFIG_PATH = BASE_DIR / "trader" / "config.json"
 
 def get_telegram_creds():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     
+    if os.path.exists(SECRETS_PATH):
+        try:
+            with open(SECRETS_PATH, "r", encoding="utf-8") as f:
+                sec = json.load(f)
+                token = token or sec.get("telegram_bot_token")
+                chat_id = chat_id or sec.get("telegram_chat_id")
+        except Exception:
+            pass
+
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -159,7 +169,7 @@ def send_exit_alert(exit_data):
         )
 
     msg = (
-        f"⚡ <b>TRADE EXITED — PROFIT BOOKED!</b> ⚡\n\n"
+        f"⚡ <b>TRADE EXITED: PROFIT BOOKED!</b> ⚡\n\n"
         f"🏷️ <b>Stock:</b> {sym} ({exchange})\n"
         f"📦 <b>Quantity:</b> {qty} Shares\n"
         f"💵 <b>Result:</b> <b>{pnl_badge}</b>\n\n"

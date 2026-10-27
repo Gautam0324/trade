@@ -44,16 +44,36 @@ strategy_eng = StrategyEngine(app_config)
 risk_eng = RiskEngine(app_config)
 position_mgr = PositionManager(app_config)
 
-WATCHLIST = [
-    "RELIANCE.NS",
-    "TCS.NS",
-    "HDFCBANK.NS",
-    "INFY.NS",
-    "ICICIBANK.NS",
-    "TATAMOTORS.NS",
-    "SBIN.NS",
-    "TCS.BO"
-]
+def load_watchlist():
+    """
+    Loads stock codes dynamically from stocks.csv.
+    Appends .NS for NSE ticker quotes and prioritizes active liquid stocks.
+    """
+    stocks_csv_path = BASE_DIR / "stocks.csv"
+    symbols = []
+    if os.path.exists(stocks_csv_path):
+        try:
+            import csv
+            with open(stocks_csv_path, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    sym = row.get("SYMBOL", "").strip()
+                    series = row.get("SERIES", "").strip()
+                    # Focus on EQ (standard equity) series
+                    if sym and series in ("EQ", ""):
+                        symbols.append(f"{sym}.NS")
+        except Exception as e:
+            print(f"[DAEMON] Error reading stocks.csv: {e}")
+
+    if not symbols:
+        symbols = [
+            "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS",
+            "ICICIBANK.NS", "TATAMOTORS.NS", "SBIN.NS", "TCS.BO"
+        ]
+    return symbols
+
+WATCHLIST = load_watchlist()
+print(f"[DAEMON] Loaded {len(WATCHLIST)} stock codes from stocks.csv for trading.")
 
 # Cooldown tracker to prevent rapid churn on the same symbol (e.g. 5 minutes)
 COOLDOWN_MINUTES = int(app_config.get("cooldown_minutes", 5))
@@ -69,13 +89,33 @@ def fetch_candles(symbol):
             data = json.loads(r.read().decode())
             res = data["chart"]["result"][0]
             quotes = res["indicators"]["quote"][0]
-            # Ensure full OHLC data structure is present
+            raw_o = quotes.get("open", [])
+            raw_h = quotes.get("high", [])
+            raw_l = quotes.get("low", [])
+            raw_c = quotes.get("close", [])
+            raw_v = quotes.get("volume", [])
+            
+            # Filter out null bars from market pauses/session gaps
+            clean_o, clean_h, clean_l, clean_c, clean_v = [], [], [], [], []
+            for i in range(len(raw_c)):
+                o = raw_o[i] if i < len(raw_o) else None
+                h = raw_h[i] if i < len(raw_h) else None
+                l = raw_l[i] if i < len(raw_l) else None
+                c = raw_c[i]
+                v = raw_v[i] if i < len(raw_v) else 0
+                if None not in (o, h, l, c):
+                    clean_o.append(float(o))
+                    clean_h.append(float(h))
+                    clean_l.append(float(l))
+                    clean_c.append(float(c))
+                    clean_v.append(float(v) if v is not None else 0.0)
+
             return {
-                "open": quotes.get("open", []),
-                "high": quotes.get("high", []),
-                "low": quotes.get("low", []),
-                "close": quotes.get("close", []),
-                "volume": quotes.get("volume", [])
+                "open": clean_o,
+                "high": clean_h,
+                "low": clean_l,
+                "close": clean_c,
+                "volume": clean_v
             }
     except Exception as e:
         print(f"[DAEMON] Error fetching {symbol}: {e}")
@@ -120,7 +160,7 @@ def monitor_cycle():
         if exit_res["action"] in ("PARTIAL_EXIT", "FULL_EXIT"):
             exit_qty = exit_res["exit_qty"]
             print(f"[{exit_res['action']}] {sym}: {exit_res['reason']} (Qty: {exit_qty})")
-            ok, exit_item = ledger.record_trade_exit(sym, cur_price, exit_res["reason"], exit_qty=exit_qty)
+            ok, exit_item = ledger.record_trade_exit(pos["id"], cur_price, exit_res["reason"], exit_qty=exit_qty)
             if ok:
                 last_exit_timestamps[sym] = time.time()
                 updated_leg = ledger.get_ledger()
@@ -164,8 +204,7 @@ def monitor_cycle():
             return
 
     updated_leg = ledger.get_ledger()
-    today_trades = ledger.get_today_trades()
-    today_trades_count = len(today_trades)
+    today_trades_count = ledger.get_today_entries_count()
     if today_trades_count >= risk_eng.max_trades_per_day:
         return
 
@@ -185,12 +224,54 @@ def monitor_cycle():
             if not quotes:
                 continue
 
-            signal_payload = strategy_eng.evaluate_all(sym, quotes)
+            # Validate completed candle bars
+            import indicators
+            is_valid, cleaned_quotes, val_err = indicators.validate_ohlcv_bars(quotes)
+            if not is_valid:
+                print(f"[DAEMON] Invalid bar data for {sym}: {val_err}")
+                continue
+
+            signal_payload = strategy_eng.evaluate_all(sym, cleaned_quotes)
+            if signal_payload:
+                # Log signal evaluation to SQLite DB
+                try:
+                    import db_v3
+                    conn = db_v3.get_connection()
+                    cur = conn.cursor()
+                    cur.execute("""
+                    INSERT INTO signals_audit (
+                        timestamp, symbol, strategy_name, side, signal, confluence_score, accepted,
+                        rejection_reasons, component_weights, indicator_values, entry_price, stop_loss, target_price,
+                        risk_per_share, reward_risk_ratio
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                        sym,
+                        signal_payload.get("strategy_name", "UNKNOWN"),
+                        signal_payload.get("side", "BUY"),
+                        signal_payload.get("signal", "NO_TRADE"),
+                        signal_payload.get("confluence_score", 0.0),
+                        1 if signal_payload.get("signal") == "BUY" else 0,
+                        json.dumps(signal_payload.get("rejections", [])),
+                        json.dumps(signal_payload.get("component_weights", {})),
+                        json.dumps(signal_payload.get("indicator_values", {})),
+                        signal_payload.get("entry_reference_price"),
+                        signal_payload.get("stop_loss"),
+                        signal_payload.get("target_price"),
+                        signal_payload.get("risk_per_share"),
+                        signal_payload.get("reward_risk_ratio")
+                    ))
+                    conn.commit()
+                    conn.close()
+                except Exception as dbe:
+                    print(f"[DAEMON] DB log error: {dbe}")
+
             if signal_payload and signal_payload.get("signal") == "BUY":
                 cur_price = signal_payload["entry_reference_price"]
                 stop_price = signal_payload["stop_loss"]
                 target_price = signal_payload["target_price"]
 
+                daily_loss = ledger.get_today_realized_loss()
                 risk_eval = risk_eng.evaluate_order_risk(
                     symbol=sym,
                     side="BUY",
@@ -198,7 +279,7 @@ def monitor_cycle():
                     stop_loss=stop_price,
                     target_price=target_price,
                     available_cash=updated_leg["free_cash"],
-                    daily_realized_loss=min(0.0, updated_leg["realized_pnl"]),
+                    daily_realized_loss=daily_loss,
                     current_trades_count=today_trades_count,
                     current_open_positions_count=len(updated_leg["open_positions"])
                 )
@@ -229,30 +310,93 @@ def monitor_cycle():
                         telegram_bot.send_trade_alert(trade_payload)
                         break  # Take one trade per scan tick
 
+DAEMON_LOCK_PATH = BASE_DIR / "trader" / "state" / "daemon.lock"
+
+def acquire_daemon_lock():
+    DAEMON_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if os.path.exists(DAEMON_LOCK_PATH):
+        try:
+            with open(DAEMON_LOCK_PATH, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content.isdigit():
+                    pid = int(content)
+                    if is_pid_alive(pid):
+                        print(f"[DAEMON] Another daemon instance is already running with PID {pid}. Aborting startup.")
+                        sys.exit(1)
+        except Exception:
+            pass
+
+    with open(DAEMON_LOCK_PATH, "w", encoding="utf-8") as f:
+        f.write(str(os.getpid()))
+
+def release_daemon_lock():
+    try:
+        if os.path.exists(DAEMON_LOCK_PATH):
+            os.remove(DAEMON_LOCK_PATH)
+    except Exception:
+        pass
+
+def is_pid_alive(pid):
+    try:
+        if os.name == "nt":
+            import ctypes
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            if h:
+                ctypes.windll.kernel32.CloseHandle(h)
+                return True
+            return False
+        else:
+            os.kill(pid, 0)
+            return True
+    except Exception:
+        return False
+
 if __name__ == "__main__":
+    acquire_daemon_lock()
+    import atexit
+    atexit.register(release_daemon_lock)
+
     tf = app_config.get("candle_timeframe", "5m")
-    print(f"[DAEMON] Continuous Auto-Trader started (Timeframe: {tf}, Strategy: {app_config.get('strategy_mode', 'EMA_CHANNEL')}).")
+    print(f"[DAEMON] Continuous Auto-Trader started (PID: {os.getpid()}, Timeframe: {tf}, Strategy: {app_config.get('strategy_mode', 'EMA_CHANNEL')}).")
     print("[DAEMON] Scanning every 15 seconds with OHLC candle evaluation & cooldown protection...")
     import export_csv
     squareoff_done = False
     eod_done = False
+    bhavcopy_updated = False
 
     while True:
         try:
             now = datetime.datetime.now()
             cur_time_str = now.strftime("%H:%M")
 
-            # 1. At 15:20 IST: Close all remaining open positions before market close (run once)
-            if cur_time_str >= "15:20" and not squareoff_done:
+            # 1. At 15:20 to 15:25 IST: Close all remaining open positions at live quote (retry each tick)
+            if "15:20" <= cur_time_str < "15:25":
                 leg = ledger.get_ledger()
-                if leg.get("open_positions"):
-                    print("[DAEMON 15:20 IST] Auto-squaring off all open intraday positions...")
-                    for p in list(leg["open_positions"]):
-                        ledger.record_trade_exit(p["symbol"], p["entry_price"], "Intraday EOD 15:20 Auto-Squareoff")
-                squareoff_done = True
+                open_pos = leg.get("open_positions", [])
+                if open_pos:
+                    print(f"[DAEMON {cur_time_str} IST] Auto-squaring off open positions with live quotes...")
+                    for p in list(open_pos):
+                        sym = p["symbol"]
+                        quotes = fetch_candles(sym)
+                        if quotes and quotes.get("close"):
+                            closes = [c for c in quotes["close"] if c is not None]
+                            if closes:
+                                exit_price = float(closes[-1])
+                                ok, exit_item = ledger.record_trade_exit(p["id"], exit_price, "Intraday EOD 15:20 Auto-Squareoff")
+                                if ok:
+                                    print(f"[DAEMON EOD] Closed {sym} @ ₹{exit_price:,.2f} P&L: ₹{exit_item['pnl']:,.2f}")
+                            else:
+                                print(f"[DAEMON EOD] Quote unavailable for {sym}, will retry next tick...")
+                        else:
+                            print(f"[DAEMON EOD] Quote unavailable for {sym}, will retry next tick...")
 
-            # 2. At 15:25 IST: Generate CSV and send Telegram EOD summary (run once)
+            # 2. At 15:25 IST: Final check, list any unclosed positions, generate CSV and send Telegram EOD summary (run once)
             if cur_time_str >= "15:25" and not eod_done:
+                leg = ledger.get_ledger()
+                unclosed = leg.get("open_positions", [])
+                if unclosed:
+                    print(f"[DAEMON 15:25 IST WARNING] Unclosed positions remaining due to missing quotes: {[p['symbol'] for p in unclosed]}")
                 print("[DAEMON 15:25 IST] Generating Daily CSV Journal and sending Telegram report...")
                 try:
                     csv_p, cnt, w, l, pnl, end_cash = export_csv.generate_daily_trade_csv()
@@ -261,12 +405,23 @@ if __name__ == "__main__":
                 except Exception as ex:
                     print(f"[DAEMON CSV ERROR] {ex}")
 
+            # 3. At 16:00 IST: Fetch and update official Daily OHLC Bhavcopy for all stocks
+            if cur_time_str >= "16:00" and not bhavcopy_updated:
+                print("[DAEMON 16:00 IST] Updating daily OHLC Bhavcopy for all stocks...")
+                try:
+                    import update_daily_bhavcopy
+                    ok = update_daily_bhavcopy.update_daily_ohlc()
+                    if ok:
+                        bhavcopy_updated = True
+                except Exception as ex:
+                    print(f"[DAEMON BHAVCOPY ERROR] {ex}")
+
             # Do NOT run monitor/new entries after 15:20 IST
             if cur_time_str < "15:20":
                 monitor_cycle()
             else:
-                if eod_done:
-                    print("[DAEMON] Market closed for the day. Trading halted.")
+                if eod_done and (bhavcopy_updated or cur_time_str >= "16:15"):
+                    print("[DAEMON] Market closed and 16:00 Daily OHLC updated. Trading halted.")
                     break
         except Exception as e:
             print(f"[DAEMON ERROR] {e}")

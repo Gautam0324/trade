@@ -377,30 +377,216 @@ class StrategyEngine:
 
         # Confluence Mode Scoring
         if self.mode == "CONFLUENCE":
-            score = 0.0
-            reasons = []
-            for c in candidates:
-                score += c["confidence_score"] * 0.4
-                reasons.append(f"{c['strategy_name']}: {c['signal_reason']}")
-
-            if score >= self.min_confluence_score:
-                best = sorted(candidates, key=lambda x: x["confidence_score"], reverse=True)[0]
-                best["strategy_name"] = "CONFLUENCE"
-                best["confidence_score"] = min(99.0, round(score, 1))
-                best["signal_reason"] = " | ".join(reasons)
-                best["market_regime"] = regime
-                best["candle_timestamp"] = datetime.datetime.now().strftime("%H:%M:%S IST")
-                return best
-            else:
-                return {
-                    "symbol": symbol,
-                    "signal": "NO_TRADE",
-                    "market_regime": regime,
-                    "reasons": [f"Confluence score ({score:.1f}) below threshold ({self.min_confluence_score})"]
-                }
+            return self.evaluate_v3_confluence(symbol, bars, atr_val, vwap_series)
 
         # Single / Multi mode: select highest confidence
         best = sorted(candidates, key=lambda x: x["confidence_score"], reverse=True)[0]
         best["market_regime"] = regime
         best["candle_timestamp"] = datetime.datetime.now().strftime("%H:%M:%S IST")
         return best
+
+    def evaluate_v3_confluence(self, symbol, bars, atr_val=None, vwap_series=None):
+        """
+        V3.0 Weighted Confluence Engine:
+        Weights:
+        - EMA channel breakout: 20
+        - EMA 5/9 alignment: 10
+        - Supertrend (10, 3): 15
+        - MACD (12, 26, 9): 15
+        - RSI (14): 10
+        - ADX and directional (+DI > -DI): 10
+        - VWAP: 10
+        - Relative volume: 10
+        Total: 100
+        Threshold >= 65 to generate BUY signal.
+        Also verifies mandatory gates and logs full component weights & rejection reasons.
+        """
+        closes = [c for c in bars.get("close", []) if c is not None]
+        highs = [h for h in bars.get("high", []) if h is not None]
+        lows = [l for l in bars.get("low", []) if l is not None]
+        volumes = [v for v in bars.get("volume", []) if v is not None]
+
+        if len(closes) < 35:
+            return {
+                "symbol": symbol,
+                "strategy_name": "CONFLUENCE_V3",
+                "side": "BUY",
+                "signal": "NO_TRADE",
+                "confluence_score": 0.0,
+                "reasons": ["Insufficient candle history (< 35 bars)"],
+                "component_weights": {}
+            }
+
+        cur_close = closes[-1]
+        cur_high = highs[-1]
+        cur_low = lows[-1]
+
+        # 1. EMA 33 Channel & EMA 5/9
+        ema5 = indicators.calculate_ema(closes, 5)[-1]
+        ema9 = indicators.calculate_ema(closes, 9)[-1]
+        ema33_h = indicators.calculate_ema(highs, 33)[-1]
+        ema33_l = indicators.calculate_ema(lows, 33)[-1]
+
+        # 2. Supertrend (10, 3)
+        st_res = indicators.calculate_supertrend(highs, lows, closes, 10, 3.0)
+        st_dir = st_res["direction"][-1]
+        st_val = st_res["supertrend"][-1]
+
+        # 3. MACD (12, 26, 9)
+        macd_res = indicators.calculate_macd(closes, 12, 26, 9)
+        macd_line = macd_res["macd"][-1]
+        macd_sig = macd_res["signal"][-1]
+        macd_hist = macd_res["hist"][-1]
+
+        # 4. RSI (14)
+        rsi_series = indicators.calculate_rsi(closes, 14)
+        cur_rsi = rsi_series[-1] or 50.0
+
+        # 5. ADX, +DI, -DI (14)
+        adx_res = indicators.calculate_adx(highs, lows, closes, 14)
+        cur_adx = adx_res["adx"][-1]
+        plus_di = adx_res["plus_di"][-1]
+        minus_di = adx_res["minus_di"][-1]
+
+        # 6. Session VWAP
+        if vwap_series is None and volumes:
+            vwap_series = indicators.calculate_vwap(highs, lows, closes, volumes)
+        cur_vwap = vwap_series[-1] if vwap_series else cur_close
+
+        # 7. Relative Volume
+        rvol_series = indicators.calculate_relative_volume(volumes, 20) if volumes else [1.0]
+        cur_rvol = rvol_series[-1] if rvol_series else 1.0
+
+        atr = atr_val or (indicators.calculate_atr(highs, lows, closes, 14)[-1] or (cur_close * 0.01))
+
+        # Scoring & Contributions
+        weights = {}
+        score = 0.0
+        details = []
+
+        # (a) EMA Channel Breakout (20)
+        if ema33_h and cur_close > ema33_h:
+            weights["ema_channel"] = 20.0
+            score += 20.0
+            details.append(f"EMA33 Channel Breakout ({cur_close:.2f} > {ema33_h:.2f})")
+        else:
+            weights["ema_channel"] = 0.0
+
+        # (b) EMA 5/9 Alignment (10)
+        if ema5 and ema9 and ema5 > ema9:
+            weights["ema_5_9"] = 10.0
+            score += 10.0
+            details.append(f"EMA 5 > EMA 9 ({ema5:.2f} > {ema9:.2f})")
+        else:
+            weights["ema_5_9"] = 0.0
+
+        # (c) Supertrend (15)
+        if st_dir == 1:
+            weights["supertrend"] = 15.0
+            score += 15.0
+            details.append(f"Supertrend Bullish ({st_val:.2f})")
+        else:
+            weights["supertrend"] = 0.0
+
+        # (d) MACD (15)
+        if macd_line is not None and macd_sig is not None and (macd_line >= macd_sig or (macd_hist and macd_hist >= 0)):
+            weights["macd"] = 15.0
+            score += 15.0
+            details.append(f"MACD Bullish Cross (Hist: {macd_hist or 0:.2f})")
+        else:
+            weights["macd"] = 0.0
+
+        # (e) RSI (10)
+        if 50.0 <= cur_rsi <= 85.0:
+            weights["rsi"] = 10.0
+            score += 10.0
+            details.append(f"RSI Momentum Zone ({cur_rsi:.1f})")
+        else:
+            weights["rsi"] = 0.0
+
+        # (f) ADX and Directional Indicators (10)
+        if plus_di and minus_di and plus_di > minus_di and (cur_adx is None or cur_adx >= 18.0):
+            weights["adx_di"] = 10.0
+            score += 10.0
+            details.append(f"ADX/DI Bullish (+DI > -DI, ADX: {cur_adx or 0:.1f})")
+        else:
+            weights["adx_di"] = 0.0
+
+        # (g) VWAP (10)
+        if cur_close >= cur_vwap:
+            weights["vwap"] = 10.0
+            score += 10.0
+            details.append(f"Above VWAP ({cur_close:.2f} >= {cur_vwap:.2f})")
+        else:
+            weights["vwap"] = 0.0
+
+        # (h) Relative Volume (10)
+        if cur_rvol >= 1.2:
+            weights["relative_volume"] = 10.0
+            score += 10.0
+            details.append(f"Volume Surge (RVol: {cur_rvol:.2f}x)")
+        elif cur_rvol >= 1.0:
+            weights["relative_volume"] = 5.0
+            score += 5.0
+            details.append(f"Normal Volume (RVol: {cur_rvol:.2f}x)")
+        else:
+            weights["relative_volume"] = 0.0
+
+        # Mandatory Gates for BUY
+        rejections = []
+        if score < self.min_confluence_score:
+            rejections.append(f"Confluence score ({score:.1f}) below threshold ({self.min_confluence_score:.1f})")
+
+        # Stop-loss calculation: max(ema33_l, cur_close - 2.0*atr)
+        stop_loss = round(max(ema33_l if ema33_l else 0, cur_close - (2.0 * atr)), 2)
+        if stop_loss >= cur_close:
+            stop_loss = round(cur_close - (1.5 * atr), 2)
+
+        risk_per_share = round(cur_close - stop_loss, 2)
+        if risk_per_share <= 0:
+            rejections.append("Calculated stop loss is invalid or greater than entry price")
+
+        # Check for excessively wide stop (> 3% of stock price)
+        if risk_per_share > (cur_close * 0.03):
+            rejections.append(f"Stop loss is excessively wide ({risk_per_share:.2f} > 3% of price)")
+
+        target = round(cur_close + (risk_per_share * 1.5), 2)
+        reward_risk = round((target - cur_close) / max(0.01, risk_per_share), 2)
+
+        if reward_risk < 1.5:
+            rejections.append(f"Reward-to-risk ratio ({reward_risk:.2f}) is below 1:1.5")
+
+        accepted = len(rejections) == 0
+
+        res = {
+            "symbol": symbol,
+            "strategy_name": "CONFLUENCE_V3",
+            "side": "BUY",
+            "signal": "BUY" if accepted else "NO_TRADE",
+            "confluence_score": round(score, 1),
+            "confidence_score": round(score, 1),
+            "entry_reference_price": round(cur_close, 2),
+            "stop_loss": stop_loss,
+            "target_price": target,
+            "risk_per_share": risk_per_share,
+            "reward_risk_ratio": reward_risk,
+            "component_weights": weights,
+            "signal_reason": " | ".join(details) if accepted else "Rejected: " + "; ".join(rejections),
+            "rejections": rejections,
+            "indicator_values": {
+                "close": round(cur_close, 2),
+                "ema5": round(ema5, 2) if ema5 else None,
+                "ema9": round(ema9, 2) if ema9 else None,
+                "ema33_h": round(ema33_h, 2) if ema33_h else None,
+                "ema33_l": round(ema33_l, 2) if ema33_l else None,
+                "supertrend": round(st_val, 2) if st_val else None,
+                "supertrend_direction": st_dir,
+                "rsi": round(cur_rsi, 1),
+                "adx": round(cur_adx, 1) if cur_adx else None,
+                "vwap": round(cur_vwap, 2) if cur_vwap else None,
+                "rvol": round(cur_rvol, 2)
+            },
+            "candle_timestamp": datetime.datetime.now().strftime("%H:%M:%S IST")
+        }
+        return res
+

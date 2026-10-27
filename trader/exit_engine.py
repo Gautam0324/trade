@@ -81,13 +81,15 @@ class PositionManager:
             rem_qty = qty - exit_qty
             pos["partial_exited"] = True
             pos["qty"] = rem_qty
-            # Trail stop strictly to Entry Price (Breakeven)
-            pos["current_stop"] = max(current_stop, entry_p)
+            include_cost = self.config.get("include_cost_in_breakeven", False)
+            cost_buffer = round(entry_p * 0.0005, 2) if include_cost else 0.0
+            breakeven_stop = round(entry_p + cost_buffer, 2)
+            pos["current_stop"] = max(current_stop, breakeven_stop)
             return {
                 "action": "PARTIAL_EXIT",
                 "exit_price": cur_p,
                 "exit_qty": exit_qty,
-                "reason": f"Partial profit booked at +1R ({cur_p:.2f}). Stop moved to breakeven ({entry_p:.2f})",
+                "reason": f"Partial profit booked at +1R ({cur_p:.2f}). Stop moved to breakeven ({pos['current_stop']:.2f})",
                 "updated_position": pos
             }
 

@@ -51,10 +51,9 @@ All trade proposals are vetted by `RiskEngine` (`trader/risk_engine.py`):
 - **Max Planned Risk Per Trade**: `1%` of budget (`₹1,000.00`)
 - **Max Position Allocation**: `75%` of available free cash
 - **Max Open Positions**: `3`
-- **Max Trades Per Day**: `3`
-- **Daily Loss Kill-Switch**: `₹1,000.00` (blocks all new entries once reached)
+- **Daily Loss Kill-Switch**: `₹150.00` (blocks all new entries once reached)
 - **Short Selling / Leveraged Derivatives**: Disabled by default
-- **Strict Hours**: No entries after 15:20 IST; mandatory squareoff by 15:20 IST; daily CSV audit at 15:25 IST.
+- **Strict Hours**: No entries after 15:15 IST; mandatory squareoff by 15:20 IST; daily CSV audit at 15:25 IST.
 
 ---
 
@@ -135,5 +134,7 @@ python -m unittest tests/test_advanced_engine.py -v
 
 ---
 
-## 📄 License
-MIT License. Developed for quantitative day trading on Indian Equities (NSE/BSE).
+## 📄 License & Credits
+- **Upstream Skill Pack**: Based on the Day Trader Skill pack created by **Jake Schincariol** (MIT License).
+- **License**: MIT License. See [LICENSE](file:///d:/Trade-agent/day-trader-skill/LICENSE) for details. Developed for quantitative day trading on Indian Equities (NSE/BSE).
+

@@ -20,8 +20,9 @@ class RiskEngine:
     def __init__(self, config=None):
         cfg = config or {}
         self.starting_capital = float(cfg.get("budget", 100000.0))
-        self.max_loss_per_trade = float(cfg.get("max_loss_per_trade_usd", 1000.0))
-        self.max_daily_loss = float(cfg.get("max_daily_loss_usd", 1000.0))
+        # Support *_inr keys with fallback to *_usd
+        self.max_loss_per_trade = float(cfg.get("max_loss_per_trade_inr", cfg.get("max_loss_per_trade_usd", 1000.0)))
+        self.max_daily_loss = float(cfg.get("max_daily_loss_inr", cfg.get("max_daily_loss_usd", 1000.0)))
         self.max_position_pct = float(cfg.get("max_position_pct", 75.0)) / 100.0
         self.max_trades_per_day = int(cfg.get("max_trades_per_day", 3))
         self.max_open_positions = int(cfg.get("max_open_positions", 3))
@@ -38,18 +39,18 @@ class RiskEngine:
                             current_open_positions_count):
         """
         Calculates position sizing and validates safety constraints.
-        Returns:
-          {
-            "passed": True/False,
-            "quantity": int,
-            "allocated_capital": float,
-            "planned_risk": float,
-            "risk_per_share": float,
-            "reward_risk": float,
-            "reasons": []
-          }
         """
         reasons = []
+
+        # 0. Futures / Options / Derivatives validation
+        sym_upper = symbol.upper()
+        is_derivative = any(term in sym_upper for term in ("FUT", "OPT", "FUTURES", "INDEX FUTURES", "CE", "PE", "NIFTY 50 (INDEX FUTURES)"))
+        if is_derivative and not self.allow_options:
+            return {
+                "passed": False,
+                "quantity": 0,
+                "reasons": [f"Derivatives trading is disabled for {symbol} (allow_options is false)"]
+            }
 
         if side.upper() != "BUY" and not self.allow_short:
             return {
@@ -120,7 +121,7 @@ class RiskEngine:
             }
 
         rr_ratio = reward_per_share / risk_per_share
-        if rr_ratio < self.min_reward_risk:
+        if round(rr_ratio, 2) < round(self.min_reward_risk, 2):
             return {
                 "passed": False,
                 "quantity": 0,

@@ -3,3 +3,23 @@ __pycache__/
 *$py.class
 *.log
 .DS_Store
+
+# Secrets and local config (Task 1 & 10)
+trader/secrets.json
+trader/config.local.json
+
+# Ledger, orders, logs, states, reports, locks (Task 10)
+trader/ledger*.json
+trader/orders.json
+trader/audit_log.json
+trader/timemachine.json
+trader/state/
+trader/reports/
+*.lock
+*.db
+
+# Historical download cache
+trader/historical_data/*.csv
+trader/historical_data/*.json
+
+
