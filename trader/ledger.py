@@ -71,6 +71,7 @@ def record_trade_entry(symbol, side, qty, price, exchange="NSE", entry_reason="E
     ledger["free_cash"] = round(ledger["free_cash"] - amount, 2)
     ledger["deployed_cash"] = round(ledger["deployed_cash"] + amount, 2)
 
+    today_date = datetime.date.today().strftime("%Y-%m-%d")
     position = {
         "id": f"POS-{len(ledger['trade_history']) + 1}",
         "symbol": symbol,
@@ -80,6 +81,8 @@ def record_trade_entry(symbol, side, qty, price, exchange="NSE", entry_reason="E
         "amount": amount,
         "exchange": exchange,
         "entry_reason": entry_reason,
+        "date": today_date,
+        "entry_date": today_date,
         "entry_time": datetime.datetime.now().strftime("%H:%M:%S IST")
     }
     ledger["open_positions"].append(position)
@@ -139,12 +142,16 @@ def record_trade_exit(symbol, exit_price, reason="Exit trigger", exit_qty=None):
         # Full exit
         ledger["open_positions"].pop(matching_idx)
 
+    today_date = datetime.date.today().strftime("%Y-%m-%d")
     history_item = {
         "id": pos["id"],
         "symbol": symbol,
         "qty": closing_qty,
         "entry_price": entry_price,
         "exit_price": exit_price,
+        "date": pos.get("date", today_date),
+        "entry_date": pos.get("entry_date", today_date),
+        "exit_date": today_date,
         "entry_time": pos["entry_time"],
         "exit_time": datetime.datetime.now().strftime("%H:%M:%S IST"),
         "entry_reason": pos.get("entry_reason", "Strategy Entry"),
@@ -157,6 +164,12 @@ def record_trade_exit(symbol, exit_price, reason="Exit trigger", exit_qty=None):
     ledger["trade_history"].append(history_item)
     save_ledger(ledger)
     return True, history_item
+
+def get_today_trades(report_date=None):
+    if report_date is None:
+        report_date = datetime.date.today().strftime("%Y-%m-%d")
+    leg = get_ledger()
+    return [t for t in leg.get("trade_history", []) if t.get("date") == report_date or t.get("exit_date") == report_date]
 
 if __name__ == "__main__":
     l = get_ledger()

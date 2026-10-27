@@ -3,258 +3,511 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day Trader Cockpit | Executive Portfolio Dashboard</title>
+  <title>Algo Trading Terminal | Executive Portfolio Cockpit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- Top Navbar -->
-  <header>
-    <div class="brand">
-      <span class="brand-badge" id="exchangeBadge">NSE (INR)</span>
-      <h1>Trading Cockpit Pro</h1>
-    </div>
-    <div class="header-meta">
-      <div style="display: flex; gap: 0.5rem; align-items: center; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
-        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">MARKET:</span>
-        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnNSE" onclick="switchMarket('NSE', 'RELIANCE.NS')">NSE (₹)</button>
-        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnBSE" onclick="switchMarket('BSE', 'TCS.BO')">BSE (₹)</button>
-        <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" id="btnUS" onclick="switchMarket('US', 'TSLA')">US ($)</button>
+  <div class="app-container">
+
+    <!-- 1. PERSISTENT INSTITUTIONAL SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">AT</div>
+        <div>
+          <div class="brand-title">DAY TRADER PRO</div>
+          <div class="brand-subtitle">Algorithmic Desk</div>
+        </div>
       </div>
 
-      <div class="badge pulse" id="modeBadge">LIVE MONITORING</div>
-      <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); font-weight: 600;" id="clockDisplay">--:--:-- IST</div>
-      <button class="btn-primary" onclick="refreshDashboard()" id="refreshBtn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        Sync
-      </button>
-    </div>
-  </header>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" onclick="switchView('overview')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+        <a class="nav-item" onclick="switchView('marketwatch')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Market Watch
+        </a>
+        <a class="nav-item" onclick="switchView('positions')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Open Positions
+        </a>
+        <a class="nav-item" onclick="switchView('trades')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Trade History
+        </a>
+        <a class="nav-item" onclick="switchView('strategies')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Strategy Analytics
+        </a>
+        <a class="nav-item" onclick="switchView('risk')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Risk Management
+        </a>
+        <a class="nav-item" onclick="switchView('control')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          Bot Control
+        </a>
+        <a class="nav-item" onclick="switchView('logs')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Logs & Alerts
+        </a>
+        <a class="nav-item" onclick="switchView('config')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Configuration
+        </a>
+        <a class="nav-item" onclick="switchView('health')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          System Health
+        </a>
+      </nav>
 
-  <!-- TOP HERO STATS STRIP: TOTAL AMOUNT, HOLDING AMOUNT, DAY P&L, TRADES COUNT -->
-  <div class="hero-stats-strip">
-    
-    <!-- 1. TOTAL ACCOUNT CAPITAL -->
-    <div class="hero-stat-card card-total">
-      <div class="hero-stat-title">
-        <span>Total Net Portfolio</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+      <div class="sidebar-footer">
+        <div>Engine: <strong>v2.0 NSE/BSE</strong></div>
+        <div style="margin-top: 4px; font-family: var(--font-mono);">Broker: Zerodha Kite Paper</div>
       </div>
-      <div class="hero-stat-value" id="topTotalCapital" style="color: #fff;">₹1,00,453.80</div>
-      <div class="hero-stat-sub">
-        <span>Available Free Cash:</span>
-        <strong style="color: var(--accent-cyan);" id="topFreeCash">₹7,161.40</strong>
-      </div>
-    </div>
+    </aside>
 
-    <!-- 2. HOLDING DEPLOYED AMOUNT -->
-    <div class="hero-stat-card card-holding">
-      <div class="hero-stat-title">
-        <span>Active Holding Amount</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-      <div class="hero-stat-value" id="topHoldingAmount" style="color: var(--accent-amber);">₹93,292.40</div>
-      <div class="hero-stat-sub">
-        <span>Deployed across:</span>
-        <strong style="color: #fff;" id="topActivePositionsCount">2 Open Positions</strong>
-      </div>
-    </div>
+    <!-- 2. MAIN APPLICATION CONTENT WRAPPER -->
+    <div class="main-wrapper">
 
-    <!-- 3. REALIZED P&L OF THE DAY -->
-    <div class="hero-stat-card card-pnl">
-      <div class="hero-stat-title">
-        <span>Day's Realized P&L</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-      </div>
-      <div class="hero-stat-value green" id="topRealizedPnl" style="color: var(--accent-green);">+₹453.80</div>
-      <div class="hero-stat-sub">
-        <span>Strategy Win Rate:</span>
-        <strong style="color: var(--accent-green);" id="topWinRate">100% Locked</strong>
-      </div>
-    </div>
+      <!-- Top Header Strip -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h2 class="page-title" id="pageTitle">Portfolio Overview</h2>
+          <span class="status-badge closed" id="marketBadge"><span class="status-dot"></span> Market Closed</span>
+          <span class="status-badge paper" id="modeBadge">PAPER MODE</span>
+          <span class="status-badge stopped" id="botStatusBadge"><span class="status-dot"></span> Bot Stopped</span>
+        </div>
 
-    <!-- 4. TOTAL TRADES EXECUTED -->
-    <div class="hero-stat-card card-trades">
-      <div class="hero-stat-title">
-        <span>Daily Trades Executed</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <div class="hero-stat-value" id="topTradeCount" style="color: var(--accent-purple);">2 / 4</div>
-      <div class="hero-stat-sub">
-        <span>Target:</span>
-        <strong style="color: #fff;">Max 4 Trades / Day</strong>
-      </div>
-    </div>
+        <div class="topbar-right">
+          <div class="clock-widget" id="istClockDisplay">--:--:-- IST</div>
+          <button class="btn btn-secondary" onclick="refreshCurrentView()" id="refreshBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync
+          </button>
+        </div>
+      </header>
 
+      <!-- Scrollable Content Body -->
+      <main class="content-body">
+
+        <!-- ==================== VIEW 1: OVERVIEW ==================== -->
+        <section id="view-overview" class="view-section active">
+
+          <!-- 12 Responsive KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Starting Capital</span>
+              <span class="kpi-value" id="kpiStartingCap">₹1,00,000.00</span>
+              <span class="kpi-sub">Configured Account Budget</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Available Free Cash</span>
+              <span class="kpi-value green" id="kpiFreeCash">₹1,00,449.15</span>
+              <span class="kpi-sub">Ready to deploy</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Deployed Capital</span>
+              <span class="kpi-value gold" id="kpiDeployedCash">₹0.00</span>
+              <span class="kpi-sub" id="kpiOpenPositionsSub">0 Active Positions</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Today's Realized P&L</span>
+              <span class="kpi-value green" id="kpiRealizedPnl">+₹449.15</span>
+              <span class="kpi-sub" id="kpiRealizedPnlSub">Closed trades booked</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Today's Unrealized P&L</span>
+              <span class="kpi-value" id="kpiUnrealizedPnl">₹0.00</span>
+              <span class="kpi-sub">Live floating mark-to-market</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Total Net Portfolio Value</span>
+              <span class="kpi-value" id="kpiNetPortfolio">₹1,00,449.15</span>
+              <span class="kpi-sub green" id="kpiReturnPct">+0.45% Today</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Win Rate</span>
+              <span class="kpi-value" id="kpiWinRate">35.6%</span>
+              <span class="kpi-sub" id="kpiWinsLossesSub">26 Wins / 20 Losses / 27 BE</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Profit Factor</span>
+              <span class="kpi-value green" id="kpiProfitFactor">1.75</span>
+              <span class="kpi-sub">Gross Win / Gross Loss</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Maximum Drawdown</span>
+              <span class="kpi-value red" id="kpiMaxDrawdown">₹219.80</span>
+              <span class="kpi-sub">Peak to valley intraday dip</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Daily Loss Utilization</span>
+              <span class="kpi-value green" id="kpiLossUtil">0.0%</span>
+              <span class="kpi-sub" id="kpiMaxLossSub">Limit: ₹1,000.00</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Daily Trades Placed</span>
+              <span class="kpi-value gold" id="kpiTradeCount">73</span>
+              <span class="kpi-sub">Max Configured: 3 / day</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Strategy Mode</span>
+              <span class="kpi-value" id="kpiStrategyMode" style="font-size: 1.1rem;">EMA CHANNEL</span>
+              <span class="kpi-sub">5m timeframe active</span>
+            </div>
+          </div>
+
+          <!-- Equity Curve Interactive Chart -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                Portfolio Equity Curve & Cumulative P&L
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                Single Source of Truth: ledger.json
+              </div>
+            </div>
+            <div style="height: 320px; width: 100%;">
+              <canvas id="equityChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Quick Watchlist & Positions Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Active Watchlist (Liquid Universe)</div>
+                <button class="btn btn-secondary" onclick="switchView('marketwatch')" style="padding: 2px 8px; font-size: 0.72rem;">View Full</button>
+              </div>
+              <div id="quickWatchlist">Loading watchlist...</div>
+            </div>
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Current Open Positions</div>
+                <button class="btn btn-secondary" onclick="switchView('positions')" style="padding: 2px 8px; font-size: 0.72rem;">Manage</button>
+              </div>
+              <div id="quickPositions">Loading positions...</div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== VIEW 2: MARKET WATCH ==================== -->
+        <section id="view-marketwatch" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Live Market Watchlist (5m Timeframe Feed)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);" id="watchlistTimestamp">Last sync: --</div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Last Price (INR)</th>
+                    <th>Change</th>
+                    <th>EMA 5</th>
+                    <th>EMA 9</th>
+                    <th>EMA 33 High</th>
+                    <th>EMA 33 Low</th>
+                    <th>Setup Signal</th>
+                    <th>Last Updated</th>
+                  </tr>
+                </thead>
+                <tbody id="watchlistTableBody">
+                  <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Loading quotes...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: OPEN POSITIONS ==================== -->
+        <section id="view-positions" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Active Deployed Positions</div>
+              <div id="positionsSummary">Deployed: ₹0.00 | Floating P&L: ₹0.00</div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Position ID</th>
+                    <th>Symbol</th>
+                    <th>Qty</th>
+                    <th>Entry Price</th>
+                    <th>Current Price</th>
+                    <th>Invested Capital</th>
+                    <th>Unrealized P&L</th>
+                    <th>P&L %</th>
+                    <th>Peak Price</th>
+                    <th>Trailing Stop</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="positionsTableBody">
+                  <tr><td colspan="11" style="text-align: center; color: var(--text-muted);">No active open positions. Cash 100% free.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 4: TRADE HISTORY ==================== -->
+        <section id="view-trades" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Daily Executed Trades Journal</div>
+              <button class="btn btn-secondary" onclick="exportTradeCSV()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export CSV
+              </button>
+            </div>
+            <div class="filter-bar">
+              <select id="tradeOutcomeFilter" onchange="loadTradesTable()">
+                <option value="">All Outcomes</option>
+                <option value="WIN">Profitable (Wins)</option>
+                <option value="LOSS">Losses</option>
+                <option value="BREAKEVEN">Breakeven (0 P&L)</option>
+              </select>
+              <select id="tradeSymbolFilter" onchange="loadTradesTable()">
+                <option value="">All Symbols</option>
+                <option value="RELIANCE.NS">RELIANCE.NS</option>
+                <option value="TCS.NS">TCS.NS</option>
+                <option value="ICICIBANK.NS">ICICIBANK.NS</option>
+                <option value="INFY.NS">INFY.NS</option>
+                <option value="SBIN.NS">SBIN.NS</option>
+              </select>
+              <span id="tradesCountBadge" style="font-size: 0.78rem; color: var(--text-muted); margin-left: auto;">Showing: 0 trades</span>
+            </div>
+            <div class="table-responsive" style="max-height: 520px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trade ID</th>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Qty</th>
+                    <th>Entry Price</th>
+                    <th>Exit Price</th>
+                    <th>Entry Time</th>
+                    <th>Exit Time</th>
+                    <th>Net P&L (INR)</th>
+                    <th>Exit Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="tradesTableBody">
+                  <tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Loading trades...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: STRATEGY ANALYTICS ==================== -->
+        <section id="view-strategies" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Strategy Performance Attribution</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Empirical back-tested & live metrics</div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Strategy Name</th>
+                    <th>Trades</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Win Rate</th>
+                    <th>Gross Profit</th>
+                    <th>Gross Loss</th>
+                    <th>Profit Factor</th>
+                    <th>Net P&L (INR)</th>
+                  </tr>
+                </thead>
+                <tbody id="strategiesTableBody">
+                  <tr><td colspan="9" style="text-align: center;">Loading strategy breakdown...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 6: RISK MANAGEMENT ==================== -->
+        <section id="view-risk" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Risk Management Center & Compliance</div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Configured Daily Loss Limit</span>
+                <span class="kpi-value" id="riskMaxDailyLoss">₹1,000.00</span>
+                <span class="kpi-sub">Kill-switch threshold</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Current Realized Loss</span>
+                <span class="kpi-value green" id="riskCurrentDailyLoss">₹0.00</span>
+                <span class="kpi-sub" id="riskLossStatus">Within safe boundaries</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Max Trades Quota</span>
+                <span class="kpi-value gold" id="riskDailyTrades">3 / Day</span>
+                <span class="kpi-sub">Over-trading guard</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">EOD Square-off Cutoff</span>
+                <span class="kpi-value" id="riskSquareoffTime">15:20 IST</span>
+                <span class="kpi-sub">Mandatory auto-exit</span>
+              </div>
+            </div>
+
+            <!-- Active Risk Alerts Box -->
+            <div class="panel" style="background: rgba(0,0,0,0.25); border-color: var(--border-medium); margin-top: 1rem;">
+              <div class="panel-header" style="border: none; margin-bottom: 0.5rem; padding: 0;">
+                <div class="panel-title" style="color: var(--gold-light);">Active Risk Compliance Warnings & Alerts</div>
+              </div>
+              <div id="riskAlertsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                No risk violations detected.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 7: BOT CONTROL ==================== -->
+        <section id="view-control" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Bot Process Management & Operational Controls</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              <div class="kpi-card">
+                <span class="kpi-label">Daemon Execution State</span>
+                <span class="kpi-value" id="controlProcessState">CHECKING...</span>
+                <span class="kpi-sub" id="controlPidSub">PID: --</span>
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                  <button class="btn btn-primary" onclick="startBotDaemon()" id="btnStartBot">Start Bot</button>
+                  <button class="btn btn-danger" onclick="stopBotDaemon()" id="btnStopBot">Stop Bot</button>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Safety Controls</span>
+                <span class="kpi-value" style="font-size: 1rem; color: var(--emerald);">PROTECTIONS ACTIVE</span>
+                <span class="kpi-sub">No live execution without manual confirmation</span>
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                  <button class="btn btn-secondary" onclick="refreshCurrentView()">Poll State</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 8: LOGS & ALERTS ==================== -->
+        <section id="view-logs" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Real-Time Audit & System Event Logs</div>
+              <div class="filter-bar" style="margin: 0;">
+                <select id="logLevelFilter" onchange="loadLogsTerminal()">
+                  <option value="">All Levels</option>
+                  <option value="INFO">INFO</option>
+                  <option value="WARNING">WARNING</option>
+                  <option value="ERROR">ERROR</option>
+                </select>
+                <button class="btn btn-secondary" onclick="loadLogsTerminal()">Refresh</button>
+              </div>
+            </div>
+            <div class="terminal-window" id="logsTerminal">
+              <!-- Log entries appended dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 9: CONFIGURATION ==================== -->
+        <section id="view-config" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Read-Only Strategy & Risk Configuration</div>
+              <div style="font-size: 0.75rem; color: var(--emerald);">Verified Schema: trader/config.json</div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Setting Key</th>
+                    <th>Configured Value</th>
+                    <th>Safety Description</th>
+                  </tr>
+                </thead>
+                <tbody id="configTableBody">
+                  <tr><td colspan="3" style="text-align: center;">Loading configuration...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 10: SYSTEM HEALTH ==================== -->
+        <section id="view-health" class="view-section">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Infrastructure & Subsystem Diagnostics</div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Data Provider</span>
+                <span class="kpi-value green">ONLINE</span>
+                <span class="kpi-sub">Yahoo Finance v8 Chart API</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Ledger Storage</span>
+                <span class="kpi-value green">HEALTHY</span>
+                <span class="kpi-sub">trader/ledger.json (Sync OK)</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Alerts Channel</span>
+                <span class="kpi-value green">CONFIGURED</span>
+                <span class="kpi-sub">Telegram Bot Dispatcher</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Execution Architecture</span>
+                <span class="kpi-value" style="font-size: 1.1rem;">ZERO LOOKAHEAD</span>
+                <span class="kpi-sub">Trailing profit lock active</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
   </div>
 
-  <!-- Main Grid Layout -->
-  <main>
-
-    <!-- LEFT COLUMN: Plan & Setup Metrics -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      
-      <!-- Current Setup Card -->
-      <section class="glass-panel" id="planPanel">
-        <div class="panel-header">
-          <span class="panel-title">Active Strategy Setup</span>
-          <span class="badge" id="setupTag">EMA 5/9/33 PRO</span>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-          <div style="display: flex; align-items: baseline; gap: 0.6rem;">
-            <h2 style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-mono); color: #fff;" id="tickerDisplay">RELIANCE.NS</h2>
-            <span style="color: var(--accent-green); font-weight: 700; font-size: 1rem;" id="sideDisplay">BUY</span>
-          </div>
-          <span style="font-size: 0.8rem; color: var(--accent-cyan); font-family: var(--font-mono);" id="exchangeLabel">NSE (India)</span>
-        </div>
-
-        <div class="stat-grid">
-          <div class="stat-box">
-            <div class="stat-label">Entry Level</div>
-            <div class="stat-value cyan" id="entryVal">₹1,196.70</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Stop-Loss (33 Low)</div>
-            <div class="stat-value red" id="stopVal">₹1,189.90</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Take-Profit (1R)</div>
-            <div class="stat-value green" id="targetVal">₹1,203.50</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Risk Per Share</div>
-            <div class="stat-value amber" id="riskVal">₹6.80</div>
-          </div>
-        </div>
-
-        <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; border-top: 1px solid var(--border-subtle); padding-top: 0.5rem;">
-          <div><strong style="color: var(--text-secondary);">Strategy:</strong> <span style="color: #fff;">EMA5 > EMA9 & Breakout Above 33 High</span></div>
-          <div><strong style="color: var(--text-secondary);">Squareoff:</strong> <span id="flatByTime" style="color: var(--accent-amber);">15:20 IST (Auto-exit)</span></div>
-        </div>
-      </section>
-
-      <!-- Quick Stock Selector -->
-      <section class="glass-panel">
-        <div class="panel-header">
-          <span class="panel-title">Liquid Market Watchlist</span>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.45rem;" id="quickTickers">
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('RELIANCE.NS')">RELIANCE</button>
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('TCS.NS')">TCS</button>
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('HDFCBANK.NS')">HDFC BANK</button>
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('INFY.NS')">INFOSYS</button>
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('SBIN.NS')">SBI</button>
-          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 9px;" onclick="loadCustomTicker('ICICIBANK.NS')">ICICI BANK</button>
-        </div>
-      </section>
-
-      <!-- Telegram Bot Configuration -->
-      <section class="glass-panel">
-        <div class="panel-header">
-          <span class="panel-title">Telegram Alerts</span>
-          <span class="badge" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.3);">CONNECTED</span>
-        </div>
-
-        <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
-          Bot: <strong style="color: #fff;">@Tradesbaba_bot</strong><br>
-          Alerts: <span style="color: var(--accent-green);">Instant Entry, Trailing Exit & Balance</span>
-        </div>
-
-        <button class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 0.2rem;" onclick="sendTelegramTest()">
-          📲 Send Ping to Telegram
-        </button>
-      </section>
-
+  <!-- Confirmation Modal for Closing Positions -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size: 1.05rem;" id="modalTitle">Confirm Action</h3>
+        <button class="btn btn-secondary" onclick="closeConfirmModal()" style="padding: 2px 8px;">✕</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;" id="modalBody">
+        Are you sure you want to execute this operation?
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-danger" id="modalConfirmBtn">Confirm Exit</button>
+      </div>
     </div>
-
-    <!-- CENTER COLUMN: Visual Chart & Projections -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      
-      <!-- Chart Area -->
-      <section class="glass-panel">
-        <div class="panel-header">
-          <span class="panel-title">Live Dynamic Price & Indicator Channels</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">EMA 5, 9, 33 High, 33 Low</span>
-        </div>
-
-        <div class="chart-container">
-          <canvas id="fanChartCanvas"></canvas>
-        </div>
-
-        <!-- Strategy Status Indicators -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; padding-top: 0.5rem;">
-          <div class="stat-box" style="padding: 0.6rem;">
-            <div class="stat-label">EMA 5 (Fast)</div>
-            <div class="stat-value cyan" style="font-size: 1.05rem;" id="chartEma5">₹1,196.55</div>
-          </div>
-          <div class="stat-box" style="padding: 0.6rem;">
-            <div class="stat-label">EMA 9 (Signal)</div>
-            <div class="stat-value" style="font-size: 1.05rem;" id="chartEma9">₹1,196.00</div>
-          </div>
-          <div class="stat-box" style="padding: 0.6rem;">
-            <div class="stat-label">33 Band High</div>
-            <div class="stat-value green" style="font-size: 1.05rem;" id="chartEma33H">₹1,194.74</div>
-          </div>
-          <div class="stat-box" style="padding: 0.6rem;">
-            <div class="stat-label">33 Band Low</div>
-            <div class="stat-value red" style="font-size: 1.05rem;" id="chartEma33L">₹1,189.90</div>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.5rem; border-top: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">
-            Exit Rule: <strong style="color: var(--accent-amber);">Immediate exit on candle close below EMA 5 / Peak Drop</strong>
-          </div>
-          <button class="btn-secondary" onclick="fetchLiveQuoteData()">Fetch Live Bar</button>
-        </div>
-      </section>
-
-      <!-- System Log Feed -->
-      <section class="glass-panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">System Execution & Risk Feed</span>
-        </div>
-        <pre id="systemLog" style="font-family: var(--font-mono); font-size: 0.78rem; color: #a7f3d0; background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 10px; overflow-x: auto; white-space: pre-wrap; height: 160px;">[INIT] Trading Cockpit Pro initialized.
-[STATUS] Active monitoring on NSE / BSE tickers.
-[AUTOMATION] Background scanner daemon active (every 15s).
-[BALANCE] Available cash updated automatically on every buy/sell.</pre>
-      </section>
-
-    </div>
-
-    <!-- RIGHT COLUMN: Active Holdings & Closed History -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      
-      <!-- Live Active Holdings -->
-      <section class="glass-panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">Active Market Holdings</span>
-          <span class="badge" id="openPosBadge" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border-color: rgba(59, 130, 246, 0.3);">2 OPEN</span>
-        </div>
-        <div id="activePositionsList" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 250px; overflow-y: auto;">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
-
-      <!-- Completed Trades History -->
-      <section class="glass-panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">Closed Trades (Profit Booked)</span>
-          <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-green);" id="historyCount">2 Trades</span>
-        </div>
-        <div id="tradeHistoryList" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 250px; overflow-y: auto;">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
-
-    </div>
-
-  </main>
+  </div>
 
   <script src="app.js"></script>
 </body>

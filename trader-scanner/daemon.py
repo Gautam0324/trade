@@ -55,15 +55,28 @@ WATCHLIST = [
     "TCS.BO"
 ]
 
+# Cooldown tracker to prevent rapid churn on the same symbol (e.g. 5 minutes)
+COOLDOWN_MINUTES = int(app_config.get("cooldown_minutes", 5))
+last_exit_timestamps = {}
+
 def fetch_candles(symbol):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=5m"
+    tf = app_config.get("candle_timeframe", "5m")
+    rng = app_config.get("candle_range", "5d")
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng}&interval={tf}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; DayTraderDaemon/2.0)"})
     try:
         with urllib.request.urlopen(req, timeout=8) as r:
             data = json.loads(r.read().decode())
             res = data["chart"]["result"][0]
             quotes = res["indicators"]["quote"][0]
-            return quotes
+            # Ensure full OHLC data structure is present
+            return {
+                "open": quotes.get("open", []),
+                "high": quotes.get("high", []),
+                "low": quotes.get("low", []),
+                "close": quotes.get("close", []),
+                "volume": quotes.get("volume", [])
+            }
     except Exception as e:
         print(f"[DAEMON] Error fetching {symbol}: {e}")
         return None
@@ -85,6 +98,7 @@ def monitor_cycle():
         closes = [c for c in quotes["close"] if c is not None]
         highs = [h for h in quotes.get("high", []) if h is not None]
         lows = [l for l in quotes.get("low", []) if l is not None]
+        opens = [o for o in quotes.get("open", []) if o is not None]
         if not closes:
             continue
 
@@ -108,6 +122,7 @@ def monitor_cycle():
             print(f"[{exit_res['action']}] {sym}: {exit_res['reason']} (Qty: {exit_qty})")
             ok, exit_item = ledger.record_trade_exit(sym, cur_price, exit_res["reason"], exit_qty=exit_qty)
             if ok:
+                last_exit_timestamps[sym] = time.time()
                 updated_leg = ledger.get_ledger()
                 exit_payload = {
                     "symbol": sym,
@@ -123,16 +138,47 @@ def monitor_cycle():
                 }
                 telegram_bot.send_exit_alert(exit_payload)
 
-    # 2. Check for New Entries if cash is available and open positions < max_open_positions, ONLY before 15:20 IST
+    # Reload config dynamically
+    cfg = app_config
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+        except Exception:
+            pass
+
     cur_time = datetime.datetime.now().strftime("%H:%M")
-    if cur_time >= "15:20":
+    no_entries_after = cfg.get("no_entries_after", "15:15")
+    no_entries_before = cfg.get("no_entries_before", "09:30")
+    if cur_time >= no_entries_after or cur_time < no_entries_before:
         return
 
+    # 2. Check for New Entries only on 5-Minute Candle Close (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55 min)
+    now_dt = datetime.datetime.now()
+    entry_close_only = cfg.get("entry_candle_close_only", True)
+    if entry_close_only:
+        # Check if we are within the first 60 seconds of a newly completed 5-minute bar
+        minute_rem = now_dt.minute % 5
+        # Example: at 10:15:00 to 10:15:59, minute_rem is 0
+        if minute_rem != 0:
+            return
+
     updated_leg = ledger.get_ledger()
+    today_trades = ledger.get_today_trades()
+    today_trades_count = len(today_trades)
+    if today_trades_count >= risk_eng.max_trades_per_day:
+        return
+
     if updated_leg["free_cash"] >= 10000 and len(updated_leg["open_positions"]) < risk_eng.max_open_positions:
+        now_ts = time.time()
         for sym in WATCHLIST:
             # Skip if already holding
             if any(p["symbol"] == sym for p in updated_leg["open_positions"]):
+                continue
+
+            # Respect per-symbol cooldown period after exit
+            last_exit = last_exit_timestamps.get(sym, 0)
+            if (now_ts - last_exit) < (COOLDOWN_MINUTES * 60):
                 continue
 
             quotes = fetch_candles(sym)
@@ -153,13 +199,12 @@ def monitor_cycle():
                     target_price=target_price,
                     available_cash=updated_leg["free_cash"],
                     daily_realized_loss=min(0.0, updated_leg["realized_pnl"]),
-                    current_trades_count=len(updated_leg["trade_history"]),
+                    current_trades_count=today_trades_count,
                     current_open_positions_count=len(updated_leg["open_positions"])
                 )
 
                 if risk_eval["passed"] and risk_eval["quantity"] > 0:
                     qty = risk_eval["quantity"]
-                    cost = qty * cur_price
 
                     ok, pos = ledger.record_trade_entry(
                         sym, "BUY", qty, cur_price,
@@ -183,12 +228,11 @@ def monitor_cycle():
                         }
                         telegram_bot.send_trade_alert(trade_payload)
                         break  # Take one trade per scan tick
-                        telegram_bot.send_trade_alert(trade_payload)
-                        break  # Take one trade per scan tick
 
 if __name__ == "__main__":
-    print("[DAEMON] Continuous Auto-Trader started (EMA5/9/33 Strategy with Trailing Profit-Lock).")
-    print("[DAEMON] Scanning every 15 seconds for live market breakouts and trailing exits...")
+    tf = app_config.get("candle_timeframe", "5m")
+    print(f"[DAEMON] Continuous Auto-Trader started (Timeframe: {tf}, Strategy: {app_config.get('strategy_mode', 'EMA_CHANNEL')}).")
+    print("[DAEMON] Scanning every 15 seconds with OHLC candle evaluation & cooldown protection...")
     import export_csv
     squareoff_done = False
     eod_done = False

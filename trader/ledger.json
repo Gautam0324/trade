@@ -1,10 +1,53 @@
 {
   "starting_capital": 100000.0,
   "currency": "INR",
-  "free_cash": 100449.15,
-  "deployed_cash": 0.0,
+  "free_cash": 6220.65,
+  "deployed_cash": 94228.5,
   "realized_pnl": 449.15,
-  "open_positions": [],
+  "open_positions": [
+    {
+      "id": "POS-74",
+      "symbol": "SBIN.NS",
+      "side": "BUY",
+      "qty": 20,
+      "entry_price": 964.8,
+      "amount": 19296.0,
+      "exchange": "NSE",
+      "entry_reason": "[EMA_CHANNEL] Close 964.80 > EMA33 High 961.04 with EMA5 (963.96) > EMA9 (963.25)",
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "entry_time": "10:13:55 IST",
+      "current_r": -0.26
+    },
+    {
+      "id": "POS-75",
+      "symbol": "ICICIBANK.NS",
+      "side": "BUY",
+      "qty": 43,
+      "entry_price": 1397.3,
+      "amount": 60083.9,
+      "exchange": "NSE",
+      "entry_reason": "[EMA_CHANNEL] Close 1397.30 > EMA33 High 1397.29 with EMA5 (1397.33) > EMA9 (1397.15)",
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "entry_time": "10:15:23 IST",
+      "current_r": -0.27
+    },
+    {
+      "id": "POS-75",
+      "symbol": "INFY.NS",
+      "side": "BUY",
+      "qty": 13,
+      "entry_price": 1142.2,
+      "amount": 14848.6,
+      "exchange": "NSE",
+      "entry_reason": "[EMA_CHANNEL] Close 1142.20 > EMA33 High 1142.01 with EMA5 (1139.38) > EMA9 (1137.82)",
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "entry_time": "10:50:41 IST",
+      "current_r": 0.01
+    }
+  ],
   "trade_history": [
     {
       "id": "POS-1",
@@ -954,7 +997,25 @@
       "returned": 409745.6,
       "pnl": 0.0,
       "reason": "Intraday EOD 15:20 Auto-Squareoff"
+    },
+    {
+      "id": "POS-74",
+      "symbol": "ICICIBANK.NS",
+      "qty": 53,
+      "entry_price": 1397.3,
+      "exit_price": 1397.300048828125,
+      "date": "2026-10-27",
+      "entry_date": "2026-10-27",
+      "exit_date": "2026-10-27",
+      "entry_time": "10:13:38 IST",
+      "exit_time": "10:14:11 IST",
+      "entry_reason": "[EMA_CHANNEL] Close 1397.30 > EMA33 High 1397.29 with EMA5 (1397.44) > EMA9 (1397.23)",
+      "exit_reason": "EMA momentum breakdown (Price 1397.30 < EMA5 1397.31)",
+      "invested": 74056.9,
+      "returned": 74056.9,
+      "pnl": 0.0,
+      "reason": "EMA momentum breakdown (Price 1397.30 < EMA5 1397.31)"
     }
   ],
-  "last_updated": "2026-10-26T15:25:00.388135"
+  "last_updated": "2026-10-27T10:55:26.826921"
 }

@@ -1,451 +1,694 @@
-// Day Trader Skill Dashboard App Logic (Multi-Market: NSE / BSE / US)
-let chartInstance = null;
-let currentMarket = "NSE";
-let currentCurrency = "INR";
-let currentCurrencySymbol = "₹";
+// Institutional Algo Trading Terminal Client Application
+let equityChartInstance = null;
+let activeView = "overview";
+let cachedDashboardData = null;
 
-// Dynamic Clock supporting IST and ET
+// Clock with exact IST (Asia/Kolkata) formatting
 function updateClock() {
   const now = new Date();
-  const timeZone = (currentMarket === 'US') ? 'America/New_York' : 'Asia/Kolkata';
-  const tzLabel = (currentMarket === 'US') ? 'ET (NY)' : 'IST (India)';
-  const timeStr = now.toLocaleTimeString('en-US', { timeZone: timeZone, hour12: false });
-  const clockEl = document.getElementById('clockDisplay');
-  if (clockEl) clockEl.textContent = `${timeStr} ${tzLabel}`;
+  const timeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
+  const clockEl = document.getElementById('istClockDisplay');
+  if (clockEl) {
+    clockEl.textContent = `${timeStr} IST`;
+  }
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-function formatMoney(amount) {
-  const sym = currentCurrency === 'INR' ? '₹' : '$';
-  return `${sym}${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function formatINR(val) {
+  if (val === undefined || val === null || isNaN(val)) return "₹0.00";
+  const num = Number(val);
+  const sign = num < 0 ? "-" : "";
+  return `${sign}₹${Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-async function switchMarket(market, symbol) {
-  const logEl = document.getElementById('systemLog');
-  logEl.textContent += `\n[ACTION] Switching market to ${market} (${symbol})...`;
-  currentMarket = market;
-  currentCurrency = (market === 'US') ? 'USD' : 'INR';
-  currentCurrencySymbol = (market === 'US') ? '$' : '₹';
+function formatSignedINR(val) {
+  if (val === undefined || val === null || isNaN(val)) return "₹0.00";
+  const num = Number(val);
+  const sign = num > 0 ? "+" : (num < 0 ? "-" : "");
+  return `${sign}₹${Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
-  // Update Buttons
-  document.getElementById('btnNSE').style.borderColor = (market === 'NSE') ? 'var(--accent-cyan)' : 'var(--border-subtle)';
-  document.getElementById('btnBSE').style.borderColor = (market === 'BSE') ? 'var(--accent-cyan)' : 'var(--border-subtle)';
-  document.getElementById('btnUS').style.borderColor = (market === 'US') ? 'var(--accent-cyan)' : 'var(--border-subtle)';
+// Sidebar Navigation Router
+function switchView(viewId) {
+  activeView = viewId;
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-  const defaultBudget = (market === 'US') ? 5000 : 100000;
-  const defaultMaxLoss = (market === 'US') ? 50 : 1000;
+  const targetSection = document.getElementById(`view-${viewId}`);
+  if (targetSection) targetSection.classList.add('active');
 
-  try {
-    const res = await fetch('/api/set_market', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        market: market,
-        symbol: symbol,
-        budget: defaultBudget,
-        max_loss: defaultMaxLoss
-      })
-    });
-    const data = await res.json();
-    logEl.textContent += `\n[PASS] Loaded ${symbol} with ${data.currency} ${defaultBudget.toLocaleString()} budget.`;
-    refreshDashboard();
-  } catch (e) {
-    logEl.textContent += `\n[ERROR] Market switch failed: ${e.message}`;
+  // Highlight Nav Item
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewMap = ['overview', 'marketwatch', 'positions', 'trades', 'strategies', 'risk', 'control', 'logs', 'config', 'health'];
+  const idx = viewMap.indexOf(viewId);
+  if (idx !== -1 && navItems[idx]) {
+    navItems[idx].classList.add('active');
+  }
+
+  // Update Page Title
+  const titles = {
+    overview: "Portfolio Overview",
+    marketwatch: "Live Market Watch",
+    positions: "Open Positions Management",
+    trades: "Trade Execution Journal",
+    strategies: "Strategy Performance Attribution",
+    risk: "Risk Management Center",
+    control: "Bot Process Control",
+    logs: "Audit & System Event Logs",
+    config: "System Configuration Viewer",
+    health: "Subsystem Diagnostics"
+  };
+  const titleEl = document.getElementById('pageTitle');
+  if (titleEl) titleEl.textContent = titles[viewId] || "Trading Terminal";
+
+  refreshCurrentView();
+}
+
+// Router dispatcher for active view data fetch
+async function refreshCurrentView() {
+  switch (activeView) {
+    case 'overview':
+      await loadOverviewData();
+      break;
+    case 'marketwatch':
+      await loadWatchlistData();
+      break;
+    case 'positions':
+      await loadPositionsData();
+      break;
+    case 'trades':
+      await loadTradesTable();
+      break;
+    case 'strategies':
+      await loadStrategiesData();
+      break;
+    case 'risk':
+      await loadRiskData();
+      break;
+    case 'control':
+      await loadControlData();
+      break;
+    case 'logs':
+      await loadLogsTerminal();
+      break;
+    case 'config':
+      await loadConfigData();
+      break;
+    case 'health':
+      break;
   }
 }
 
-async function loadCustomTicker(symbol) {
-  const market = symbol.includes('.BO') ? 'BSE' : (symbol.includes('.NS') ? 'NSE' : 'US');
-  await switchMarket(market, symbol);
-}
-
-async function refreshDashboard() {
-  const log = (msg) => {
-    const el = document.getElementById('systemLog');
-    if (el) el.textContent += `\n${msg}`;
-  };
-
+// 1. Overview Loader
+async function loadOverviewData() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/overview');
     const data = await res.json();
+    cachedDashboardData = data;
+
+    // Header Badges
+    const mkt = data.market_status || "UNKNOWN";
+    const mktBadge = document.getElementById('marketBadge');
+    if (mktBadge) {
+      mktBadge.textContent = `Market ${mkt}`;
+      mktBadge.className = `status-badge ${mkt === 'OPEN' ? 'open' : 'closed'}`;
+    }
+
+    const botStatus = data.bot_status || {};
+    const botBadge = document.getElementById('botStatusBadge');
+    if (botBadge) {
+      const isRunning = botStatus.status === "RUNNING";
+      botBadge.textContent = isRunning ? `Bot Running (PID: ${botStatus.pid})` : "Bot Stopped";
+      botBadge.className = `status-badge ${isRunning ? 'running' : 'stopped'}`;
+    }
+
+    // KPIs
+    const kpis = data.kpis || {};
+    document.getElementById('kpiStartingCap').textContent = formatINR(kpis.starting_capital);
+    document.getElementById('kpiFreeCash').textContent = formatINR(kpis.free_cash);
+    document.getElementById('kpiDeployedCash').textContent = formatINR(kpis.deployed_cash);
+    document.getElementById('kpiOpenPositionsSub').textContent = `${kpis.open_positions_count || 0} Active Positions`;
     
-    const cfg = data.config || {};
-    const p = data.plan || {};
-    const ord = (data.orders && data.orders.orders && data.orders.orders.length > 0) ? data.orders.orders[0] : null;
+    const rPnlEl = document.getElementById('kpiRealizedPnl');
+    rPnlEl.textContent = formatSignedINR(kpis.realized_pnl);
+    rPnlEl.className = `kpi-value ${kpis.realized_pnl >= 0 ? 'green' : 'red'}`;
 
-    currentCurrency = p.currency || cfg.currency || (p.symbol && p.symbol.includes('.NS') ? 'INR' : 'USD');
-    currentMarket = p.exchange || cfg.market || 'NSE';
-    currentCurrencySymbol = currentCurrency === 'INR' ? '₹' : '$';
+    const uPnlEl = document.getElementById('kpiUnrealizedPnl');
+    uPnlEl.textContent = formatSignedINR(kpis.unrealized_pnl);
+    uPnlEl.className = `kpi-value ${kpis.unrealized_pnl >= 0 ? (kpis.unrealized_pnl > 0 ? 'green' : '') : 'red'}`;
 
-    document.getElementById('exchangeBadge').textContent = `${currentMarket} (${currentCurrency})`;
-    document.getElementById('exchangeLabel').textContent = `${currentMarket} (${currentCurrency === 'INR' ? 'India' : 'US'})`;
-    document.getElementById('brokerTag').textContent = currentCurrency === 'INR' ? 'ZERODHA / PAPER' : 'ALPACA PAPER';
+    document.getElementById('kpiNetPortfolio').textContent = formatINR(kpis.total_portfolio_value);
+    const retEl = document.getElementById('kpiReturnPct');
+    retEl.textContent = `${kpis.return_pct >= 0 ? '+' : ''}${kpis.return_pct}% Today`;
+    retEl.className = `kpi-sub ${kpis.return_pct >= 0 ? 'green' : 'red'}`;
 
-    // Update Plan card
-    if (p.symbol) {
-      document.getElementById('tickerDisplay').textContent = p.symbol;
-      document.getElementById('sideDisplay').textContent = (p.side || 'BUY').toUpperCase();
-      document.getElementById('entryVal').textContent = formatMoney(p.entry);
-      document.getElementById('stopVal').textContent = formatMoney(p.stop);
-      document.getElementById('targetVal').textContent = formatMoney(p.target);
-      document.getElementById('riskVal').textContent = formatMoney(p.risk_per_share || (p.entry - p.stop));
-      document.getElementById('flatByTime').textContent = `${p.flat_by || (currentCurrency === 'INR' ? '15:20 IST' : '15:55 ET')}`;
-    }
+    document.getElementById('kpiWinRate').textContent = `${kpis.win_rate}%`;
+    document.getElementById('kpiWinsLossesSub').textContent = `${kpis.wins_count} W / ${kpis.losses_count} L / ${kpis.breakeven_count} BE`;
 
-    // Update Config
-    if (cfg.budget && document.getElementById('budgetInput')) {
-      document.getElementById('budgetInput').value = cfg.budget;
-      document.getElementById('budgetLabel').textContent = `Account Budget (${currentCurrencySymbol} ${currentCurrency})`;
-    }
-    if (cfg.max_loss_per_trade_usd && document.getElementById('maxLossInput')) {
-      document.getElementById('maxLossInput').value = cfg.max_loss_per_trade_usd;
-      document.getElementById('maxLossLabel').textContent = `Max Loss Per Trade (${currentCurrencySymbol} ${currentCurrency})`;
-    }
+    document.getElementById('kpiProfitFactor').textContent = kpis.profit_factor || "1.00";
+    document.getElementById('kpiMaxDrawdown').textContent = formatINR(kpis.max_drawdown);
+    
+    document.getElementById('kpiLossUtil').textContent = `${kpis.daily_loss_utilization_pct}%`;
+    document.getElementById('kpiMaxLossSub').textContent = `Limit: ${formatINR(kpis.max_daily_loss)}`;
 
-    // Update Live Balance & Ledger
-    if (data.ledger) {
-      const leg = data.ledger;
-      const free = Number(leg.free_cash || 0);
-      const deployed = Number(leg.deployed_cash || 0);
-      const pnl = Number(leg.realized_pnl || 0);
-      const start = Number(leg.starting_capital || 100000);
+    document.getElementById('kpiTradeCount').textContent = `${kpis.total_trades_count || 0}`;
 
-      const totalPortfolio = free + deployed;
-      const openPositions = leg.open_positions || [];
-      const history = leg.trade_history || [];
-      const totalTradesToday = history.length;
+    // Render Equity Chart
+    await renderEquityChart();
 
-      // 1. TOP HERO KPI STRIP
-      if (document.getElementById('topTotalCapital')) {
-        document.getElementById('topTotalCapital').textContent = formatMoney(totalPortfolio);
-      }
-      if (document.getElementById('topFreeCash')) {
-        document.getElementById('topFreeCash').textContent = formatMoney(free);
-      }
-      if (document.getElementById('topHoldingAmount')) {
-        document.getElementById('topHoldingAmount').textContent = formatMoney(deployed);
-      }
-      if (document.getElementById('topActivePositionsCount')) {
-        document.getElementById('topActivePositionsCount').textContent = `${openPositions.length} Open Position${openPositions.length === 1 ? '' : 's'}`;
-      }
-      if (document.getElementById('topRealizedPnl')) {
-        const pnlTopEl = document.getElementById('topRealizedPnl');
-        const prefix = pnl >= 0 ? '+' : '';
-        pnlTopEl.textContent = `${prefix}${formatMoney(pnl)}`;
-        pnlTopEl.style.color = pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-      }
-      if (document.getElementById('topTradeCount')) {
-        document.getElementById('topTradeCount').textContent = `${totalTradesToday} / 4`;
-      }
-
-      // Render Active Positions List
-      const posContainer = document.getElementById('activePositionsList');
-      if (document.getElementById('openPosBadge')) {
-        document.getElementById('openPosBadge').textContent = `${openPositions.length} OPEN`;
-      }
-
-      if (openPositions.length === 0) {
-        posContainer.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem; text-align: center;">No active open trades right now.</div>`;
-      } else {
-        posContainer.innerHTML = openPositions.map(pos => `
-          <div class="news-item" style="border-left: 3px solid var(--accent-cyan);">
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-              <strong style="color: #fff; font-size: 0.95rem;">${pos.symbol} (${pos.exchange})</strong>
-              <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 700;">BUY ${pos.qty} SHARES</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">
-              <span>Entry: <strong style="color:#fff;">${formatMoney(pos.entry_price)}</strong></span>
-              <span>Invested: <strong style="color: var(--accent-amber);">${formatMoney(pos.amount)}</strong></span>
-            </div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px;">
-              🕒 Entry Time: <code>${pos.entry_time || 'IST'}</code>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      // Render Closed Trade History
-      const histContainer = document.getElementById('tradeHistoryList');
-      const history = leg.trade_history || [];
-      document.getElementById('historyCount').textContent = `${history.length} Trades`;
-
-      if (history.length === 0) {
-        histContainer.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem; text-align: center;">No closed trades yet today.</div>`;
-      } else {
-        histContainer.innerHTML = history.slice().reverse().map(h => {
-          const isProf = Number(h.pnl) >= 0;
-          return `
-            <div class="news-item" style="border-left: 3px solid ${isProf ? 'var(--accent-green)' : 'var(--accent-red)'};">
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <strong style="color: #fff; font-size: 0.85rem;">${h.symbol}</strong>
-                <strong style="color: ${isProf ? 'var(--accent-green)' : 'var(--accent-red)'}; font-size: 0.85rem;">
-                  ${isProf ? '+' : ''}${formatMoney(h.pnl)}
-                </strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">
-                <span>In: ${formatMoney(h.entry_price)} ➔ Out: ${formatMoney(h.exit_price)}</span>
-                <span>${h.qty} shares</span>
-              </div>
-              <div style="font-size: 0.66rem; color: var(--text-muted); margin-top: 2px;">
-                ${h.reason || 'Exit trigger'}
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    // Update Orders Ticket
-    if (ord) {
-      document.getElementById('ticketHeader').textContent = `${(ord.side || 'BUY').toUpperCase()} ${ord.qty} ${ord.symbol}`;
-      document.getElementById('ticketQty').textContent = `${ord.qty} Shares`;
-      
-      const capital = Number(ord.qty) * (p.entry || 1000);
-      document.getElementById('ticketCapital').textContent = formatMoney(capital);
-      
-      const maxLoss = Number(ord.qty) * (p.risk_per_share || 10);
-      document.getElementById('ticketMaxLoss').textContent = formatMoney(maxLoss);
-      document.getElementById('ticketTP').textContent = formatMoney(ord.take_profit_limit_price || p.target);
-      document.getElementById('ticketSL').textContent = formatMoney(ord.stop_loss_stop_price || p.stop);
-    }
-
-    // Render Chart
-    renderMarketChart(p);
+    // Quick previews
+    renderQuickWatchlist();
+    renderQuickPositions(kpis.enriched_positions || []);
 
   } catch (err) {
-    console.error("Failed to load dashboard status:", err);
-    log(`[ERROR] Sync failed: ${err.message}`);
+    console.error("Overview error:", err);
   }
 }
 
-function renderMarketChart(plan) {
-  const ctx = document.getElementById('fanChartCanvas').getContext('2d');
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
+// Equity Chart Renderer using Chart.js
+async function renderEquityChart() {
+  try {
+    const res = await fetch('/api/equity_curve');
+    const data = await res.json();
+    const points = data.points || [];
 
-  const isIndia = currentCurrency === 'INR';
-  const startHour = isIndia ? 9 : 10;
-  const startMin = isIndia ? 15 : 15;
-  const labels = [];
+    const labels = points.map(p => p.time);
+    const equities = points.map(p => p.equity);
+    const cumulativePnls = points.map(p => p.cumulative_pnl);
 
-  let curH = startHour;
-  let curM = startMin;
-  const totalBars = 35;
+    const ctx = document.getElementById('equityChart');
+    if (!ctx) return;
 
-  for (let i = 0; i < totalBars; i++) {
-    labels.push(`${curH < 10 ? '0' : ''}${curH}:${curM < 10 ? '0' : ''}${curM}`);
-    curM += 10;
-    if (curM >= 60) {
-      curH++;
-      curM -= 60;
+    if (equityChartInstance) {
+      equityChartInstance.destroy();
     }
-  }
 
-  const entry = plan ? Number(plan.entry) : (isIndia ? 1195 : 364.18);
-  const target = plan ? Number(plan.target) : (isIndia ? 1205 : 370.04);
-  const stop = plan ? Number(plan.stop) : (isIndia ? 1185 : 358.32);
-  const spreadBase = isIndia ? (entry * 0.012) : 6;
-
-  const medianData = [];
-  const upperData = [];
-  const lowerData = [];
-  const targetLine = [];
-  const stopLine = [];
-  const entryLine = [];
-
-  for (let i = 0; i < labels.length; i++) {
-    const factor = (i / labels.length);
-    medianData.push(entry + (factor * (target - entry) * 0.4));
-    upperData.push(entry + (factor * spreadBase * 1.5));
-    lowerData.push(entry - (factor * spreadBase * 1.1));
-    targetLine.push(target);
-    stopLine.push(stop);
-    entryLine.push(entry);
-  }
-
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Target (1R)',
-          data: targetLine,
-          borderColor: '#10b981',
-          borderWidth: 1.5,
-          borderDash: [5, 5],
-          pointRadius: 0,
-          fill: false
-        },
-        {
-          label: 'Stop-Loss',
-          data: stopLine,
-          borderColor: '#ef4444',
-          borderWidth: 1.5,
-          borderDash: [5, 5],
-          pointRadius: 0,
-          fill: false
-        },
-        {
-          label: 'Entry Level',
-          data: entryLine,
-          borderColor: '#06b6d4',
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false
-        },
-        {
-          label: 'Upper Volatility Fan',
-          data: upperData,
-          borderColor: 'rgba(59, 130, 246, 0.4)',
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: '+1',
-          backgroundColor: 'rgba(59, 130, 246, 0.12)'
-        },
-        {
-          label: 'Median Projection',
-          data: medianData,
-          borderColor: '#3b82f6',
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: false
-        },
-        {
-          label: 'Lower Volatility Fan',
-          data: lowerData,
-          borderColor: 'rgba(59, 130, 246, 0.4)',
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          labels: { color: '#9ca3af', boxWidth: 12, font: { size: 10 } }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#6b7280', maxTicksLimit: 8 },
-          grid: { color: 'rgba(255, 255, 255, 0.05)' }
-        },
-        y: {
-          ticks: {
-            color: '#6b7280',
-            callback: function(value) { return formatMoney(value); }
+    equityChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Net Portfolio Equity (₹)',
+            data: equities,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.08)',
+            borderWidth: 2,
+            tension: 0.2,
+            fill: true,
+            yAxisID: 'y'
           },
-          grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          {
+            label: 'Cumulative P&L (₹)',
+            data: cumulativePnls,
+            borderColor: '#f59e0b',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            tension: 0.2,
+            fill: false,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#94a3b8',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+            ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 12 }
+          },
+          y: {
+            position: 'left',
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: {
+              color: '#10b981',
+              font: { family: 'JetBrains Mono', size: 10 },
+              callback: (val) => '₹' + val.toLocaleString('en-IN')
+            }
+          },
+          y1: {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: {
+              color: '#f59e0b',
+              font: { family: 'JetBrains Mono', size: 10 },
+              callback: (val) => (val >= 0 ? '+' : '') + '₹' + val.toLocaleString('en-IN')
+            }
+          }
         }
       }
+    });
+  } catch (err) {
+    console.error("Equity chart error:", err);
+  }
+}
+
+function renderQuickWatchlist() {
+  const el = document.getElementById('quickWatchlist');
+  if (!el) return;
+  fetch('/api/watchlist').then(r => r.json()).then(data => {
+    const list = data.symbols || [];
+    if (!list.length) {
+      el.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem;">No watchlist data available.</span>`;
+      return;
     }
+    let html = `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+    list.slice(0, 4).forEach(q => {
+      const isGreen = q.change >= 0;
+      html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
+          <div>
+            <strong style="font-size: 0.82rem; color: #fff;">${q.symbol}</strong>
+            <span style="margin-left: 0.5rem; font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">EMA5: ${q.ema5}</span>
+          </div>
+          <div style="text-align: right; font-family: var(--font-mono); font-size: 0.82rem;">
+            <div>₹${q.price.toFixed(2)}</div>
+            <div style="font-size: 0.7rem;" class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${q.change_pct}%</div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    el.innerHTML = html;
+  }).catch(() => {
+    el.innerHTML = `<span style="color: var(--red); font-size: 0.8rem;">Quote feed synchronizing...</span>`;
   });
 }
 
-async function recalculateSizing() {
-  const budget = parseFloat(document.getElementById('budgetInput').value) || 100000;
-  const maxLoss = parseFloat(document.getElementById('maxLossInput').value) || 1000;
-
-  const logEl = document.getElementById('systemLog');
-  logEl.textContent += `\n[ACTION] Recalculating: Budget=${currentCurrencySymbol} ${budget.toLocaleString()}, MaxLoss=${currentCurrencySymbol} ${maxLoss.toLocaleString()}...`;
-
-  try {
-    const res = await fetch('/api/recalculate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ budget: budget, max_loss: maxLoss })
-    });
-    const result = await res.json();
-    logEl.textContent += `\n${result.size_output || 'Position updated.'}`;
-    refreshDashboard();
-  } catch (e) {
-    logEl.textContent += `\n[ERROR] Sizing failed: ${e.message}`;
-  }
-}
-
-async function fetchLiveQuoteData() {
-  const ticker = document.getElementById('tickerDisplay').textContent;
-  const logEl = document.getElementById('systemLog');
-  logEl.textContent += `\n[FETCH] Requesting latest bar for ${ticker}...`;
-  try {
-    const res = await fetch(`/api/quote?symbol=${encodeURIComponent(ticker)}`);
-    const q = await res.json();
-    if (q.price) {
-      logEl.textContent += `\n[TICK] ${q.symbol} live price: ${formatMoney(q.price)} (${q.exchange})`;
-    }
-  } catch (e) {
-    logEl.textContent += `\n[ERROR] Bar fetch error: ${e.message}`;
-  }
-}
-
-async function fetchNews() {
-  const ticker = document.getElementById('tickerDisplay').textContent;
-  try {
-    const res = await fetch(`/api/news?symbol=${encodeURIComponent(ticker)}`);
-    const data = await res.json();
-    const feed = document.getElementById('newsFeed');
-    if (data.output) {
-      const lines = data.output.split('\n').filter(l => l.trim().length > 0).slice(0, 5);
-      if (lines.length > 0) {
-        feed.innerHTML = lines.map(line => `
-          <div class="news-item">
-            <div class="news-time">BSE / NSE Live Disclosure</div>
-            <div class="news-title">${line}</div>
-          </div>
-        `).join('');
-      }
-    }
-  } catch (e) {
-    console.error("News fetch error:", e);
-  }
-}
-
-function confirmOrderAction() {
-  const logEl = document.getElementById('systemLog');
-  logEl.textContent += `\n[SAFETY CHECK] Ticket verified for paper trade in ${currentCurrency}. Manual approval mandatory prior to execution.`;
-  alert(`Safety Protocol Active:\n\nOrder is ready in ${currentCurrency} for paper execution.\nNo real orders are submitted without interactive approval.`);
-}
-
-async function sendTelegramTest() {
-  const token = document.getElementById('telegramTokenInput').value.trim();
-  const chatId = document.getElementById('telegramChatIdInput').value.trim();
-  const logEl = document.getElementById('systemLog');
-
-  if (!token || !chatId) {
-    alert("Please provide both your Telegram Bot Token and Chat ID.");
+function renderQuickPositions(positions) {
+  const el = document.getElementById('quickPositions');
+  if (!el) return;
+  if (!positions.length) {
+    el.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">All positions closed. Capital 100% in free cash.</div>`;
     return;
   }
+  let html = `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+  positions.forEach(p => {
+    const isGreen = p.unrealized_pnl >= 0;
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
+        <div>
+          <strong style="color: #fff; font-size: 0.82rem;">${p.symbol}</strong>
+          <span style="font-size: 0.72rem; color: var(--text-secondary); margin-left: 0.4rem;">Qty: ${p.qty} @ ₹${p.entry_price}</span>
+        </div>
+        <div style="text-align: right; font-family: var(--font-mono); font-size: 0.82rem;">
+          <div class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}₹${p.unrealized_pnl.toFixed(2)} (${p.unrealized_pnl_pct}%)</div>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+}
 
-  logEl.textContent += `\n[TELEGRAM] Sending test trade notification...`;
+// 2. Watchlist Loader
+async function loadWatchlistData() {
+  const tbody = document.getElementById('watchlistTableBody');
+  const tsEl = document.getElementById('watchlistTimestamp');
   try {
-    const res = await fetch('/api/telegram_test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bot_token: token, chat_id: chatId })
-    });
+    const res = await fetch('/api/watchlist');
     const data = await res.json();
-    if (data.status === 'ok') {
-      logEl.textContent += `\n[TELEGRAM] Alert sent successfully! Check your Telegram chat.`;
-      alert("Trade alert sent to your Telegram successfully!");
-    } else {
-      logEl.textContent += `\n[TELEGRAM ERROR] ${data.message}`;
-      alert(`Telegram delivery failed: ${data.message}`);
+    const symbols = data.symbols || [];
+    if (tsEl) tsEl.textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' })} IST`;
+
+    if (!symbols.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No symbols configured in watchlist.</td></tr>`;
+      return;
     }
+
+    let rows = "";
+    symbols.forEach(q => {
+      const isGreen = q.change >= 0;
+      rows += `
+        <tr>
+          <td style="font-weight: 700; color: #fff;">${q.symbol}</td>
+          <td>₹${q.price.toFixed(2)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${q.change.toFixed(2)} (${q.change_pct}%)</td>
+          <td>₹${q.ema5.toFixed(2)}</td>
+          <td>₹${q.ema9.toFixed(2)}</td>
+          <td>₹${q.ema33_high.toFixed(2)}</td>
+          <td>₹${q.ema33_low.toFixed(2)}</td>
+          <td><span class="status-badge ${q.signal === 'BUY' ? 'open' : 'closed'}">${q.signal}</span></td>
+          <td>${q.last_updated}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = rows;
   } catch (err) {
-    logEl.textContent += `\n[TELEGRAM ERROR] ${err.message}`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--red);">Error loading watchlist.</td></tr>`;
   }
 }
 
+// 3. Open Positions Loader
+async function loadPositionsData() {
+  const tbody = document.getElementById('positionsTableBody');
+  const summaryEl = document.getElementById('positionsSummary');
+  try {
+    const res = await fetch('/api/positions');
+    const data = await res.json();
+    const positions = data.open_positions || [];
+
+    if (summaryEl) {
+      summaryEl.textContent = `Deployed: ${formatINR(data.total_deployed_cash)} | Floating P&L: ${formatSignedINR(data.total_unrealized_pnl)}`;
+    }
+
+    if (!positions.length) {
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">No active open positions. Cash 100% free.</td></tr>`;
+      return;
+    }
+
+    let rows = "";
+    positions.forEach(p => {
+      const isGreen = p.unrealized_pnl >= 0;
+      rows += `
+        <tr>
+          <td>${p.id || 'POS'}</td>
+          <td style="font-weight: 700; color: #fff;">${p.symbol}</td>
+          <td>${p.qty}</td>
+          <td>₹${Number(p.entry_price).toFixed(2)}</td>
+          <td>₹${Number(p.current_price).toFixed(2)}</td>
+          <td>₹${Number(p.amount).toFixed(2)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct}%</td>
+          <td>₹${Number(p.peak_price || p.entry_price).toFixed(2)}</td>
+          <td>₹${Number(p.current_stop || p.stop_loss || (p.entry_price * 0.99)).toFixed(2)}</td>
+          <td>
+            <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.72rem;" onclick="promptClosePosition('${p.symbol}', ${p.qty})">Close</button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = rows;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--red);">Error loading open positions.</td></tr>`;
+  }
+}
+
+// 4. Trade History Loader
+async function loadTradesTable() {
+  const tbody = document.getElementById('tradesTableBody');
+  const countBadge = document.getElementById('tradesCountBadge');
+  const symFilter = document.getElementById('tradeSymbolFilter').value;
+  const outcomeFilter = document.getElementById('tradeOutcomeFilter').value;
+
+  try {
+    let url = '/api/trades?';
+    if (symFilter) url += `symbol=${encodeURIComponent(symFilter)}&`;
+    if (outcomeFilter) url += `outcome=${encodeURIComponent(outcomeFilter)}&`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+    const trades = data.trades || [];
+
+    if (countBadge) {
+      countBadge.textContent = `Showing: ${data.filtered_count} / ${data.total_records} trades`;
+    }
+
+    if (!trades.length) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching executed trades found.</td></tr>`;
+      return;
+    }
+
+    let rows = "";
+    trades.forEach(t => {
+      const pnl = Number(t.pnl || 0);
+      const isGreen = pnl > 0;
+      const isLoss = pnl < 0;
+      rows += `
+        <tr>
+          <td>${t.id || 'POS'}</td>
+          <td style="font-weight: 700; color: #fff;">${t.symbol}</td>
+          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">BUY</span></td>
+          <td>${t.qty}</td>
+          <td>₹${Number(t.entry_price).toFixed(2)}</td>
+          <td>₹${Number(t.exit_price).toFixed(2)}</td>
+          <td>${t.entry_time || '--'}</td>
+          <td>${t.exit_time || '--'}</td>
+          <td class="${isGreen ? 'green' : (isLoss ? 'red' : '')}">${formatSignedINR(pnl)}</td>
+          <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = rows;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--red);">Error loading trade history.</td></tr>`;
+  }
+}
+
+// 5. Strategy Analytics Loader
+async function loadStrategiesData() {
+  const tbody = document.getElementById('strategiesTableBody');
+  try {
+    const res = await fetch('/api/strategies');
+    const data = await res.json();
+    const strategies = data.strategies || [];
+
+    if (!strategies.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">No strategy data recorded.</td></tr>`;
+      return;
+    }
+
+    let rows = "";
+    strategies.forEach(s => {
+      rows += `
+        <tr>
+          <td style="font-weight: 700; color: #fff;">${s.strategy}</td>
+          <td>${s.trades}</td>
+          <td class="green">${s.wins}</td>
+          <td class="red">${s.losses}</td>
+          <td>${s.win_rate}%</td>
+          <td class="green">₹${s.gross_profit.toFixed(2)}</td>
+          <td class="red">₹${s.gross_loss.toFixed(2)}</td>
+          <td>${s.profit_factor}</td>
+          <td class="${s.net_pnl >= 0 ? 'green' : 'red'}">${formatSignedINR(s.net_pnl)}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = rows;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--red);">Error loading strategy stats.</td></tr>`;
+  }
+}
+
+// 6. Risk Center Loader
+async function loadRiskData() {
+  try {
+    const res = await fetch('/api/risk');
+    const data = await res.json();
+
+    document.getElementById('riskMaxDailyLoss').textContent = formatINR(data.max_daily_loss);
+    document.getElementById('riskCurrentDailyLoss').textContent = formatINR(data.realized_daily_loss);
+    document.getElementById('riskDailyTrades').textContent = `${data.current_trades_count} / ${data.max_trades_per_day} Day`;
+    document.getElementById('riskSquareoffTime').textContent = `${data.flat_by_time} IST`;
+
+    const container = document.getElementById('riskAlertsContainer');
+    const alerts = data.alerts || [];
+    if (!alerts.length) {
+      container.innerHTML = `<div style="font-size: 0.8rem; color: var(--emerald); padding: 0.5rem 0;">✓ All risk metrics compliant. Zero limit breaches.</div>`;
+    } else {
+      let html = "";
+      alerts.forEach(a => {
+        const isCrit = a.severity === "CRITICAL";
+        html += `
+          <div style="background: rgba(${isCrit ? '239, 68, 68' : '245, 158, 11'}, 0.1); border-left: 3px solid ${isCrit ? 'var(--red)' : 'var(--gold-light)'}; padding: 0.6rem 0.85rem; border-radius: 4px; font-size: 0.8rem; display: flex; justify-content: space-between;">
+            <div>
+              <strong style="color: ${isCrit ? 'var(--red)' : 'var(--gold-light)'};">[${a.severity}]</strong>
+              <span style="color: var(--text-primary); margin-left: 0.4rem;">${a.message}</span>
+            </div>
+            <span style="color: var(--text-muted); font-size: 0.72rem;">Active Rule</span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+  } catch (err) {
+    console.error("Risk load error:", err);
+  }
+}
+
+// 7. Bot Control Loader
+async function loadControlData() {
+  try {
+    const res = await fetch('/api/overview');
+    const data = await res.json();
+    const bot = data.bot_status || {};
+    const isRunning = bot.status === "RUNNING";
+
+    const stateEl = document.getElementById('controlProcessState');
+    const pidEl = document.getElementById('controlPidSub');
+    const btnStart = document.getElementById('btnStartBot');
+    const btnStop = document.getElementById('btnStopBot');
+
+    if (stateEl) {
+      stateEl.textContent = isRunning ? "RUNNING" : "STOPPED";
+      stateEl.className = `kpi-value ${isRunning ? 'green' : 'red'}`;
+    }
+    if (pidEl) {
+      pidEl.textContent = isRunning ? `Process ID: ${bot.pid}` : "Process Idle";
+    }
+    if (btnStart) btnStart.disabled = isRunning;
+    if (btnStop) btnStop.disabled = !isRunning;
+  } catch (err) {
+    console.error("Control load error:", err);
+  }
+}
+
+async function startBotDaemon() {
+  if (!confirm("Confirm launching the automated day trading bot daemon?")) return;
+  try {
+    const res = await fetch('/api/bot/start', { method: 'POST' });
+    const data = await res.json();
+    alert(data.message);
+    loadControlData();
+    loadOverviewData();
+  } catch (err) {
+    alert("Error starting bot: " + err.message);
+  }
+}
+
+async function stopBotDaemon() {
+  if (!confirm("WARNING: Stop the trading daemon? Open positions will NOT be automatically closed unless instructed.")) return;
+  try {
+    const res = await fetch('/api/bot/stop', { method: 'POST' });
+    const data = await res.json();
+    alert(data.message);
+    loadControlData();
+    loadOverviewData();
+  } catch (err) {
+    alert("Error stopping bot: " + err.message);
+  }
+}
+
+// 8. Logs Terminal Loader
+async function loadLogsTerminal() {
+  const terminal = document.getElementById('logsTerminal');
+  const lvlFilter = document.getElementById('logLevelFilter').value;
+  try {
+    let url = '/api/logs?';
+    if (lvlFilter) url += `level=${lvlFilter}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const logs = data.logs || [];
+
+    if (!logs.length) {
+      terminal.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 2rem;">No system log events recorded.</div>`;
+      return;
+    }
+
+    let html = "";
+    logs.forEach(l => {
+      html += `
+        <div class="log-entry">
+          <span class="log-time">[${l.timestamp || '--'}]</span>
+          <span class="log-badge ${l.level}">${l.level}</span>
+          <span style="color: var(--text-primary);">${l.message}</span>
+        </div>
+      `;
+    });
+    terminal.innerHTML = html;
+  } catch (err) {
+    terminal.innerHTML = `<div style="color: var(--red);">Error reading system logs.</div>`;
+  }
+}
+
+// 9. Config Loader
+async function loadConfigData() {
+  const tbody = document.getElementById('configTableBody');
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    const cfg = data.config || {};
+
+    const descriptions = {
+      budget: "Starting account trading budget capital in INR",
+      market: "Target exchange (NSE / BSE)",
+      currency: "Account base currency",
+      candle_timeframe: "Primary chart candle interval (5m)",
+      cooldown_minutes: "Minimum waiting delay before re-entering same symbol",
+      max_trades_per_day: "Daily over-trading quota guard",
+      max_daily_loss_usd: "Hard kill-switch stop loss for the day",
+      max_loss_per_trade_usd: "Max permissible risk per single order",
+      max_open_positions: "Max simultaneous open positions",
+      no_entries_after: "Intraday cutoff time after which no new trades are taken",
+      flat_by: "Mandatory end-of-day market square-off time",
+      strategy_mode: "Active algorithmic strategy engine mode",
+      broker: "Active execution adapter"
+    };
+
+    let rows = "";
+    Object.keys(cfg).forEach(k => {
+      rows += `
+        <tr>
+          <td style="font-weight: 600; color: #fff;">${k}</td>
+          <td style="color: var(--emerald);">${JSON.stringify(cfg[k])}</td>
+          <td style="color: var(--text-secondary);">${descriptions[k] || "Strategy engine parameter"}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = rows;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--red);">Error loading configuration.</td></tr>`;
+  }
+}
+
+// Position Close Modal
+let pendingCloseSymbol = null;
+function promptClosePosition(symbol, qty) {
+  pendingCloseSymbol = symbol;
+  const modal = document.getElementById('confirmModal');
+  const body = document.getElementById('modalBody');
+  body.textContent = `Are you sure you want to execute immediate market exit for position ${symbol} (${qty} shares)?`;
+  modal.style.display = 'flex';
+
+  document.getElementById('modalConfirmBtn').onclick = async () => {
+    try {
+      const res = await fetch('/api/positions/close', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: pendingCloseSymbol })
+      });
+      const data = await res.json();
+      alert(data.message);
+      closeConfirmModal();
+      refreshCurrentView();
+    } catch (err) {
+      alert("Failed to close position: " + err.message);
+    }
+  };
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmModal').style.display = 'none';
+  pendingCloseSymbol = null;
+}
+
+function exportTradeCSV() {
+  window.open('/api/trades', '_blank');
+}
+
+// Initial Boot
 window.addEventListener('DOMContentLoaded', () => {
-  switchMarket('NSE', 'RELIANCE.NS');
-  // Auto-refresh dashboard every 5 seconds to sync with daemon
-  setInterval(refreshDashboard, 5000);
+  loadOverviewData();
+  // Auto refresh overview every 15 seconds
+  setInterval(() => {
+    if (activeView === 'overview') {
+      loadOverviewData();
+    }
+  }, 15000);
 });

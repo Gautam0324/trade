@@ -1,72 +1,32 @@
 #!/usr/bin/env python3
 """
-Lightweight REST API & Static File Server for Day Trader Skill Dashboard.
-Supports Global Markets: US (USD), NSE (INR - .NS), and BSE (INR - .BO).
+Production-Quality HTTP & REST API Server for Algo Trading Terminal.
+Serves:
+- Institutional Fintech Terminal UI
+- Real-time endpoints for Overview KPIs, Equity Curve, Watchlist, Positions, Trade History,
+  Strategy Performance, Risk Audit, Bot Process Management, Logs, and Configuration.
 """
 
 import http.server
 import json
-import math
 import os
-import subprocess
 import sys
+import subprocess
 import urllib.parse
-import urllib.request
-import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-TRADER_DIR = BASE_DIR / "trader"
 DASHBOARD_DIR = BASE_DIR / "dashboard"
+TRADER_DIR = BASE_DIR / "trader"
+
+sys.path.insert(0, str(DASHBOARD_DIR))
+sys.path.insert(0, str(TRADER_DIR))
+
+import service
 
 PORT = 8080
 
-def read_json_file(path):
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            return {"error": str(e)}
-    return None
-
-def write_json_file(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-
-def fetch_live_quote(symbol):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=1d&interval=5m"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; DayTrader/2.0)"})
-    try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = json.loads(resp.read().decode())
-            res = data.get("chart", {}).get("result", [])
-            if not res:
-                return None
-            meta = res[0].get("meta", {})
-            quotes = res[0].get("indicators", {}).get("quote", [{}])[0]
-            closes = [c for c in quotes.get("close", []) if c is not None]
-            highs = [h for h in quotes.get("high", []) if h is not None]
-            lows = [l for l in quotes.get("low", []) if l is not None]
-
-            latest_price = meta.get("regularMarketPrice") or (closes[-1] if closes else 0.0)
-            currency = meta.get("currency", "INR" if (".NS" in symbol or ".BO" in symbol) else "USD")
-
-            return {
-                "symbol": symbol,
-                "price": round(float(latest_price), 2),
-                "currency": currency,
-                "exchange": meta.get("exchangeName", "NSE" if ".NS" in symbol else "BSE"),
-                "high": round(float(max(highs)), 2) if highs else round(float(latest_price), 2),
-                "low": round(float(min(lows)), 2) if lows else round(float(latest_price), 2),
-                "history": closes[-30:] if closes else []
-            }
-    except Exception as e:
-        print(f"Error fetching quote for {symbol}: {e}")
-        return None
-
-class DashboardHandler(http.server.SimpleHTTPRequestHandler):
+class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DASHBOARD_DIR), **kwargs)
 
@@ -76,9 +36,12 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
 
         if path.startswith("/api/"):
-            self.handle_api_get(path, query)
+            try:
+                self.handle_api_get(path, query)
+            except Exception as e:
+                self.send_json({"error": str(e)}, status=500)
         else:
-            if path == "/" or not path:
+            if path == "/" or not path or path == "/index.html":
                 self.path = "/index.html"
             super().do_GET()
 
@@ -93,12 +56,22 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             data = {}
 
         if path.startswith("/api/"):
-            self.handle_api_post(path, data)
+            try:
+                self.handle_api_post(path, data)
+            except Exception as e:
+                self.send_json({"error": str(e)}, status=500)
         else:
             self.send_error(404, "Not Found")
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def send_json(self, data, status=200):
-        response_bytes = json.dumps(data).encode("utf-8")
+        response_bytes = json.dumps(data, default=str).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(response_bytes)))
@@ -108,288 +81,197 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response_bytes)
 
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-
     def handle_api_get(self, path, query):
-        if path == "/api/status":
-            config = read_json_file(TRADER_DIR / "config.json") or {}
-            plan = read_json_file(TRADER_DIR / "plan.json") or {}
-            orders = read_json_file(TRADER_DIR / "orders.json") or {}
-            timemachine = read_json_file(TRADER_DIR / "timemachine.json")
-
-            tm_summary = None
-            if timemachine and isinstance(timemachine, dict):
-                mc = timemachine.get("mc", {})
-                tm_summary = {
-                    "p_target": mc.get("p_target"),
-                    "p_stop": mc.get("p_stop"),
-                    "p_neither": mc.get("p_neither"),
-                    "p_green": mc.get("p_green"),
-                    "median_close": mc.get("median_close"),
-                    "avg_R": mc.get("avg_R"),
-                    "replays": mc.get("replays"),
-                    "bands": mc.get("bands", [])[::2],
-                    "bars_left": mc.get("bars_left"),
-                }
-
-            ledger = read_json_file(TRADER_DIR / "ledger.json")
+        if path == "/api/status" or path == "/api/overview":
+            # Complete Overview Payload
+            kpis = service.compute_dashboard_metrics()
+            daemon_info = service.check_daemon_status()
+            config = service.read_json_file(TRADER_DIR / "config.json", default={})
+            market_status = service.is_market_open()
+            ist_time = service.get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
 
             self.send_json({
-                "config": config,
-                "plan": plan,
-                "orders": orders,
-                "timemachine": tm_summary,
-                "ledger": ledger
+                "market_status": market_status,
+                "trading_mode": "PAPER" if config.get("paper", True) else "LIVE",
+                "ist_time": ist_time,
+                "bot_status": daemon_info,
+                "kpis": kpis,
+                "config": service.sanitize_config(config)
             })
+
+        elif path == "/api/equity_curve":
+            points = service.get_equity_curve_data()
+            self.send_json({"points": points})
+
+        elif path == "/api/watchlist":
+            config = service.read_json_file(TRADER_DIR / "config.json", default={})
+            symbols = config.get("watchlist", [
+                "RELIANCE.NS",
+                "TCS.NS",
+                "HDFCBANK.NS",
+                "INFY.NS",
+                "ICICIBANK.NS",
+                "TATAMOTORS.NS",
+                "SBIN.NS"
+            ])
+            quotes = []
+            for s in symbols:
+                q = service.fetch_live_quote_data(s)
+                if q:
+                    quotes.append(q)
+            self.send_json({"symbols": quotes})
+
+        elif path == "/api/positions":
+            kpis = service.compute_dashboard_metrics()
+            self.send_json({
+                "open_positions": kpis["enriched_positions"],
+                "total_unrealized_pnl": kpis["unrealized_pnl"],
+                "total_deployed_cash": kpis["deployed_cash"]
+            })
+
+        elif path == "/api/trades":
+            ledger = service.read_json_file(TRADER_DIR / "ledger.json", default={})
+            history = ledger.get("trade_history", [])
+            
+            # Support symbol, strategy, and outcome filters
+            symbol_filter = query.get("symbol", [None])[0]
+            outcome_filter = query.get("outcome", [None])[0] # WIN, LOSS, BREAKEVEN
+
+            filtered = []
+            for t in reversed(history):
+                pnl = float(t.get("pnl", 0.0))
+                if symbol_filter and t.get("symbol") != symbol_filter:
+                    continue
+                if outcome_filter == "WIN" and pnl <= 0:
+                    continue
+                if outcome_filter == "LOSS" and pnl >= 0:
+                    continue
+                if outcome_filter == "BREAKEVEN" and pnl != 0:
+                    continue
+                filtered.append(t)
+
+            self.send_json({
+                "total_records": len(history),
+                "filtered_count": len(filtered),
+                "trades": filtered
+            })
+
+        elif path == "/api/strategies":
+            stats = service.get_strategy_performance()
+            self.send_json({"strategies": stats})
+
+        elif path == "/api/risk":
+            risk_data = service.get_risk_audit()
+            self.send_json(risk_data)
+
+        elif path == "/api/logs":
+            lvl = query.get("level", [None])[0]
+            logs = service.get_system_logs(filter_level=lvl)
+            self.send_json({"logs": logs})
+
+        elif path == "/api/config":
+            config = service.read_json_file(TRADER_DIR / "config.json", default={})
+            self.send_json({"config": service.sanitize_config(config)})
 
         elif path == "/api/quote":
             symbol = query.get("symbol", ["RELIANCE.NS"])[0].upper()
-            quote = fetch_live_quote(symbol)
+            quote = service.fetch_live_quote_data(symbol)
             if quote:
                 self.send_json(quote)
             else:
-                self.send_json({"error": f"Could not fetch quote for {symbol}"}, status=404)
-
-        elif path == "/api/popular_indian":
-            # Quick list of liquid Indian stocks for NSE/BSE
-            stocks = [
-                {"symbol": "RELIANCE.NS", "name": "Reliance Industries", "exchange": "NSE"},
-                {"symbol": "TCS.NS", "name": "Tata Consultancy Services", "exchange": "NSE"},
-                {"symbol": "HDFCBANK.NS", "name": "HDFC Bank", "exchange": "NSE"},
-                {"symbol": "INFY.NS", "name": "Infosys Ltd", "exchange": "NSE"},
-                {"symbol": "ICICIBANK.NS", "name": "ICICI Bank", "exchange": "NSE"},
-                {"symbol": "SBIN.NS", "name": "State Bank of India", "exchange": "NSE"},
-                {"symbol": "TATAMOTORS.NS", "name": "Tata Motors", "exchange": "NSE"},
-                {"symbol": "ITC.NS", "name": "ITC Ltd", "exchange": "NSE"},
-                {"symbol": "TCS.BO", "name": "TCS (BSE)", "exchange": "BSE"},
-                {"symbol": "RELIANCE.BO", "name": "Reliance (BSE)", "exchange": "BSE"}
-            ]
-            self.send_json({"stocks": stocks})
-
-        elif path == "/api/news":
-            symbol = query.get("symbol", ["RELIANCE.NS"])[0]
-            # Use trader-news or generic headline
-            try:
-                cmd = [sys.executable, str(BASE_DIR / "trader-news" / "news.py"), "--tickers", symbol, "--no-sec"]
-                res = subprocess.run(cmd, cwd=str(BASE_DIR), capture_output=True, text=True, timeout=10)
-                self.send_json({"symbol": symbol, "output": res.stdout, "error": res.stderr})
-            except Exception as e:
-                self.send_json({"symbol": symbol, "output": "News stream available: " + str(e), "error": str(e)})
+                self.send_json({"error": f"Quote unavailable for {symbol}"}, status=404)
 
         else:
-            self.send_error(404, "API route not found")
+            self.send_error(404, "API endpoint not found")
 
     def handle_api_post(self, path, data):
-        if path == "/api/config":
-            cfg = read_json_file(TRADER_DIR / "config.json") or {}
-            cfg.update(data)
-            write_json_file(TRADER_DIR / "config.json", cfg)
-            self.send_json({"status": "ok", "config": cfg})
+        if path == "/api/bot/start":
+            status = service.check_daemon_status()
+            if status["status"] == "RUNNING":
+                self.send_json({"status": "ALREADY_RUNNING", "pid": status["pid"], "message": "Bot is already running."})
+                return
 
-        elif path == "/api/plan":
-            write_json_file(TRADER_DIR / "plan.json", data)
-            self.send_json({"status": "ok", "plan": data})
+            daemon_script = BASE_DIR / "trader-scanner" / "daemon.py"
+            proc = subprocess.Popen(
+                [sys.executable, str(daemon_script)],
+                cwd=str(BASE_DIR),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            service.daemon_process = proc
+            service.log_audit_event("START_BOT_DAEMON", {"pid": proc.pid})
+            self.send_json({"status": "SUCCESS", "pid": proc.pid, "message": "Trading bot daemon started successfully."})
 
-        elif path == "/api/set_market":
-            # Switch market between US and India (NSE/BSE)
-            market = data.get("market", "NSE")  # NSE, BSE, US
-            symbol = data.get("symbol", "RELIANCE.NS" if market != "US" else "TSLA")
-            budget = float(data.get("budget", 100000 if market != "US" else 5000))
-            max_loss = float(data.get("max_loss", 1000 if market != "US" else 50))
-            currency = "INR" if market in ["NSE", "BSE"] else "USD"
+        elif path == "/api/bot/stop":
+            status = service.check_daemon_status()
+            if status["status"] != "RUNNING" or not status["pid"]:
+                self.send_json({"status": "NOT_RUNNING", "message": "Bot daemon is not running."})
+                return
 
-            quote = fetch_live_quote(symbol)
-            current_price = quote["price"] if quote else (1192.60 if "RELIANCE" in symbol else 2525.0)
+            pid = status["pid"]
+            try:
+                if os.name == "nt":
+                    subprocess.call(["taskkill", "/F", "/PID", str(pid)])
+                else:
+                    os.kill(int(pid), 9)
+                service.daemon_process = None
+                service.log_audit_event("STOP_BOT_DAEMON", {"pid": pid})
+                self.send_json({"status": "SUCCESS", "message": f"Daemon PID {pid} stopped."})
+            except Exception as e:
+                service.log_audit_event("STOP_BOT_DAEMON_ERROR", {"error": str(e)}, status="FAILED")
+                self.send_json({"status": "ERROR", "message": str(e)}, status=500)
 
-            # Calculate 15-minute Opening Range & ORB Plan
-            or_low = round(current_price * 0.993, 2)
-            or_high = round(current_price * 1.004, 2)
-            entry = round(or_high * 1.002, 2)
-            stop = round((or_low + or_high) / 2.0, 2)
-            risk_per_share = round(entry - stop, 2)
-            if risk_per_share <= 0:
-                risk_per_share = round(entry * 0.008, 2)
-                stop = round(entry - risk_per_share, 2)
-            target = round(entry + risk_per_share, 2)
+        elif path == "/api/positions/close":
+            # Confirmed exit of an open position via existing verified PositionManager / ledger
+            symbol = data.get("symbol")
+            if not symbol:
+                self.send_json({"status": "ERROR", "message": "Symbol is required."}, status=400)
+                return
 
-            # Plan dict
-            plan = {
-                "created_by": "trader-exit",
-                "symbol": symbol,
-                "currency": currency,
-                "exchange": market,
-                "side": "buy",
-                "date": datetime.date.today().strftime("%Y-%m-%d"),
-                "setup": "orb",
-                "entry": entry,
-                "entry_time": "09:45 AM IST" if market in ["NSE", "BSE"] else "10:15 AM ET",
-                "interval": "5m",
-                "opening_range": {"high": or_high, "low": or_low, "minutes": 15},
-                "stop": stop,
-                "stop_rule": "or_mid",
-                "stop_label": "opening-range midpoint",
-                "target": target,
-                "target_r": 1.0,
-                "target_label": "1R (one times the risk)",
-                "risk_per_share": risk_per_share,
-                "reward_risk": 1.0,
-                "flat_by": "15:20 IST" if market in ["NSE", "BSE"] else "15:55 ET"
+            import ledger
+            quote = service.fetch_live_quote_data(symbol)
+            cur_p = quote["price"] if quote else 0.0
+            if cur_p <= 0:
+                self.send_json({"status": "ERROR", "message": "Unable to verify live price for execution."}, status=400)
+                return
+
+            ok, res = ledger.record_trade_exit(symbol, cur_p, "Manual Exit from Dashboard Terminal")
+            if ok:
+                service.log_audit_event("MANUAL_CLOSE_POSITION", {"symbol": symbol, "exit_price": cur_p})
+                self.send_json({"status": "SUCCESS", "message": f"Position {symbol} closed @ ₹{cur_p:,.2f}"})
+            else:
+                self.send_json({"status": "ERROR", "message": f"Failed to close position: {res}"}, status=400)
+
+        elif path == "/api/config/update":
+            # Safe config update for non-secret risk parameters
+            allowed_keys = {
+                "max_trades_per_day",
+                "max_open_positions",
+                "cooldown_minutes",
+                "no_entries_before",
+                "no_entries_after",
+                "flat_by",
+                "strategy_mode",
+                "min_confluence_score"
             }
-            write_json_file(TRADER_DIR / "plan.json", plan)
+            cfg = service.read_json_file(TRADER_DIR / "config.json", default={})
+            updated = {}
+            for k, v in data.items():
+                if k in allowed_keys:
+                    cfg[k] = v
+                    updated[k] = v
 
-            # Update Config
-            cfg = read_json_file(TRADER_DIR / "config.json") or {}
-            cfg["currency"] = currency
-            cfg["market"] = market
-            cfg["budget"] = budget
-            cfg["max_loss_per_trade_usd"] = max_loss
-            cfg["max_order_usd"] = budget * 0.8
-            cfg["flat_by"] = "15:20" if market in ["NSE", "BSE"] else "15:55"
-            cfg["broker"] = "zerodha_kite_paper" if market in ["NSE", "BSE"] else "alpaca_paper"
-            write_json_file(TRADER_DIR / "config.json", cfg)
-
-            # Sizing calculation
-            qty = max(1, math.floor(max_loss / risk_per_share))
-            # Cap at budget
-            if (qty * entry) > budget:
-                qty = max(1, math.floor((budget * 0.9) / entry))
-            actual_loss = round(qty * risk_per_share, 2)
-
-            orders = {
-                "created_by": "trader-budget",
-                "created_at": datetime.datetime.utcnow().isoformat() + "Z",
-                "status": "proposed",
-                "paper": True,
-                "market": market,
-                "currency": currency,
-                "orders": [
-                    {
-                        "symbol": symbol,
-                        "side": "buy",
-                        "qty": str(qty),
-                        "type": "market",
-                        "time_in_force": "day",
-                        "order_class": "bracket",
-                        "take_profit_limit_price": str(target),
-                        "stop_loss_stop_price": str(stop),
-                        "currency": currency,
-                        "exchange": market,
-                        "why": f"Opening-range breakout on {symbol} ({market}): {qty} shares, bound by your {currency} {max_loss} max loss ({qty} x {risk_per_share} = {currency} {actual_loss} at stop)",
-                        "plan": plan
-                    }
-                ]
-            }
-            write_json_file(TRADER_DIR / "orders.json", orders)
-
-            self.send_json({
-                "status": "ok",
-                "market": market,
-                "currency": currency,
-                "plan": plan,
-                "orders": orders,
-                "quote": quote
-            })
-
-        elif path == "/api/recalculate":
-            # Recalculate sizing for the current plan
-            plan = read_json_file(TRADER_DIR / "plan.json") or {}
-            cfg = read_json_file(TRADER_DIR / "config.json") or {}
-
-            budget = float(data.get("budget", cfg.get("budget", 100000)))
-            max_loss = float(data.get("max_loss", cfg.get("max_loss_per_trade_usd", 1000)))
-            currency = cfg.get("currency", "INR")
-            market = cfg.get("market", "NSE")
-
-            symbol = plan.get("symbol", "RELIANCE.NS")
-            entry = float(plan.get("entry", 1195.0))
-            stop = float(plan.get("stop", 1185.0))
-            risk_per_share = max(0.05, float(plan.get("risk_per_share", entry - stop)))
-
-            qty = max(1, math.floor(max_loss / risk_per_share))
-            if (qty * entry) > budget:
-                qty = max(1, math.floor((budget * 0.9) / entry))
-            actual_loss = round(qty * risk_per_share, 2)
-
-            orders = {
-                "created_by": "trader-budget",
-                "created_at": datetime.datetime.utcnow().isoformat() + "Z",
-                "status": "proposed",
-                "paper": True,
-                "market": market,
-                "currency": currency,
-                "orders": [
-                    {
-                        "symbol": symbol,
-                        "side": plan.get("side", "buy"),
-                        "qty": str(qty),
-                        "type": "market",
-                        "time_in_force": "day",
-                        "order_class": "bracket",
-                        "take_profit_limit_price": str(plan.get("target", round(entry + risk_per_share, 2))),
-                        "stop_loss_stop_price": str(stop),
-                        "currency": currency,
-                        "exchange": market,
-                        "why": f"Sized {qty} shares of {symbol} for {currency} {actual_loss} risk at stop.",
-                        "plan": plan
-                    }
-                ]
-            }
-            write_json_file(TRADER_DIR / "orders.json", orders)
-            self.send_json({
-                "status": "ok",
-                "orders": orders,
-                "size_output": f"[PASS] Position resized: {qty} shares of {symbol} ({currency} {qty * entry:,.2f}), max loss {currency} {actual_loss:,.2f}"
-            })
-
-        elif path == "/api/telegram_test":
-            from pathlib import Path
-            telegram_script = BASE_DIR / "trader-alerts" / "telegram_bot.py"
-            bot_token = data.get("bot_token")
-            chat_id = data.get("chat_id")
-            
-            # Save if provided
-            if bot_token and chat_id:
-                cfg = read_json_file(TRADER_DIR / "config.json") or {}
-                cfg["telegram_bot_token"] = bot_token
-                cfg["telegram_chat_id"] = chat_id
-                write_json_file(TRADER_DIR / "config.json", cfg)
-            
-            # Try to send
-            plan = read_json_file(TRADER_DIR / "plan.json") or {}
-            orders = read_json_file(TRADER_DIR / "orders.json") or {}
-            first_ord = orders.get("orders", [{}])[0] if orders.get("orders") else {}
-            
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("telegram_bot", str(telegram_script))
-            tg = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(tg)
-            
-            ok, msg = tg.send_trade_alert({
-                "symbol": plan.get("symbol", "RELIANCE.NS"),
-                "side": plan.get("side", "BUY"),
-                "qty": first_ord.get("qty", "74"),
-                "entry": plan.get("entry", 1200.87),
-                "stop": plan.get("stop", 1191.90),
-                "target": plan.get("target", 1209.84),
-                "max_loss": (plan.get("entry", 1200.87) - plan.get("stop", 1191.90)) * float(first_ord.get("qty", 74)),
-                "currency": plan.get("currency", "INR"),
-                "exchange": plan.get("exchange", "NSE")
-            })
-            
-            self.send_json({"status": "ok" if ok else "error", "message": msg})
+            service.write_json_file(TRADER_DIR / "config.json", cfg)
+            service.log_audit_event("UPDATE_CONFIGURATION", updated)
+            self.send_json({"status": "SUCCESS", "updated": updated, "config": service.sanitize_config(cfg)})
 
         else:
-            self.send_error(404, "Unknown POST route")
+            self.send_error(404, "API endpoint not found")
 
 def run(port=PORT):
     server_address = ("", port)
-    httpd = http.server.HTTPServer(server_address, DashboardHandler)
-    print(f"Day Trader Skill Dashboard Server running on http://localhost:{port}")
+    httpd = http.server.HTTPServer(server_address, PremiumDashboardHandler)
+    print(f"Institutional Algo Trading Terminal running on http://localhost:{port}")
     httpd.serve_forever()
 
 if __name__ == "__main__":
