@@ -1,0 +1,7 @@
+timestamp,signal_type,asset,option_contract,spot_price,trigger_level,status,reason,final_trade_taken
+"2026-10-28 10:58:35 IST","BUY","HDFCBANK","HDFCBANK",676.05,676.40,"SIGNAL_GENERATED","Bullish Combo Triggered (Waiting Confirmation)",False
+"2026-10-28 10:59:39 IST","BUY","HDFCBANK","HDFCBANK",676.80,676.40,"CONFIRMED_EXECUTED","Bought 591 shares @ Rs 676.8",True
+"2026-10-28 11:37:09 IST","SELL","TCS","TCS",2412.00,2412.00,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 11:37:57 IST","SELL","RELIANCE","RELIANCE",1175.30,1175.10,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 11:38:17 IST","SELL","INFY","INFY",1105.10,1105.10,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 11:38:28 IST","SELL","TCS","TCS",2408.20,2412.00,"CONFIRMED_EXECUTED","Sold 166 shares @ Rs 2408.2",True

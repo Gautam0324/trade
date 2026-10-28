@@ -1,9 +1,9 @@
 {
-  "starting_capital": 100000.0,
+  "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 100449.15,
+  "free_cash": 1000497.57,
   "deployed_cash": 0.0,
-  "realized_pnl": 449.15,
+  "realized_pnl": 497.57,
   "open_positions": [],
   "trade_history": [
     {
@@ -1229,11 +1229,38 @@
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
       "exit_date": "2026-10-26"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 591,
+      "entry_price": 676.8,
+      "exit_price": 678.82,
+      "entry_time": "10:59",
+      "exit_time": "11:05",
+      "pnl": 1193.82,
+      "reason": "Target Hit (+1.5R - Wick Touch)",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
+    },
+    {
+      "symbol": "TCS",
+      "side": "SELL",
+      "qty": 166,
+      "entry_price": 2408.2,
+      "exit_price": 2415.1,
+      "entry_time": "11:38",
+      "exit_time": "11:53",
+      "pnl": -1145.4,
+      "reason": "Short Stop Loss Hit (Wick Touch)",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
     }
   ],
-  "last_updated": "2026-10-26T15:30:00.000000",
+  "last_updated": "2026-10-28 11:56:13 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15
-  }
+  },
+  "trades": []
 }

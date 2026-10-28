@@ -95,6 +95,30 @@ def log_signal_to_csv(signal_type, asset, contract, spot_price, trigger_level, s
     except Exception as e:
         print(f"[CSV LOG ERROR] {e}")
 
+LOCK_PATH = BASE_DIR / "trader" / "multi_trader.lock"
+
+def acquire_instance_lock():
+    """Ensures only ONE instance of the trading bot runs at any time."""
+    pid = os.getpid()
+    if os.path.exists(LOCK_PATH):
+        try:
+            with open(LOCK_PATH, "r") as f:
+                old_pid = int(f.read().strip())
+            # Check if old process is still alive on Windows
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            h_proc = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, old_pid)
+            if h_proc:
+                kernel32.CloseHandle(h_proc)
+                print(f"[FATAL] Another bot instance is already running with PID {old_pid}! Exiting to prevent duplicate trades.")
+                sys.exit(0)
+        except Exception:
+            pass  # Lock is stale or unreadable
+
+    with open(LOCK_PATH, "w") as f:
+        f.write(str(pid))
+
 def update_ledger(action, record):
     try:
         ledger = {}
@@ -107,7 +131,9 @@ def update_ledger(action, record):
         open_pos_list = ledger.get("open_positions", [])
 
         if action == "ENTRY":
-            # Add to open_positions
+            # Avoid duplicate ENTRY if symbol is already in open_positions
+            if any(p.get("symbol") == record["symbol"] for p in open_pos_list):
+                return
             open_pos_list.append({
                 "id": f"POS-{len(ledger.get('trade_history', [])) + len(open_pos_list) + 1}",
                 "symbol": record["symbol"],
@@ -122,7 +148,21 @@ def update_ledger(action, record):
         elif action == "EXIT":
             # Remove from open_positions and add to trade_history
             open_pos_list = [p for p in open_pos_list if p.get("symbol") != record["symbol"]]
+            ledger["trades"] = [p for p in ledger.get("trades", []) if p.get("symbol") != record["symbol"]]
             th = ledger.get("trade_history", [])
+            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+
+            # Duplicate protection: don't record if exactly this exit for this symbol and entry_time already exists
+            already_recorded = any(
+                t.get("symbol") == record["symbol"] and 
+                t.get("entry_time") == record["entry_time"] and
+                t.get("date") == today_str
+                for t in th
+            )
+            if already_recorded:
+                print(f"[LEDGER] Exit for {record['symbol']} entry at {record['entry_time']} already recorded. Skipping duplicate.")
+                return
+
             th.append({
                 "symbol": record["symbol"],
                 "side": record["side"],
@@ -132,7 +172,9 @@ def update_ledger(action, record):
                 "entry_time": record["entry_time"],
                 "exit_time": record["exit_time"],
                 "pnl": record["pnl"],
-                "reason": record["reason"]
+                "reason": record["reason"],
+                "date": today_str,
+                "exit_date": today_str
             })
             ledger["trade_history"] = th
             ledger["realized_pnl"] = round(ledger.get("realized_pnl", 0.0) + record["pnl"], 2)
@@ -149,6 +191,8 @@ def update_ledger(action, record):
         print(f"[LEDGER ERROR] {e}")
 
 def run_multi_symbol_trader():
+    acquire_instance_lock()
+
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
 
@@ -410,16 +454,29 @@ def run_multi_symbol_trader():
 
                     # 3. Detect New Signal Candle (Stage 1: Both BUY & SHORT SELL)
                     if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time <= "15:00":
+                        # (A) Fresh Bullish Flip
                         is_bull_combo = (
                             st_dir == 1 and st_dir_prev == -1 and
                             (ema33 is None or c > ema33) and
                             (macd_hist is not None and macd_hist >= 0)
                         )
-                        is_bear_combo = (
+                        # (B) Fresh Bearish Flip
+                        is_bear_flip = (
                             st_dir == -1 and st_dir_prev == 1 and
                             (ema33 is None or c < ema33) and
                             (macd_hist is not None and macd_hist <= 0)
                         )
+                        # (C) Low-Risk EMA 33 Pullback Rejection in Running Downtrend
+                        # Condition: Supertrend is Red + Price pulled up to touch/near EMA 33 and rejected downwards + MACD bearish
+                        is_pullback_short = False
+                        if st_dir == -1 and ema33 is not None:
+                            # Candle High tested near EMA33 (within 0.15%) and closed below it (rejection)
+                            tested_ema = h >= (ema33 * 0.9985) and c < ema33
+                            is_red_bar = c < o
+                            is_pullback_short = tested_ema and is_red_bar and (macd_hist is not None and macd_hist <= 0)
+
+                        is_bear_combo = is_bear_flip or is_pullback_short
+                        setup_tag = "Bearish Flip" if is_bear_flip else "EMA33 Pullback Rejection"
 
                         if is_bull_combo:
                             pending_signals[sym] = {
@@ -438,20 +495,22 @@ def run_multi_symbol_trader():
                             print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} Bullish Combo @ Rs {c:.2f}. Waiting confirmation above Rs {h:.2f}")
 
                         elif is_bear_combo:
+                            # Tight Stop Loss: High of rejection candle (Minimal risk)
+                            sl_level = round(max(h, ema33 if ema33 else h), 2)
                             pending_signals[sym] = {
                                 "side": "SELL",
                                 "signal_time": bar_time,
                                 "signal_idx": len(raw_bars) - 1,
                                 "trigger_level": l,
-                                "stop_loss": h,
+                                "stop_loss": sl_level,
                                 "spot": c
                             }
-                            log_signal_to_csv("SELL", sym, sym, c, l, "SIGNAL_GENERATED", "Bearish Short Combo Triggered (Waiting Confirmation)", trade_taken=False)
+                            log_signal_to_csv("SELL", sym, sym, c, l, "SIGNAL_GENERATED", f"{setup_tag} Triggered (Waiting Confirmation)", trade_taken=False)
                             telegram_bot.send_signal_alert({
-                                "symbol": sym, "side": "SHORT SELL", "spot_price": c, "trigger_level": l, "stop_loss": h,
-                                "strategy_name": "Multi-EMA + Supertrend + MACD", "candle_time": bar_time
+                                "symbol": sym, "side": f"SHORT SELL ({setup_tag})", "spot_price": c, "trigger_level": l, "stop_loss": sl_level,
+                                "strategy_name": f"Multi-EMA + Supertrend ({setup_tag})", "candle_time": bar_time
                             })
-                            print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} Bearish SHORT Combo @ Rs {c:.2f}. Waiting confirmation below Rs {l:.2f}")
+                            print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} {setup_tag} @ Rs {c:.2f}. Waiting confirmation below Rs {l:.2f}")
 
                 except Exception as inner_e:
                     pass
