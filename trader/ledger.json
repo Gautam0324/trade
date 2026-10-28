@@ -1,22 +1,10 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 600872.47,
-  "deployed_cash": 399162.0,
-  "realized_pnl": 34.47,
-  "open_positions": [
-    {
-      "id": "POS-77",
-      "symbol": "JPL",
-      "side": "BUY",
-      "qty": 284,
-      "entry_price": 1405.5,
-      "sl_price": 1395.38,
-      "target_price": 1420.68,
-      "entry_time": "14:44",
-      "amount": 399162.0
-    }
-  ],
+  "free_cash": 1004345.59,
+  "deployed_cash": 0,
+  "realized_pnl": 4345.59,
+  "open_positions": [],
   "trade_history": [
     {
       "id": "POS-1",
@@ -1327,9 +1315,22 @@
       "reason": "Manual User Request Exit",
       "date": "2026-10-28",
       "exit_date": "2026-10-28"
+    },
+    {
+      "symbol": "JPL",
+      "side": "BUY",
+      "qty": 284,
+      "entry_price": 1405.5,
+      "exit_price": 1420.68,
+      "entry_time": "14:44",
+      "exit_time": "15:15",
+      "pnl": 4311.12,
+      "reason": "Target Hit (+1.5R - Wick Touch)",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
     }
   ],
-  "last_updated": "2026-10-28 14:58:00 IST",
+  "last_updated": "2026-10-28 15:23:02 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15,
