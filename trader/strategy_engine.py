@@ -351,7 +351,14 @@ class StrategyEngine:
             return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "Insufficient stock candles")
 
         if not benchmark_bars or len(benchmark_bars.get("close", [])) < 25:
-            return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "Benchmark data missing or unaligned")
+            return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "Benchmark data missing or insufficient")
+
+        # Check timestamp alignment and freshness if timestamps are provided
+        stock_times = bars.get("timestamp", bars.get("time", []))
+        bench_times = benchmark_bars.get("timestamp", benchmark_bars.get("time", []))
+        if stock_times and bench_times:
+            if stock_times[-1] != bench_times[-1]:
+                return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", f"Benchmark timestamp {bench_times[-1]} unaligned or stale vs stock {stock_times[-1]}")
 
         bench_closes = benchmark_bars["close"]
         lookback = min(20, len(closes)-1, len(bench_closes)-1)
@@ -587,8 +594,14 @@ class StrategyEngine:
             "TREND_MOMENTUM": lambda: self.evaluate_trend_momentum(symbol, bars, exchange)
         }
 
+        VALID_MODES = ["CONFLUENCE", "SCANNER"] + list(strategy_methods.keys())
+        if self.mode not in VALID_MODES:
+            return self._empty_signal(symbol, exchange, self.mode, f"Invalid strategy mode '{self.mode}'. Allowed: {VALID_MODES}")
+
         # Single Strategy Mode
         if self.mode in strategy_methods:
+            if self.mode not in self.enabled_strategies:
+                return self._empty_signal(symbol, exchange, self.mode, f"Strategy '{self.mode}' is disabled in configuration")
             sig = strategy_methods[self.mode]()
             sig["market_regime"] = regime
             return sig
@@ -604,15 +617,98 @@ class StrategyEngine:
         if self.mode == "SCANNER":
             return signals
 
-        # For CONFLUENCE: Find highest-priority actionable signal
-        actionable = [s for s in signals if s["direction"] in ("LONG", "SHORT")]
-        if actionable:
-            # Pick first valid actionable strategy that matches regime direction
-            for act in actionable:
-                if act["direction"] == "LONG" and regime in ("TRENDING_UP", "RANGE_BOUND", "HIGH_VOLATILITY", "UNKNOWN"):
-                    return act
-                elif act["direction"] == "SHORT" and regime in ("TRENDING_DOWN", "RANGE_BOUND", "HIGH_VOLATILITY", "UNKNOWN"):
-                    return act
-            return actionable[0]
+        # Real CONFLUENCE Engine
+        # Requires true multi-factor confirmation score or independent setup agreement:
+        # 1. Base Strategy Confirmation: At least 2 independent strategies agreeing on direction OR
+        # 2. Confluence Score >= min_confluence_score (e.g. 65.0)
+        long_candidates = [s for s in signals if s["direction"] == "LONG"]
+        short_candidates = [s for s in signals if s["direction"] == "SHORT"]
+
+        # Calculate directional confluence scores
+        # Weighting: Base setup = 35 pts, Supporting setup = 25 pts, Regime alignment = 20 pts, RVol = 10 pts, R:R >= 1.5 = 10 pts
+        regime_bullish = regime in ("TRENDING_UP", "RANGE_BOUND")
+        regime_bearish = regime in ("TRENDING_DOWN", "RANGE_BOUND")
+
+        if len(long_candidates) >= 1:
+            score = 35.0  # primary setup
+            contributing = [long_candidates[0]["strategy_name"]]
+            if len(long_candidates) >= 2:
+                score += 25.0 * (len(long_candidates) - 1)
+                contributing.extend([s["strategy_name"] for s in long_candidates[1:]])
+            if regime_bullish:
+                score += 20.0
+                contributing.append(f"Regime Alignment ({regime})")
+            if long_candidates[0].get("reward_risk_ratio", 0) >= self.min_reward_risk:
+                score += 10.0
+                contributing.append(f"Favorable R:R ({long_candidates[0]['reward_risk_ratio']:.2f})")
+
+            # Check if confluence score threshold is satisfied
+            required_score = self.min_confluence_score
+            # If multi-strategy agreement required (min 2 independent triggers)
+            min_independent = int(self.config.get("min_confluence_strategies", 2))
+            has_multi_setup = len(long_candidates) >= min_independent
+            score_passed = score >= required_score
+
+            best_sig = dict(long_candidates[0])
+            best_sig["confluence_score"] = round(score, 1)
+            best_sig["contributing_conditions"] = contributing
+            best_sig["required_threshold"] = required_score
+            best_sig["strategy_name"] = "CONFLUENCE"
+
+            if has_multi_setup and score_passed:
+                best_sig["direction"] = "LONG"
+                best_sig["setup_description"] = f"Multi-Strategy Confluence ({score:.1f} pts >= {required_score:.1f}): " + " + ".join(contributing)
+                best_sig["rejection_reasons"] = []
+                return best_sig
+            else:
+                rejections = []
+                if not has_multi_setup:
+                    rejections.append(f"Insufficient independent strategy confirmations ({len(long_candidates)} < {min_independent})")
+                if not score_passed:
+                    rejections.append(f"Confluence score ({score:.1f}) below threshold ({required_score:.1f})")
+                best_sig["direction"] = "NO_TRADE"
+                best_sig["rejection_reasons"] = rejections
+                best_sig["setup_description"] = "Confluence Rejected: " + "; ".join(rejections)
+                return best_sig
+
+        elif len(short_candidates) >= 1 and self.allow_short:
+            score = 35.0
+            contributing = [short_candidates[0]["strategy_name"]]
+            if len(short_candidates) >= 2:
+                score += 25.0 * (len(short_candidates) - 1)
+                contributing.extend([s["strategy_name"] for s in short_candidates[1:]])
+            if regime_bearish:
+                score += 20.0
+                contributing.append(f"Regime Alignment ({regime})")
+            if short_candidates[0].get("reward_risk_ratio", 0) >= self.min_reward_risk:
+                score += 10.0
+                contributing.append(f"Favorable R:R ({short_candidates[0]['reward_risk_ratio']:.2f})")
+
+            required_score = self.min_confluence_score
+            min_independent = int(self.config.get("min_confluence_strategies", 2))
+            has_multi_setup = len(short_candidates) >= min_independent
+            score_passed = score >= required_score
+
+            best_sig = dict(short_candidates[0])
+            best_sig["confluence_score"] = round(score, 1)
+            best_sig["contributing_conditions"] = contributing
+            best_sig["required_threshold"] = required_score
+            best_sig["strategy_name"] = "CONFLUENCE"
+
+            if has_multi_setup and score_passed:
+                best_sig["direction"] = "SHORT"
+                best_sig["setup_description"] = f"Multi-Strategy Short Confluence ({score:.1f} pts >= {required_score:.1f}): " + " + ".join(contributing)
+                best_sig["rejection_reasons"] = []
+                return best_sig
+            else:
+                rejections = []
+                if not has_multi_setup:
+                    rejections.append(f"Insufficient independent strategy confirmations ({len(short_candidates)} < {min_independent})")
+                if not score_passed:
+                    rejections.append(f"Confluence score ({score:.1f}) below threshold ({required_score:.1f})")
+                best_sig["direction"] = "NO_TRADE"
+                best_sig["rejection_reasons"] = rejections
+                best_sig["setup_description"] = "Confluence Rejected: " + "; ".join(rejections)
+                return best_sig
 
         return self._empty_signal(symbol, exchange, "CONFLUENCE", "No enabled strategy triggered")

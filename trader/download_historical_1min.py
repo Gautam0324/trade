@@ -192,7 +192,7 @@ def download_stock_historical(smart_api, symbol, token):
 
 def run_downloader():
     print("=" * 65)
-    print("ANGEL ONE SMARTAPI — 10-YEAR 1-MINUTE CANDLE DOWNLOADER")
+    print("ANGEL ONE SMARTAPI - 10-YEAR 1-MINUTE CANDLE DOWNLOADER")
     print(f"Destination: {OUTPUT_DIR}")
     print("=" * 65)
 

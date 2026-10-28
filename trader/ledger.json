@@ -1,10 +1,22 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 1000172.67,
-  "deployed_cash": 0,
-  "realized_pnl": 172.67,
-  "open_positions": [],
+  "free_cash": 600872.47,
+  "deployed_cash": 399162.0,
+  "realized_pnl": 34.47,
+  "open_positions": [
+    {
+      "id": "POS-77",
+      "symbol": "JPL",
+      "side": "BUY",
+      "qty": 284,
+      "entry_price": 1405.5,
+      "sl_price": 1395.38,
+      "target_price": 1420.68,
+      "entry_time": "14:44",
+      "amount": 399162.0
+    }
+  ],
   "trade_history": [
     {
       "id": "POS-1",
@@ -1287,9 +1299,37 @@
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-10-28",
       "exit_date": "2026-10-28"
+    },
+    {
+      "id": "POS-78",
+      "symbol": "RELIANCE_BSE",
+      "side": "SELL",
+      "qty": 344,
+      "entry_price": 1159.6,
+      "exit_price": 1159.4,
+      "entry_time": "14:45",
+      "exit_time": "14:58 IST",
+      "pnl": 68.8,
+      "reason": "Manual User Request Exit",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
+    },
+    {
+      "id": "POS-79",
+      "symbol": "RELIANCE",
+      "side": "SELL",
+      "qty": 345,
+      "entry_price": 1158.6,
+      "exit_price": 1159.2,
+      "entry_time": "14:49",
+      "exit_time": "14:58 IST",
+      "pnl": -207.0,
+      "reason": "Manual User Request Exit",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
     }
   ],
-  "last_updated": "2026-10-28 13:38:18 IST",
+  "last_updated": "2026-10-28 14:58:00 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15,
