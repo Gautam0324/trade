@@ -20,6 +20,15 @@ import sqlite3
 import logging
 from pathlib import Path
 
+# Force UTF-8 encoding for Windows standard console output to avoid charmap codec errors
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR / "trader"))
 sys.path.append(str(BASE_DIR / "trader-alerts"))
@@ -434,7 +443,10 @@ def run_multi_symbol_trader():
             # Check Session Cutoff (flat_by): Square off any open positions at cutoff
             if current_time_str >= flat_by and open_positions:
                 print(f"[SESSION CUTOFF] Reached flat_by ({flat_by}). Auto squaring off all {len(open_positions)} open positions...")
-                for sym, pos in list(open_positions.items()):
+                for sym in list(open_positions.keys()):
+                    pos = open_positions.pop(sym, None)
+                    if not pos:
+                        continue
                     exit_price = pos["entry_price"]
                     pnl = 0.0
                     trade_rec = {
@@ -445,14 +457,16 @@ def run_multi_symbol_trader():
                     }
                     trades_today.append(trade_rec)
                     update_ledger("EXIT", trade_rec)
-                    telegram_bot.send_exit_alert({
-                        "symbol": sym, "qty": pos["quantity"], "entry_price": pos["entry_price"],
-                        "exit_price": exit_price, "peak_price": exit_price,
-                        "reason": trade_rec["reason"], "free_cash": capital,
-                        "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": "NSE"
-                    })
-                    print(f"🎯 [SQUARE-OFF EXECUTED] {pos['side']} {sym} @ Rs {exit_price} | Reason: {trade_rec['reason']}")
-                    del open_positions[sym]
+                    try:
+                        telegram_bot.send_exit_alert({
+                            "symbol": sym, "qty": pos["quantity"], "entry_price": pos["entry_price"],
+                            "exit_price": exit_price, "peak_price": exit_price,
+                            "reason": trade_rec["reason"], "free_cash": capital,
+                            "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": "NSE"
+                        })
+                    except Exception as te:
+                        print(f"[TELEGRAM ALERT ERROR] {te}")
+                    print(f"[SQUARE-OFF EXECUTED] {pos['side']} {sym} @ Rs {exit_price} | Reason: {trade_rec['reason']}")
 
             if current_time_str >= "15:25":
                 print(f"[MARKET CLOSED] End of session: {current_time_str}")
@@ -517,6 +531,9 @@ def run_multi_symbol_trader():
                         )
 
                         if exit_trade:
+                            pos = open_positions.pop(sym, None)
+                            if not pos:
+                                continue
                             entry_p = pos["entry_price"]
                             side = pos["side"]
                             pnl = round((exit_price - entry_p) * pos["quantity"], 2) if side == "BUY" else round((entry_p - exit_price) * pos["quantity"], 2)
@@ -529,14 +546,16 @@ def run_multi_symbol_trader():
                             trades_today.append(trade_rec)
                             update_ledger("EXIT", trade_rec)
 
-                            telegram_bot.send_exit_alert({
-                                "symbol": sym, "qty": pos["quantity"], "entry_price": entry_p,
-                                "exit_price": exit_price, "peak_price": max(entry_p, exit_price),
-                                "reason": exit_reason, "free_cash": capital,
-                                "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": exch
-                            })
-                            print(f"🎯 [EXIT EXECUTED] {side} {sym} @ Rs {exit_price} | PnL: Rs {pnl:+,.2f} | Reason: {exit_reason}")
-                            del open_positions[sym]
+                            try:
+                                telegram_bot.send_exit_alert({
+                                    "symbol": sym, "qty": pos["quantity"], "entry_price": entry_p,
+                                    "exit_price": exit_price, "peak_price": max(entry_p, exit_price),
+                                    "reason": exit_reason, "free_cash": capital,
+                                    "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": exch
+                                })
+                            except Exception as te:
+                                print(f"[TELEGRAM ALERT ERROR] {te}")
+                            print(f"[EXIT EXECUTED] {side} {sym} @ Rs {exit_price} | PnL: Rs {pnl:+,.2f} | Reason: {exit_reason}")
                             continue
 
                     # 2. Check Pending Signal Confirmation for this Symbol
@@ -597,12 +616,12 @@ def run_multi_symbol_trader():
                                     "strategy": f"{ps.get('strategy_name', 'Unified Engine')} ({ps.get('setup_tag', 'Breakout')})"
                                 })
                                 update_ledger("ENTRY", open_positions[sym])
-                                print(f"🚨 [{bar_time}] ENTRY EXECUTED: {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_res.get('order_id')}")
+                                print(f"[ENTRY EXECUTED] {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_res.get('order_id')}")
                                 del pending_signals[sym]
                                 continue
                             else:
                                 reject_reason = f"Risk Engine Blocked: {'; '.join(risk_check.get('reasons', []))}"
-                                print(f"🛡️ [{bar_time}] {side} {sym} Blocked by Risk Gate: {reject_reason}")
+                                print(f"[RISK BLOCKED] [{bar_time}] {side} {sym}: {reject_reason}")
                                 log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "REJECTED_BY_RISK", reject_reason, trade_taken=False)
                                 del pending_signals[sym]
                                 continue
@@ -612,7 +631,7 @@ def run_multi_symbol_trader():
                         window_candles = int(cfg.get("confirmation_window_candles", 2))
                         if current_candle_count > sig_bar_count + window_candles:
                             cancel_msg = f"Price did not break trigger level within confirmation window ({window_candles} bars elapsed)"
-                            print(f"⚪ [{bar_time}] {ps['side']} {sym} Signal Cancelled ({cancel_msg})")
+                            print(f"[CANCELLED] [{bar_time}] {ps['side']} {sym} Signal Cancelled ({cancel_msg})")
                             log_signal_to_csv(
                                 ps["side"], sym, sym, ps["spot"], ps["trigger_level"],
                                 "CANCELLED_NO_CONFIRMATION", cancel_msg, trade_taken=False
@@ -657,8 +676,7 @@ def run_multi_symbol_trader():
                                 "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
                                 "strategy_name": strat_title, "candle_time": bar_time
                             })
-                            emoji = "🟢" if side == "BUY" else "🟡"
-                            print(f"{emoji} [{bar_time}] STAGE 1 SIGNAL: {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
+                            print(f"[STAGE 1 SIGNAL] [{bar_time}] {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
 
                 except Exception as inner_e:
                     print(f"[PROCESSING ERROR] symbol={sym} time={current_time_str} error={type(inner_e).__name__}: {inner_e}")
