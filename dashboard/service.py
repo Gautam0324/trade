@@ -342,6 +342,12 @@ def compute_dashboard_metrics():
     today_trades = [t for t in trade_history if (t.get("date") == today_str or t.get("exit_date") == today_str) and t.get("status") != "void_pending_review"]
     today_realized_pnl = sum(float(t.get("pnl", 0.0)) for t in today_trades)
 
+    # Reconcile check
+    from ledger_utils import reconcile_ledger
+    is_reconciled, reconcile_report, _ = reconcile_ledger(ledger)
+
+    last_updated_str = ledger.get("last_updated", "N/A")
+
     return {
         "starting_capital": starting_cap,
         "free_cash": free_cash,
@@ -363,7 +369,11 @@ def compute_dashboard_metrics():
         "max_drawdown": round(max_dd, 2),
         "max_daily_loss": max_daily_loss,
         "daily_loss_utilization_pct": daily_loss_utilization,
-        "enriched_positions": enriched_positions
+        "enriched_positions": enriched_positions,
+        "is_reconciled": is_reconciled,
+        "reconcile_discrepancies": reconcile_report.get("discrepancies", []),
+        "last_updated": last_updated_str,
+        "data_freshness": "FRESH" if is_reconciled else "WARNING_DISCREPANCY"
     }
 
 def get_equity_curve_data():

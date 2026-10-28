@@ -5,9 +5,12 @@ Tracks Top Active Symbols across NSE & BSE with:
 - Strict completed-candle enforcement (no unfinished candles for indicators or signals)
 - Robust multi-strategy confluence engine
 - Safe broker isolation boundary (BrokerAdapter)
-- Risk-gate validation using single-source-of-truth ledger state
+- Atomic OrderManager state machine (CREATED -> VALIDATED -> SUBMITTED -> FILLED -> CLOSED)
+- Deduplication and idempotency on order admission
+- Accurate regulatory CostModel (gross vs net PnL, brokerage, STT, GST, turnover, stamp duty)
+- Real market quote EOD square-off (no fabricated zero P&L)
+- Risk-gate validation using single-source-of-truth ledger & order state
 - Conservative exit evaluation (ambiguous stop/target resolution & gap slippage handling)
-- Mandatory flat_by session square-off
 - Structured error logging replacing bare exception silences
 """
 
@@ -37,6 +40,9 @@ import indicators
 from risk_engine import RiskEngine
 from strategy_engine import StrategyEngine
 from broker_adapter import BrokerAdapter, PaperModeIsolationError
+from order_manager import OrderManager, OrderState
+from cost_model import CostModel
+from ledger_utils import reconcile_ledger
 from regime import detect_market_regime
 import telegram_bot
 import download_historical_1min as dh
@@ -200,12 +206,10 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
     h = float(bar[2])
     l = float(bar[3])
     c = float(bar[4])
-    ts = bar[0]
-    bar_time = ts.split("T")[1][:5] if "T" in ts else ts.split(" ")[1][:5]
 
     # 1. Check Session Cutoff (flat_by)
     if flat_by and current_time_str and current_time_str >= flat_by:
-        return True, c, f"Session Cutoff (flat_by {flat_by} reached)"
+        return True, c, f"Simulated EOD Square-Off (flat_by {flat_by} reached)"
 
     if side == "BUY":
         stop_touched = (l <= sl_p)
@@ -218,7 +222,6 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
 
         # Stop loss touch only
         if stop_touched:
-            # Gapped down below stop on candle open
             exit_price = o if o < sl_p else sl_p
             reason = "Stop Loss Hit (Gapped Below SL)" if o < sl_p else "Stop Loss Hit (Wick Touch)"
             return True, exit_price, reason
@@ -259,15 +262,10 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
     return False, c, ""
 
 # -------------------------------------------------------------------------
-# BENCHMARK DATA FETCHER
+# BENCHMARK DATA & EXIT QUOTE FETCHER
 # -------------------------------------------------------------------------
 
 def fetch_benchmark_data(api, today_str, current_time_str, symbol="NIFTY 50", token="99926000", exchange="NSE"):
-    """
-    Fetches benchmark candles for relative strength evaluation.
-    Returns bars_dict: {"open": [...], "high": [...], "low": [...], "close": [...], "volume": [...], "timestamp": [...]}
-    or None if unavailable.
-    """
     if not api:
         return None
     try:
@@ -293,74 +291,39 @@ def fetch_benchmark_data(api, today_str, current_time_str, symbol="NIFTY 50", to
         print(f"[BENCHMARK FETCH ERROR] symbol={symbol} ts={current_time_str}: {e}")
     return None
 
-# -------------------------------------------------------------------------
-# LEDGER SYNC & POSITION RECOVERY
-# -------------------------------------------------------------------------
-
-def update_ledger(action, record):
-    try:
-        ledger = {}
-        if os.path.exists(LEDGER_PATH):
-            with open(LEDGER_PATH, "r", encoding="utf-8") as f:
-                ledger = json.load(f)
-
-        starting_cap = float(ledger.get("starting_capital", 1000000.0))
-        ledger["starting_capital"] = starting_cap
-        open_pos_list = ledger.get("open_positions", [])
-
-        if action == "ENTRY":
-            if any(p.get("symbol") == record["symbol"] for p in open_pos_list):
-                return
-            open_pos_list.append({
-                "id": f"POS-{len(ledger.get('trade_history', [])) + len(open_pos_list) + 1}",
-                "symbol": record["symbol"],
-                "side": record["side"],
-                "qty": record["quantity"],
-                "entry_price": record["entry_price"],
-                "sl_price": record["sl_price"],
-                "target_price": record["target_price"],
-                "entry_time": record["entry_time"],
-                "amount": round(record["quantity"] * record["entry_price"], 2)
+def fetch_exit_quote(api, symbol, token, exchange, today_str, current_time_str):
+    """
+    Fetches the latest completed market price for square-off.
+    Falls back to ticks SQLite DB if API is closed or unreadable.
+    """
+    if api:
+        try:
+            resp = api.getCandleData({
+                "exchange": exchange,
+                "symboltoken": token,
+                "interval": "ONE_MINUTE",
+                "fromdate": f"{today_str} 09:15",
+                "todate": f"{today_str} {current_time_str}"
             })
-        elif action == "EXIT":
-            open_pos_list = [p for p in open_pos_list if p.get("symbol") != record["symbol"]]
-            ledger["trades"] = [p for p in ledger.get("trades", []) if p.get("symbol") != record["symbol"]]
-            th = ledger.get("trade_history", [])
-            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            if resp and resp.get("status") and resp.get("data"):
+                bars = resp["data"]
+                if bars:
+                    return float(bars[-1][4])
+        except Exception:
+            pass
 
-            already_recorded = any(
-                t.get("symbol") == record["symbol"] and 
-                t.get("entry_time") == record["entry_time"] and
-                t.get("date") == today_str
-                for t in th
-            )
-            if not already_recorded:
-                th.append({
-                    "symbol": record["symbol"],
-                    "side": record["side"],
-                    "qty": record["qty"],
-                    "entry_price": record["entry_price"],
-                    "exit_price": record["exit_price"],
-                    "entry_time": record["entry_time"],
-                    "exit_time": record["exit_time"],
-                    "pnl": record["pnl"],
-                    "reason": record["reason"],
-                    "date": today_str,
-                    "exit_date": today_str
-                })
-                ledger["trade_history"] = th
-                ledger["realized_pnl"] = round(ledger.get("realized_pnl", 0.0) + record["pnl"], 2)
-
-        ledger["open_positions"] = open_pos_list
-        deployed = sum(float(p.get("amount", p.get("qty", 0) * p.get("entry_price", 0))) for p in open_pos_list)
-        ledger["deployed_cash"] = round(deployed, 2)
-        ledger["free_cash"] = round(starting_cap - deployed + ledger.get("realized_pnl", 0.0), 2)
-        ledger["last_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
-
-        with open(LEDGER_PATH, "w", encoding="utf-8") as f:
-            json.dump(ledger, f, indent=2)
-    except Exception as e:
-        print(f"[LEDGER ERROR] op={action}: {e}")
+    # Fallback to local SQLite ticks DB
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=3)
+        cur = conn.cursor()
+        cur.execute("SELECT close FROM ticks WHERE symbol = ? ORDER BY timestamp DESC LIMIT 1", (symbol,))
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            return float(row[0])
+    except Exception:
+        pass
+    return None
 
 # -------------------------------------------------------------------------
 # MAIN MULTI-SYMBOL TRADING LOOP
@@ -374,12 +337,19 @@ def run_multi_symbol_trader():
 
     capital = float(cfg.get("budget", 1000000.0))
     flat_by = cfg.get("flat_by", "15:20")
+    no_entries_after = cfg.get("no_entries_after", flat_by)
+
     risk_engine = RiskEngine(cfg)
     strategy_engine = StrategyEngine(cfg)
     broker_adapter = BrokerAdapter(cfg)
+    order_manager = OrderManager()
+    cost_model = CostModel(cfg)
+
+    # Initial reconcile check
+    reconcile_ledger(auto_repair=True)
 
     print("=" * 75)
-    print("[START] MULTI-SYMBOL LIVE PAPER TRADER (Unified Confluence & Completed-Candle Engine)")
+    print("[START] MULTI-SYMBOL LIVE PAPER TRADER (Production-Grade Audit & OrderManager Active)")
     print(f"[CONFIG] Capital: Rs {capital:,.2f} | Flat By: {flat_by} | Paper: {cfg.get('paper', True)}")
     print("Watchlist: " + ", ".join([w["symbol"] for w in WATCHLIST]))
     print("=" * 75)
@@ -391,12 +361,12 @@ def run_multi_symbol_trader():
         "🚀 <b>Multi-Stock Day Trader Bot LIVE!</b>\n"
         f"📋 <b>Watchlist:</b> <code>JPL, TCS, RELIANCE, INFY, HDFCBANK</code>\n"
         f"💰 <b>Paper Capital:</b> ₹{capital:,.2f}\n"
-        "⚡ <b>Engine:</b> Strict Completed Candles + Real Confluence + Broker Boundary Active\n"
-        "💾 <b>Tick Storage:</b> SQLite DB (Idempotent UNIQUE constraint active).\n"
+        "⚡ <b>Engine:</b> OrderManager State Machine + Completed Candles + CostModel Active\n"
+        "💾 <b>Tick Storage:</b> SQLite DB with unique constraint idempotent insertion.\n"
         "📝 Real-time CSV Audit & Telegram Alerts Connected."
     )
 
-    # 1. Recover active open positions from ledger.json across restarts
+    # 1. Recover active open positions from OrderManager and ledger.json
     open_positions = {}
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
     trades_today = []
@@ -407,6 +377,7 @@ def run_multi_symbol_trader():
                 saved_ledger = json.load(f)
                 for p in saved_ledger.get("open_positions", []):
                     open_positions[p["symbol"]] = {
+                        "id": p.get("id"),
                         "symbol": p["symbol"],
                         "side": p.get("side", "BUY"),
                         "entry_time": p.get("entry_time", "N/A"),
@@ -415,7 +386,6 @@ def run_multi_symbol_trader():
                         "target_price": float(p.get("target_price", p["entry_price"] * 1.01)),
                         "quantity": int(p.get("qty", p.get("quantity", 0)))
                     }
-                # Restore today's executed trades to persist daily risk limits across restarts
                 for t in saved_ledger.get("trade_history", []):
                     if t.get("date") == today_str or t.get("exit_date") == today_str:
                         trades_today.append(t)
@@ -440,33 +410,56 @@ def run_multi_symbol_trader():
                 time.sleep(30)
                 continue
 
-            # Check Session Cutoff (flat_by): Square off any open positions at cutoff
+            # Check Session Cutoff (flat_by): Square off any open positions at real market quote
             if current_time_str >= flat_by and open_positions:
-                print(f"[SESSION CUTOFF] Reached flat_by ({flat_by}). Auto squaring off all {len(open_positions)} open positions...")
+                print(f"[SESSION CUTOFF] Reached flat_by ({flat_by}). Executing genuine square-off for {len(open_positions)} open positions...")
                 for sym in list(open_positions.keys()):
                     pos = open_positions.pop(sym, None)
                     if not pos:
                         continue
-                    exit_price = pos["entry_price"]
-                    pnl = 0.0
-                    trade_rec = {
-                        "symbol": sym, "side": pos["side"], "entry_time": pos["entry_time"],
-                        "exit_time": current_time_str, "entry_price": pos["entry_price"],
-                        "exit_price": exit_price, "qty": pos["quantity"], "pnl": pnl,
-                        "reason": f"Session Cutoff (flat_by {flat_by} reached)"
-                    }
-                    trades_today.append(trade_rec)
-                    update_ledger("EXIT", trade_rec)
+
+                    # Find token and exchange
+                    item_cfg = next((w for w in WATCHLIST if w["symbol"] == sym), {"token": "", "exchange": "NSE"})
+                    real_exit_price = fetch_exit_quote(api, sym, item_cfg["token"], item_cfg["exchange"], today_str, current_time_str)
+
+                    if real_exit_price is None or real_exit_price <= 0:
+                        # Mark unresolved, do not invent zero P&L
+                        print(f"[ERROR] Could not obtain fresh exit quote for {sym}. Marking position unresolved.")
+                        continue
+
+                    # Calculate costs and P&L accurately
+                    roundtrip = cost_model.calculate_roundtrip_cost(pos["side"], pos["entry_price"], real_exit_price, pos["quantity"], item_cfg["exchange"])
+                    gross_pnl = roundtrip["gross_pnl"]
+                    fees = roundtrip["total_costs"]
+                    net_pnl = roundtrip["net_pnl"]
+                    exit_reason = f"Simulated EOD Square-Off (flat_by {flat_by} reached)"
+
+                    # Persist via OrderManager
+                    exit_record = order_manager.record_position_exit(sym, real_exit_price, exit_reason, fees=fees)
+                    if not exit_record:
+                        # Fallback record
+                        exit_record = {
+                            "symbol": sym, "side": pos["side"], "entry_time": pos["entry_time"],
+                            "exit_time": current_time_str, "entry_price": pos["entry_price"],
+                            "exit_price": real_exit_price, "qty": pos["quantity"],
+                            "gross_pnl": gross_pnl, "fees": fees, "pnl": net_pnl, "reason": exit_reason,
+                            "date": today_str, "exit_date": today_str
+                        }
+
+                    trades_today.append(exit_record)
+                    capital += net_pnl
+
                     try:
                         telegram_bot.send_exit_alert({
                             "symbol": sym, "qty": pos["quantity"], "entry_price": pos["entry_price"],
-                            "exit_price": exit_price, "peak_price": exit_price,
-                            "reason": trade_rec["reason"], "free_cash": capital,
-                            "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": "NSE"
+                            "exit_price": real_exit_price, "peak_price": real_exit_price,
+                            "reason": exit_reason, "free_cash": capital,
+                            "realized_pnl": sum(t.get("pnl", 0.0) for t in trades_today), "currency": "INR", "exchange": item_cfg["exchange"]
                         })
                     except Exception as te:
                         print(f"[TELEGRAM ALERT ERROR] {te}")
-                    print(f"[SQUARE-OFF EXECUTED] {pos['side']} {sym} @ Rs {exit_price} | Reason: {trade_rec['reason']}")
+
+                    print(f"[SQUARE-OFF EXECUTED] {pos['side']} {sym} @ Rs {real_exit_price:.2f} | Gross PnL: Rs {gross_pnl:+,.2f} | Fees: Rs {fees:.2f} | Net PnL: Rs {net_pnl:+,.2f}")
 
             if current_time_str >= "15:25":
                 print(f"[MARKET CLOSED] End of session: {current_time_str}")
@@ -493,7 +486,7 @@ def run_multi_symbol_trader():
                         time.sleep(1.5)
                         continue
 
-                    # Filter only strictly completed candles (drops the currently forming minute)
+                    # Filter only strictly completed candles
                     completed_bars = filter_completed_candles(resp["data"], current_time_str)
                     if len(completed_bars) < 5:
                         time.sleep(1.5)
@@ -519,11 +512,10 @@ def run_multi_symbol_trader():
 
                     print(f"[{bar_time}] {sym:10s} Close: Rs {c:8.2f} | H: {h:8.2f} | L: {l:8.2f} [COMPLETED BAR]")
 
-                    # Indicators calculated on completed bars
                     st_data = indicators.calculate_supertrend(highs, lows, closes, 10, 3.0)
                     st_dir = st_data["direction"][-1] if (st_data and "direction" in st_data and len(st_data["direction"]) > 0) else 0
 
-                    # 1. Manage Open Position for this Symbol (with conservative exits & gap handling)
+                    # 1. Manage Open Position for this Symbol
                     if sym in open_positions:
                         pos = open_positions[sym]
                         exit_trade, exit_price, exit_reason = evaluate_position_exit(
@@ -534,32 +526,40 @@ def run_multi_symbol_trader():
                             pos = open_positions.pop(sym, None)
                             if not pos:
                                 continue
-                            entry_p = pos["entry_price"]
-                            side = pos["side"]
-                            pnl = round((exit_price - entry_p) * pos["quantity"], 2) if side == "BUY" else round((entry_p - exit_price) * pos["quantity"], 2)
-                            capital += pnl
-                            trade_rec = {
-                                "symbol": sym, "side": side, "entry_time": pos["entry_time"],
-                                "exit_time": bar_time, "entry_price": entry_p, "exit_price": exit_price,
-                                "qty": pos["quantity"], "pnl": pnl, "reason": exit_reason
-                            }
-                            trades_today.append(trade_rec)
-                            update_ledger("EXIT", trade_rec)
+
+                            roundtrip = cost_model.calculate_roundtrip_cost(pos["side"], pos["entry_price"], exit_price, pos["quantity"], exch)
+                            gross_pnl = roundtrip["gross_pnl"]
+                            fees = roundtrip["total_costs"]
+                            net_pnl = roundtrip["net_pnl"]
+                            capital += net_pnl
+
+                            # Record via OrderManager
+                            exit_record = order_manager.record_position_exit(sym, exit_price, exit_reason, fees=fees)
+                            if not exit_record:
+                                exit_record = {
+                                    "symbol": sym, "side": pos["side"], "entry_time": pos["entry_time"],
+                                    "exit_time": bar_time, "entry_price": pos["entry_price"],
+                                    "exit_price": exit_price, "qty": pos["quantity"],
+                                    "gross_pnl": gross_pnl, "fees": fees, "pnl": net_pnl,
+                                    "reason": exit_reason, "date": today_str, "exit_date": today_str
+                                }
+
+                            trades_today.append(exit_record)
 
                             try:
                                 telegram_bot.send_exit_alert({
-                                    "symbol": sym, "qty": pos["quantity"], "entry_price": entry_p,
-                                    "exit_price": exit_price, "peak_price": max(entry_p, exit_price),
+                                    "symbol": sym, "qty": pos["quantity"], "entry_price": pos["entry_price"],
+                                    "exit_price": exit_price, "peak_price": max(pos["entry_price"], exit_price),
                                     "reason": exit_reason, "free_cash": capital,
-                                    "realized_pnl": sum(t["pnl"] for t in trades_today), "currency": "INR", "exchange": exch
+                                    "realized_pnl": sum(t.get("pnl", 0.0) for t in trades_today), "currency": "INR", "exchange": exch
                                 })
                             except Exception as te:
                                 print(f"[TELEGRAM ALERT ERROR] {te}")
-                            print(f"[EXIT EXECUTED] {side} {sym} @ Rs {exit_price} | PnL: Rs {pnl:+,.2f} | Reason: {exit_reason}")
+
+                            print(f"[EXIT EXECUTED] {pos['side']} {sym} @ Rs {exit_price:.2f} | Gross: Rs {gross_pnl:+,.2f} | Fees: Rs {fees:.2f} | Net: Rs {net_pnl:+,.2f} | Reason: {exit_reason}")
                             continue
 
                     # 2. Check Pending Signal Confirmation for this Symbol
-                    # Evaluates the subsequent completed confirmation candle before expiring
                     if sym in pending_signals:
                         ps = pending_signals[sym]
                         sig_time = ps.get("signal_time")
@@ -572,13 +572,21 @@ def run_multi_symbol_trader():
                             is_confirmed = True
 
                         if is_confirmed and bar_time != sig_time:
-                            # Confirmed by distinct subsequent completed candle
                             side = ps["side"]
                             est_sl = ps["stop_loss"]
                             risk_pts = abs(c - est_sl)
                             est_tgt = round(c + (risk_pts * 1.5) if side == "BUY" else c - (risk_pts * 1.5), 2)
+                            sig_id = ps.get("signal_id", f"SIG-{sym}-{side}-{sig_time}")
 
-                            # Central Risk Gate Evaluation from Ledger
+                            # 2a. Atomic admission check via OrderManager
+                            can_admit, admit_reason = order_manager.can_admit_order(sym, signal_id=sig_id)
+                            if not can_admit:
+                                print(f"[ORDER_MANAGER BLOCKED] {sym}: {admit_reason}")
+                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "REJECTED_BY_ORDER_MANAGER", admit_reason, trade_taken=False)
+                                del pending_signals[sym]
+                                continue
+
+                            # 2b. Central Risk Gate Evaluation
                             ledger_data = {}
                             if os.path.exists(LEDGER_PATH):
                                 try:
@@ -600,14 +608,36 @@ def run_multi_symbol_trader():
                             if risk_check["passed"]:
                                 qty = risk_check["quantity"]
 
-                                # Safe Order Routing via BrokerAdapter
+                                # 2c. Atomic order creation in OrderManager (State: CREATED)
+                                order_record = order_manager.create_order(
+                                    symbol=sym, side=side, quantity=qty, price=c,
+                                    stop_loss=est_sl, target_price=est_tgt,
+                                    signal_id=sig_id, strategy_name=ps.get("strategy_name")
+                                )
+
+                                if not order_record.get("success"):
+                                    print(f"[ORDER CREATION BLOCKED] {sym}: {order_record.get('reason')}")
+                                    del pending_signals[sym]
+                                    continue
+
+                                order_id = order_record["order_id"]
+
+                                # Transition state to SUBMITTED
+                                order_manager.update_order_status(order_id, OrderState.SUBMITTED)
+
+                                # 2d. Safe Order Routing via BrokerAdapter (Paper Mode Guaranteed)
                                 order_res = broker_adapter.place_order(sym, side, qty, c)
 
+                                # 2e. Simulated Fill & Position Creation (State: FILLED)
+                                fill_res = order_manager.record_simulated_fill(order_id, fill_price=c, fill_qty=qty)
+
                                 open_positions[sym] = {
+                                    "id": fill_res["position_id"],
                                     "symbol": sym, "side": side, "entry_time": bar_time,
                                     "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
                                 }
-                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c}", trade_taken=True)
+
+                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c} [Order {order_id}]", trade_taken=True)
                                 
                                 fresh_free_cash = float(ledger_data.get("free_cash", capital)) - (qty * c)
                                 telegram_bot.send_trade_alert({
@@ -615,8 +645,8 @@ def run_multi_symbol_trader():
                                     "currency": "INR", "exchange": exch, "free_cash": fresh_free_cash,
                                     "strategy": f"{ps.get('strategy_name', 'Unified Engine')} ({ps.get('setup_tag', 'Breakout')})"
                                 })
-                                update_ledger("ENTRY", open_positions[sym])
-                                print(f"[ENTRY EXECUTED] {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_res.get('order_id')}")
+
+                                print(f"[ENTRY EXECUTED] {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_id} | PosId: {fill_res['position_id']}")
                                 del pending_signals[sym]
                                 continue
                             else:
@@ -626,7 +656,7 @@ def run_multi_symbol_trader():
                                 del pending_signals[sym]
                                 continue
 
-                        # Expiry condition: check if confirmation window has elapsed
+                        # Expiry condition
                         sig_bar_count = ps.get("signal_idx", 0) + 1
                         window_candles = int(cfg.get("confirmation_window_candles", 2))
                         if current_candle_count > sig_bar_count + window_candles:
@@ -645,8 +675,8 @@ def run_multi_symbol_trader():
                             })
                             del pending_signals[sym]
 
-                    # 3. Detect New Signal Candle via Unified Strategy Engine
-                    if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time <= "15:00":
+                    # 3. Detect New Signal Candle (Stop admitting if >= no_entries_after)
+                    if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time < no_entries_after:
                         bars_dict = {
                             "timestamp": [b[0] for b in completed_bars],
                             "open": opens, "high": highs, "low": lows, "close": closes, "volume": volumes
@@ -659,29 +689,34 @@ def run_multi_symbol_trader():
                             sl_level = sig.get("stop_loss", l if side == "BUY" else h)
                             strat_title = sig.get("strategy_name", "UNIFIED_STRATEGY")
                             desc = sig.get("setup_description", "Setup Triggered")
+                            sig_id = f"SIG-{sym}-{side}-{today_str.replace('-', '')}-{bar_time.replace(':', '')}"
 
-                            pending_signals[sym] = {
-                                "side": side,
-                                "signal_time": bar_time,
-                                "signal_idx": len(completed_bars) - 1,
-                                "trigger_level": trigger,
-                                "stop_loss": sl_level,
-                                "spot": c,
-                                "strategy_name": strat_title,
-                                "setup_tag": strat_title
-                            }
-                            log_signal_to_csv(side, sym, sym, c, trigger, "SIGNAL_GENERATED", f"{strat_title} ({desc})", trade_taken=False)
-                            telegram_bot.send_signal_alert({
-                                "symbol": sym, "exchange": exch, "side": f"{side} ({strat_title})",
-                                "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
-                                "strategy_name": strat_title, "candle_time": bar_time
-                            })
-                            print(f"[STAGE 1 SIGNAL] [{bar_time}] {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
+                            # Pre-check admission before creating pending signal
+                            can_admit, _ = order_manager.can_admit_order(sym, signal_id=sig_id)
+                            if can_admit:
+                                pending_signals[sym] = {
+                                    "signal_id": sig_id,
+                                    "side": side,
+                                    "signal_time": bar_time,
+                                    "signal_idx": len(completed_bars) - 1,
+                                    "trigger_level": trigger,
+                                    "stop_loss": sl_level,
+                                    "spot": c,
+                                    "strategy_name": strat_title,
+                                    "setup_tag": strat_title
+                                }
+                                log_signal_to_csv(side, sym, sym, c, trigger, "SIGNAL_GENERATED", f"{strat_title} ({desc})", trade_taken=False)
+                                telegram_bot.send_signal_alert({
+                                    "symbol": sym, "exchange": exch, "side": f"{side} ({strat_title})",
+                                    "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
+                                    "strategy_name": strat_title, "candle_time": bar_time
+                                })
+                                print(f"[STAGE 1 SIGNAL] [{bar_time}] {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
 
                 except Exception as inner_e:
                     print(f"[PROCESSING ERROR] symbol={sym} time={current_time_str} error={type(inner_e).__name__}: {inner_e}")
 
-                time.sleep(1.8) # Respect SmartAPI rate limit (~1 req / 1.5s)
+                time.sleep(1.8)
 
             time.sleep(4)
 

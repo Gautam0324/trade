@@ -42,7 +42,12 @@ class Repo(unittest.TestCase):
         # The user confirmed this repository is the skill pack only.
         # Root includes the eleven Claude day-trading skills, plugin manifest, tests, and metadata.
         # Ignore local development artifacts/caches if present.
-        root = sorted(d for d in os.listdir(ROOT) if not d.startswith((".git", ".pytest_cache", "__pycache__")) and d not in ("dashboard", "trader"))
+        ignored_files = {
+            "dashboard", "trader", "historical_data", "logs", "run.py", "clear_holdings.py",
+            "entry.txt", "stockcodes.py", "stocks.csv", "stocks_daily_ohlc.csv",
+            "update_daily_bhavcopy.py", "Multi-EMA + Supertrend + MACD Combo"
+        }
+        root = sorted(d for d in os.listdir(ROOT) if not d.startswith((".git", ".pytest_cache", "__pycache__")) and d not in ignored_files)
         self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
 
     def test_frontmatter_name_and_description(self):

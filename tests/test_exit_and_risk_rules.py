@@ -77,12 +77,12 @@ class TestExitAndRiskRules(unittest.TestCase):
         }
 
         # 1. Hard initial stop hit
-        res_stop = pos_mgr.evaluate_exit(pos, current_price=89.0)
+        res_stop = pos_mgr.evaluate_exit(pos, current_price=89.0, current_time="10:00")
         self.assertEqual(res_stop["action"], "FULL_EXIT")
         self.assertIn("Stop-loss hit", res_stop["reason"])
 
         # 2. +1R Partial Profit Booking (Price 110.0)
-        res_partial = pos_mgr.evaluate_exit(pos, current_price=110.0)
+        res_partial = pos_mgr.evaluate_exit(pos, current_price=110.0, current_time="10:00")
         self.assertEqual(res_partial["action"], "PARTIAL_EXIT")
         self.assertEqual(res_partial["exit_qty"], 5)
         # 3. Breakeven move
@@ -90,13 +90,13 @@ class TestExitAndRiskRules(unittest.TestCase):
 
         # 4. ATR Trail
         updated_pos = res_partial["updated_position"]
-        res_atr = pos_mgr.evaluate_exit(updated_pos, current_price=115.0, current_atr=2.0)
+        res_atr = pos_mgr.evaluate_exit(updated_pos, current_price=115.0, current_atr=2.0, current_time="10:00")
         # Peak = 115, stop = 115 - 1.5 * 2 = 112
         self.assertEqual(res_atr["updated_position"]["current_stop"], 112.0)
 
         # 5. Peak Reversal (0.2% drop from peak 120 -> below 119.76)
         updated_pos["peak_price"] = 120.0
-        res_reversal = pos_mgr.evaluate_exit(updated_pos, current_price=119.5)
+        res_reversal = pos_mgr.evaluate_exit(updated_pos, current_price=119.5, current_time="10:00")
         self.assertEqual(res_reversal["action"], "FULL_EXIT")
         self.assertIn("Peak reversal exit", res_reversal["reason"])
 

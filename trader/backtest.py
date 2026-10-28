@@ -1,53 +1,102 @@
 #!/usr/bin/env python3
 """
-Backtesting Framework for Multi-Strategy Indian Equities Trading System.
+Credible Historical Backtesting Engine for Indian Equities.
 Features:
-- Deterministic event-driven simulation bar-by-bar
-- Conservative fill assumption: no intrabar lookahead
-- Realistic transaction costs: 0.05% brokerage/STT/turnover charges
-- Tracks initial stop-loss, ATR trailing stop, +1R partial profit booking (50%)
-- Compares each individual strategy (EMA_CHANNEL, VWAP_PULLBACK, ORB, TREND_MOMENTUM, CONFLUENCE)
-- Comprehensive performance report:
-  Net P&L, Win Rate, Profit Factor, Max Drawdown, Total Trades, Average R-multiple
+- Loads and validates genuine NSE 1-minute OHLCV historical CSV data
+- Eliminates look-ahead bias via strict sequential bar slicing
+- Conservative execution assumptions:
+  * Gap handling: fill at candle open if gapped beyond stop level
+  * Stop/Target ambiguity: stop-loss hit first if both levels touched in the same bar
+- Precise statutory & regulatory transaction costs via CostModel
+- Supports both Long and Short execution
+- Generates institutional performance metrics & exports trade logs
 """
 
-import datetime
-import math
-from pathlib import Path
+import os
 import sys
+import argparse
+import datetime
+import pandas as pd
+from pathlib import Path
 
 TRADER_DIR = Path(__file__).resolve().parent
+BASE_DIR = TRADER_DIR.parent
 sys.path.insert(0, str(TRADER_DIR))
 
 import indicators
 from strategy_engine import StrategyEngine
 from risk_engine import RiskEngine
-from exit_engine import PositionManager
+from cost_model import CostModel
 
 class BacktestEngine:
-    def __init__(self, starting_capital=100000.0, cost_pct=0.0005):
+    def __init__(self, starting_capital=1000000.0, config=None):
+        self.config = config or {}
         self.starting_capital = starting_capital
-        self.cost_pct = cost_pct  # 0.05% round-trip transaction costs
+        self.cost_model = CostModel(self.config)
 
-    def run_strategy(self, bars_dict, strategy_name="EMA_CHANNEL", or_high=None, or_low=None):
+    @staticmethod
+    def load_historical_csv(filepath, max_bars=None):
         """
-        Runs backtest over historical bar sequence for a single instrument.
-        bars_dict: { 'open': [], 'high': [], 'low': [], 'close': [], 'volume': [] }
+        Loads and validates genuine 1-minute historical OHLCV data from CSV.
         """
-        closes = bars_dict.get("close", [])
-        highs = bars_dict.get("high", [])
-        lows = bars_dict.get("low", [])
-        opens = bars_dict.get("open", [])
-        volumes = bars_dict.get("volume", [100000] * len(closes))
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"Historical data file not found: {filepath}")
+
+        df = pd.read_csv(filepath)
+        required_cols = {"timestamp", "open", "high", "low", "close"}
+        if not required_cols.issubset(set(df.columns)):
+            raise ValueError(f"CSV missing required columns {required_cols}. Found: {df.columns.tolist()}")
+
+        df["open"] = pd.to_numeric(df["open"], errors="coerce")
+        df["high"] = pd.to_numeric(df["high"], errors="coerce")
+        df["low"] = pd.to_numeric(df["low"], errors="coerce")
+        df["close"] = pd.to_numeric(df["close"], errors="coerce")
+        if "volume" in df.columns:
+            df["volume"] = pd.to_numeric(df["volume"], errors="coerce").fillna(1000.0)
+        else:
+            df["volume"] = 1000.0
+
+        # Drop invalid rows
+        df = df.dropna(subset=["open", "high", "low", "close"]).reset_index(drop=True)
+
+        # Validate OHLC logic
+        df = df[(df["high"] >= df["low"]) & (df["high"] >= df["open"]) & (df["high"] >= df["close"]) & (df["low"] <= df["open"]) & (df["low"] <= df["close"])]
+
+        if max_bars and len(df) > max_bars:
+            df = df.iloc[-max_bars:].reset_index(drop=True)
+
+        return {
+            "timestamp": df["timestamp"].tolist(),
+            "open": df["open"].tolist(),
+            "high": df["high"].tolist(),
+            "low": df["low"].tolist(),
+            "close": df["close"].tolist(),
+            "volume": df["volume"].tolist()
+        }
+
+    def run_strategy(self, bars_dict, strategy_name="EMA_CHANNEL", symbol="EQUITY"):
+        """Alias for backward compatibility with existing tests."""
+        return self.run(bars_dict, strategy_name=strategy_name, symbol=symbol)
+
+    def run(self, bars_dict, strategy_name="EMA_CHANNEL", symbol="EQUITY"):
+        """
+        Executes strictly sequential event-driven backtest.
+        """
+        closes = bars_dict["close"]
+        highs = bars_dict["high"]
+        lows = bars_dict["low"]
+        opens = bars_dict["open"]
+        volumes = bars_dict.get("volume", [1000.0] * len(closes))
+        timestamps = bars_dict.get("timestamp", [f"T-{i}" for i in range(len(closes))])
 
         n_bars = len(closes)
         if n_bars < 40:
-            return {"error": "Insufficient bars for backtest"}
+            return {"error": "Insufficient bars for backtest (minimum 40 bars required)"}
 
-        cfg = {"strategy_mode": strategy_name}
+        cfg = dict(self.config)
+        cfg["strategy_mode"] = strategy_name
         strat_eng = StrategyEngine(cfg)
         risk_eng = RiskEngine({"budget": self.starting_capital})
-        pos_mgr = PositionManager({"flat_by": "15:20"})
 
         cash = self.starting_capital
         peak_equity = self.starting_capital
@@ -56,123 +105,121 @@ class BacktestEngine:
         open_position = None
         trade_log = []
 
-        # Precompute VWAP & ATR series
-        vwap_series = indicators.calculate_vwap(highs, lows, closes, volumes)
-        atr_series = indicators.calculate_atr(highs, lows, closes, 14)
-        ema5_series = indicators.calculate_ema(closes, 5)
-        ema9_series = indicators.calculate_ema(closes, 9)
-
-        # Iterate bar by bar (no future lookahead)
+        # Sequential bar-by-bar evaluation (zero lookahead)
         for i in range(35, n_bars):
-            cur_open = opens[i]
-            cur_high = highs[i]
-            cur_low = lows[i]
-            cur_close = closes[i]
-            cur_atr = atr_series[i] or (cur_close * 0.01)
-            cur_ema5 = ema5_series[i]
-            cur_ema9 = ema9_series[i]
+            cur_time = timestamps[i]
+            cur_o = opens[i]
+            cur_h = highs[i]
+            cur_l = lows[i]
+            cur_c = closes[i]
 
-            # 1. Manage Active Open Position Exits first
+            # 1. Manage Open Position Exits First
             if open_position is not None:
-                # Conservative fill check: Did low hit stop?
-                cur_stop = open_position.get("current_stop", open_position.get("initial_stop", open_position.get("stop_loss")))
-                if cur_low <= cur_stop:
-                    # Stopped out at stop price (or gap down open)
-                    fill_p = min(cur_open, cur_stop)
-                    qty = open_position["qty"]
-                    invested = qty * open_position["entry_price"]
-                    revenue = qty * fill_p
-                    cost = (invested + revenue) * self.cost_pct
-                    net_pnl = (revenue - invested) - cost
-                    cash += revenue - cost
+                side = open_position["side"]
+                entry_p = open_position["entry_price"]
+                sl_p = open_position["stop_loss"]
+                tgt_p = open_position["target_price"]
+                qty = open_position["qty"]
+
+                exit_trade = False
+                exit_price = cur_c
+                exit_reason = ""
+
+                if side == "BUY":
+                    stop_touched = (cur_l <= sl_p)
+                    target_touched = (cur_h >= tgt_p)
+
+                    # Ambiguity resolution: conservative assumption assumes Stop Loss hit first
+                    if stop_touched and target_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o < sl_p else sl_p
+                        exit_reason = "Stop Loss Hit (Ambiguous Candle)"
+                    elif stop_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o < sl_p else sl_p
+                        exit_reason = "Stop Loss Hit (Gapped)" if cur_o < sl_p else "Stop Loss Hit"
+                    elif target_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o > tgt_p else tgt_p
+                        exit_reason = "Target Hit (+1.5R)"
+
+                elif side == "SELL":
+                    stop_touched = (cur_h >= sl_p)
+                    target_touched = (cur_l <= tgt_p)
+
+                    if stop_touched and target_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o > sl_p else sl_p
+                        exit_reason = "Short Stop Loss Hit (Ambiguous Candle)"
+                    elif stop_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o > sl_p else sl_p
+                        exit_reason = "Short Stop Loss Hit (Gapped)" if cur_o > sl_p else "Short Stop Loss Hit"
+                    elif target_touched:
+                        exit_trade = True
+                        exit_price = cur_o if cur_o < tgt_p else tgt_p
+                        exit_reason = "Short Target Hit (+1.5R)"
+
+                if exit_trade:
+                    # Calculate exact costs via CostModel
+                    cost_info = self.cost_model.calculate_roundtrip_cost(side, entry_p, exit_price, qty)
+                    gross_pnl = cost_info["gross_pnl"]
+                    fees = cost_info["total_costs"]
+                    net_pnl = cost_info["net_pnl"]
+
+                    cash += (qty * exit_price if side == "BUY" else qty * (2 * entry_p - exit_price)) - fees
+
+                    risk_pts = abs(entry_p - sl_p)
+                    r_mult = round((exit_price - entry_p) / risk_pts, 2) if side == "BUY" else round((entry_p - exit_price) / risk_pts, 2)
 
                     trade_log.append({
-                        "entry_price": open_position["entry_price"],
-                        "exit_price": fill_p,
+                        "symbol": symbol,
+                        "side": side,
+                        "entry_time": open_position["entry_time"],
+                        "exit_time": cur_time,
+                        "entry_price": entry_p,
+                        "exit_price": exit_price,
                         "qty": qty,
-                        "pnl": net_pnl,
-                        "reason": "Stop Loss Hit",
-                        "r_multiple": (fill_p - open_position["entry_price"]) / open_position["risk_per_share"]
+                        "gross_pnl": gross_pnl,
+                        "fees": fees,
+                        "net_pnl": net_pnl,
+                        "reason": exit_reason,
+                        "r_multiple": r_mult
                     })
                     open_position = None
-                else:
-                    # Evaluate dynamic exits (Partial profit, ATR trailing, EMA drop)
-                    exit_res = pos_mgr.evaluate_exit(
-                        open_position,
-                        current_price=cur_close,
-                        current_atr=cur_atr,
-                        current_ema5=cur_ema5,
-                        current_ema9=cur_ema9
-                    )
-                    open_position = exit_res["updated_position"]
 
-                    if exit_res["action"] == "PARTIAL_EXIT":
-                        p_qty = exit_res["exit_qty"]
-                        inv_portion = p_qty * open_position["entry_price"]
-                        rev_portion = p_qty * cur_close
-                        cost = (inv_portion + rev_portion) * self.cost_pct
-                        net_pnl = (rev_portion - inv_portion) - cost
-                        cash += rev_portion - cost
-
-                        trade_log.append({
-                            "entry_price": open_position["entry_price"],
-                            "exit_price": cur_close,
-                            "qty": p_qty,
-                            "pnl": net_pnl,
-                            "reason": exit_res["reason"],
-                            "r_multiple": 1.0
-                        })
-                    elif exit_res["action"] == "FULL_EXIT":
-                        f_qty = exit_res["exit_qty"]
-                        inv_tot = f_qty * open_position["entry_price"]
-                        rev_tot = f_qty * cur_close
-                        cost = (inv_tot + rev_tot) * self.cost_pct
-                        net_pnl = (rev_tot - inv_tot) - cost
-                        cash += rev_tot - cost
-
-                        trade_log.append({
-                            "entry_price": open_position["entry_price"],
-                            "exit_price": cur_close,
-                            "qty": f_qty,
-                            "pnl": net_pnl,
-                            "reason": exit_res["reason"],
-                            "r_multiple": (cur_close - open_position["entry_price"]) / max(0.01, open_position["risk_per_share"])
-                        })
-                        open_position = None
-
-            # Track drawdown
-            current_equity = cash + (open_position["qty"] * cur_close if open_position else 0.0)
+            # Track equity curve & drawdown
+            current_equity = cash + (open_position["qty"] * cur_c if open_position else 0.0)
             if current_equity > peak_equity:
                 peak_equity = current_equity
-            dd = (peak_equity - current_equity) / peak_equity
+            dd = (peak_equity - current_equity) / peak_equity if peak_equity > 0 else 0.0
             if dd > max_drawdown:
                 max_drawdown = dd
 
             # 2. Check for New Entry if flat
             if open_position is None:
-                # Slice historical bars up to current candle (no lookahead)
                 sliced_bars = {
+                    "timestamp": timestamps[:i+1],
                     "open": opens[:i+1],
                     "high": highs[:i+1],
                     "low": lows[:i+1],
                     "close": closes[:i+1],
                     "volume": volumes[:i+1]
                 }
-                signal_payload = strat_eng.evaluate_all(
-                    symbol="TEST",
-                    bars=sliced_bars,
-                    or_high=or_high,
-                    or_low=or_low,
-                    vwap_series=vwap_series[:i+1]
-                )
+                sig = strat_eng.evaluate(symbol, sliced_bars)
 
-                if signal_payload and signal_payload.get("signal") == "BUY":
+                if sig and sig.get("direction") in ("LONG", "SHORT"):
+                    side = "BUY" if sig["direction"] == "LONG" else "SELL"
+                    entry_p = cur_c
+                    sl_p = sig.get("stop_loss", cur_l if side == "BUY" else cur_h)
+                    tgt_p = sig.get("target_price", round(cur_c + 1.5 * abs(cur_c - sl_p), 2) if side == "BUY" else round(cur_c - 1.5 * abs(cur_c - sl_p), 2))
+
                     risk_eval = risk_eng.evaluate_order_risk(
-                        symbol="TEST",
-                        side="BUY",
-                        entry_price=signal_payload["entry_reference_price"],
-                        stop_loss=signal_payload["stop_loss"],
-                        target_price=signal_payload["target_price"],
+                        symbol=symbol,
+                        side=side,
+                        entry_price=entry_p,
+                        stop_loss=sl_p,
+                        target_price=tgt_p,
                         available_cash=cash,
                         daily_realized_loss=min(0.0, cash - self.starting_capital),
                         current_trades_count=len(trade_log),
@@ -181,59 +228,105 @@ class BacktestEngine:
 
                     if risk_eval["passed"] and risk_eval["quantity"] > 0:
                         qty = risk_eval["quantity"]
-                        cost = qty * signal_payload["entry_reference_price"]
-                        cash -= cost
+                        cost_outlay = qty * entry_p
+                        cash -= cost_outlay
                         open_position = {
-                            "symbol": "TEST",
-                            "strategy": signal_payload["strategy_name"],
+                            "symbol": symbol,
+                            "side": side,
+                            "entry_time": cur_time,
+                            "entry_price": entry_p,
+                            "stop_loss": sl_p,
+                            "target_price": tgt_p,
                             "qty": qty,
-                            "entry_price": signal_payload["entry_reference_price"],
-                            "initial_stop": signal_payload["stop_loss"],
-                            "current_stop": signal_payload["stop_loss"],
-                            "risk_per_share": signal_payload["risk_per_share"],
-                            "target_price": signal_payload["target_price"],
-                            "peak_price": signal_payload["entry_reference_price"]
+                            "strategy": sig.get("strategy_name", strategy_name)
                         }
 
-        # Close any lingering position at final close
+        # Square off remaining open position at backtest conclusion
         if open_position is not None:
-            f_qty = open_position["qty"]
-            inv_tot = f_qty * open_position["entry_price"]
-            rev_tot = f_qty * closes[-1]
-            cost = (inv_tot + rev_tot) * self.cost_pct
-            net_pnl = (rev_tot - inv_tot) - cost
-            cash += rev_tot - cost
-            trade_log.append({
-                "entry_price": open_position["entry_price"],
-                "exit_price": closes[-1],
-                "qty": f_qty,
-                "pnl": net_pnl,
-                "reason": "Backtest Final Close",
-                "r_multiple": (closes[-1] - open_position["entry_price"]) / max(0.01, open_position["risk_per_share"])
-            })
+            side = open_position["side"]
+            entry_p = open_position["entry_price"]
+            exit_price = closes[-1]
+            qty = open_position["qty"]
+            cost_info = self.cost_model.calculate_roundtrip_cost(side, entry_p, exit_price, qty)
+            gross_pnl = cost_info["gross_pnl"]
+            fees = cost_info["total_costs"]
+            net_pnl = cost_info["net_pnl"]
 
-        # Calculate performance statistics
-        wins = [t for t in trade_log if t["pnl"] > 0]
-        losses = [t for t in trade_log if t["pnl"] < 0]
-        gross_profit = sum(t["pnl"] for t in wins)
-        gross_loss = abs(sum(t["pnl"] for t in losses))
-        profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else (99.0 if gross_profit > 0 else 0.0)
+            cash += (qty * exit_price if side == "BUY" else qty * (2 * entry_p - exit_price)) - fees
+            trade_log.append({
+                "symbol": symbol,
+                "side": side,
+                "entry_time": open_position["entry_time"],
+                "exit_time": timestamps[-1],
+                "entry_price": entry_p,
+                "exit_price": exit_price,
+                "qty": qty,
+                "gross_pnl": gross_pnl,
+                "fees": fees,
+                "net_pnl": net_pnl,
+                "reason": "Backtest Final Close",
+                "r_multiple": 0.0
+            })
+            open_position = None
+
+        # Statistics computation
+        wins = [t for t in trade_log if t["net_pnl"] > 0]
+        losses = [t for t in trade_log if t["net_pnl"] < 0]
+        be = [t for t in trade_log if t["net_pnl"] == 0]
+        gross_profit = sum(t["gross_pnl"] for t in wins)
+        gross_loss = abs(sum(t["gross_pnl"] for t in losses))
+        total_fees = sum(t["fees"] for t in trade_log)
+        net_profit = sum(t["net_pnl"] for t in trade_log)
+
+        profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else (99.0 if gross_profit > 0 else 1.0)
         win_rate = round((len(wins) / len(trade_log)) * 100, 1) if trade_log else 0.0
-        net_pnl = round(cash - self.starting_capital, 2)
         avg_r = round(sum(t["r_multiple"] for t in trade_log) / len(trade_log), 2) if trade_log else 0.0
 
         return {
+            "symbol": symbol,
             "strategy": strategy_name,
             "starting_capital": self.starting_capital,
             "ending_capital": round(cash, 2),
-            "net_pnl": net_pnl,
-            "roi_pct": round((net_pnl / self.starting_capital) * 100, 2),
+            "gross_pnl": round(gross_profit - gross_loss, 2),
+            "total_costs": round(total_fees, 2),
+            "net_pnl": round(net_profit, 2),
+            "roi_pct": round((net_profit / self.starting_capital) * 100, 2),
             "total_trades": len(trade_log),
             "wins": len(wins),
             "losses": len(losses),
+            "breakeven": len(be),
             "win_rate_pct": win_rate,
             "profit_factor": profit_factor,
             "max_drawdown_pct": round(max_drawdown * 100, 2),
             "average_r": avg_r,
             "trades": trade_log
         }
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Institutional Backtester for Day Trader Pro")
+    parser.add_argument("--csv", type=str, default=str(BASE_DIR / "historical_data" / "3MINDIA_1min.csv"), help="Path to 1-minute historical CSV")
+    parser.add_argument("--strategy", type=str, default="EMA_CHANNEL", help="Strategy to test")
+    parser.add_argument("--max_bars", type=int, default=2000, help="Max bars to evaluate")
+    args = parser.parse_args()
+
+    engine = BacktestEngine(starting_capital=1000000.0)
+    print(f"Loading historical CSV: {args.csv}...")
+    bars = engine.load_historical_csv(args.csv, max_bars=args.max_bars)
+    sym = Path(args.csv).stem.replace("_1min", "")
+    print(f"Running backtest for {sym} using strategy {args.strategy} over {len(bars['close'])} completed bars...")
+    res = engine.run(bars, strategy_name=args.strategy, symbol=sym)
+
+    print("\n" + "=" * 60)
+    print(f"BACKTEST RESULTS: {sym} | Strategy: {args.strategy}")
+    print("=" * 60)
+    print(f"Starting Capital:     Rs {res['starting_capital']:,.2f}")
+    print(f"Ending Capital:       Rs {res['ending_capital']:,.2f}")
+    print(f"Gross P&L:            Rs {res['gross_pnl']:+,.2f}")
+    print(f"Total Fees & Taxes:   Rs {res['total_costs']:,.2f}")
+    print(f"Net Realized P&L:     Rs {res['net_pnl']:+,.2f} ({res['roi_pct']:+.2f}%)")
+    print(f"Total Trades:         {res['total_trades']} (Wins: {res['wins']} | Losses: {res['losses']} | BE: {res['breakeven']})")
+    print(f"Win Rate:             {res['win_rate_pct']}%")
+    print(f"Profit Factor:        {res['profit_factor']}")
+    print(f"Max Drawdown:         {res['max_drawdown_pct']}%")
+    print(f"Average R-Multiple:   {res['average_r']}")
+    print("=" * 60)

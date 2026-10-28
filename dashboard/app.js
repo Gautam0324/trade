@@ -144,8 +144,14 @@ async function loadOverviewData() {
     document.getElementById('kpiOpenPositionsSub').textContent = `${kpis.open_positions_count || 0} Active Positions`;
     
     const rPnlEl = document.getElementById('kpiRealizedPnl');
-    rPnlEl.textContent = formatSignedINR(kpis.realized_pnl);
-    rPnlEl.className = `kpi-value ${kpis.realized_pnl >= 0 ? 'green' : 'red'}`;
+    const todayPnlVal = kpis.today_realized_pnl !== undefined ? kpis.today_realized_pnl : kpis.realized_pnl;
+    rPnlEl.textContent = formatSignedINR(todayPnlVal);
+    rPnlEl.className = `kpi-value ${todayPnlVal >= 0 ? 'green' : 'red'}`;
+
+    const rPnlSub = document.getElementById('kpiRealizedPnlSub');
+    if (rPnlSub) {
+      rPnlSub.textContent = `Cumulative: ${formatSignedINR(kpis.realized_pnl)}`;
+    }
 
     const uPnlEl = document.getElementById('kpiUnrealizedPnl');
     uPnlEl.textContent = formatSignedINR(kpis.unrealized_pnl);
@@ -165,7 +171,9 @@ async function loadOverviewData() {
     document.getElementById('kpiLossUtil').textContent = `${kpis.daily_loss_utilization_pct}%`;
     document.getElementById('kpiMaxLossSub').textContent = `Limit: ${formatINR(kpis.max_daily_loss)}`;
 
-    document.getElementById('kpiTradeCount').textContent = `${kpis.total_trades_count || 0}`;
+    const tradeCountEl = document.getElementById('kpiTradeCount');
+    const todayTradesVal = kpis.today_trades_count !== undefined ? kpis.today_trades_count : (kpis.total_trades_count || 0);
+    tradeCountEl.textContent = `${todayTradesVal}`;
 
     // Render Equity Chart
     await renderEquityChart();

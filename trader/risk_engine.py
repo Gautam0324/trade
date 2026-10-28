@@ -25,13 +25,16 @@ class RiskEngine:
         self.max_daily_loss = float(self.config.get("max_daily_loss_inr", self.config.get("max_daily_loss_usd", 20000.0)))
         self.max_position_pct = float(self.config.get("max_position_pct", 40.0)) / 100.0
         self.max_trades_per_day = int(self.config.get("max_trades_per_day", 10))
+        self.max_orders_per_day = int(self.config.get("max_orders_per_day", 20))
+        self.cash_buffer_pct = float(self.config.get("cash_buffer_pct", 10.0)) / 100.0
+        self.max_portfolio_exposure_pct = float(self.config.get("max_portfolio_exposure_pct", 80.0)) / 100.0
         self.max_open_positions = int(self.config.get("max_open_positions", 3))
         self.min_reward_risk = float(self.config.get("min_reward_risk", 1.5))
         self.allow_short = bool(self.config.get("allow_short", True))
         self.allow_options = bool(self.config.get("allow_options", False))
         self.paper = bool(self.config.get("paper", True))
         self.include_unrealized_in_daily_loss = bool(self.config.get("include_unrealized_in_daily_loss", True))
-        self.max_order_notional = float(self.config.get("max_order_notional", self.starting_capital * 0.40))
+        self.max_order_notional = float(self.config.get("max_order_notional", self.config.get("max_order_inr", self.starting_capital * 0.40)))
 
         # Slippage & Estimated Brokerage (0.05% round-trip brokerage + taxes)
         self.estimated_cost_pct = float(self.config.get("estimated_cost_pct", 0.05)) / 100.0
@@ -39,22 +42,32 @@ class RiskEngine:
     def evaluate_order_risk(self, symbol, side, entry_price, stop_loss, target_price,
                             available_cash, daily_realized_loss, current_trades_count,
                             current_open_positions_count, unrealized_loss=0.0,
-                            existing_symbols=None):
+                            existing_symbols=None, today_orders_count=0, deployed_cash=0.0):
         """
         Calculates position sizing and validates all safety constraints centrally.
         """
         # 0. Duplicate position check
         if existing_symbols:
-            # Handle list or set or dict
             open_syms = set(existing_symbols.keys() if isinstance(existing_symbols, dict) else existing_symbols)
-            if symbol in open_syms:
-                return {
-                    "passed": False,
-                    "quantity": 0,
-                    "reasons": [f"Duplicate position rejected: {symbol} is already open"]
-                }
+            base_target = symbol.replace(".NS", "").replace(".BO", "").replace("_BSE", "").replace("_NSE", "")
+            for s in open_syms:
+                s_base = s.replace(".NS", "").replace(".BO", "").replace("_BSE", "").replace("_NSE", "")
+                if s == symbol or s_base == base_target:
+                    return {
+                        "passed": False,
+                        "quantity": 0,
+                        "reasons": [f"Duplicate position rejected: {symbol} is already open ({s})"]
+                    }
 
-        # 1. Futures / Options / Derivatives validation
+        # 1. Daily order count limit check
+        if today_orders_count >= self.max_orders_per_day:
+            return {
+                "passed": False,
+                "quantity": 0,
+                "reasons": [f"Maximum daily orders count reached ({today_orders_count}/{self.max_orders_per_day})"]
+            }
+
+        # 2. Futures / Options / Derivatives validation
         sym_upper = symbol.upper()
         # Option contracts have CE / PE at the end (e.g. RELIANCE24OCT1200CE or NIFTY 25000 CE), or contain FUT/FUTURES/OPT
         is_derivative = (
@@ -108,13 +121,24 @@ class RiskEngine:
                 "reasons": [f"Maximum open positions reached ({current_open_positions_count}/{self.max_open_positions})"]
             }
 
-        # 5. Available Cash Check
+        # 5. Available Cash & Buffer Check
         if available_cash <= 0:
             return {
                 "passed": False,
                 "quantity": 0,
-                "reasons": [f"Insufficient available cash: ₹{available_cash:,.2f} <= ₹0.00"]
+                "reasons": [f"Insufficient available cash: ₹{available_cash:,.2f} is non-positive"]
             }
+
+        ref_capital = self.starting_capital if "budget" in self.config else available_cash
+        cash_buffer = ref_capital * self.cash_buffer_pct
+        if available_cash <= cash_buffer:
+            return {
+                "passed": False,
+                "quantity": 0,
+                "reasons": [f"Cash buffer constraint breached: available cash ₹{available_cash:,.2f} is below or equal to required buffer ₹{cash_buffer:,.2f} ({self.cash_buffer_pct*100:.0f}%)"]
+            }
+
+        usable_cash = available_cash - cash_buffer
 
         # 6. Validate stop-loss and target placement
         entry_p = float(entry_price)
@@ -168,8 +192,13 @@ class RiskEngine:
         risk_budget = min(self.max_loss_per_trade, remaining_loss_budget)
 
         risk_quantity = math.floor(risk_budget / risk_per_share)
-        max_position_cash = available_cash * self.max_position_pct
+        max_position_cash = usable_cash * self.max_position_pct
         cash_quantity = math.floor(max_position_cash / entry_p)
+
+        # Portfolio exposure constraint
+        max_exposure = self.starting_capital * self.max_portfolio_exposure_pct
+        remaining_exposure = max(0.0, max_exposure - deployed_cash)
+        exposure_quantity = math.floor(remaining_exposure / entry_p)
 
         # Lot sizing check for options/derivatives
         lot_size = 1
@@ -179,7 +208,7 @@ class RiskEngine:
             elif "NIFTY" in sym_upper:
                 lot_size = 25
 
-        raw_qty = min(risk_quantity, cash_quantity)
+        raw_qty = min(risk_quantity, cash_quantity, exposure_quantity)
         if lot_size > 1:
             quantity = (raw_qty // lot_size) * lot_size
         else:
@@ -245,6 +274,10 @@ class RiskEngine:
 
         existing_symbols = [p.get("symbol") for p in open_positions]
 
+        orders_list = ledger.get("orders", [])
+        today_orders = [o for o in orders_list if str(o.get("created_at", "")).startswith(today_str)]
+        today_orders_count = max(len(today_orders), len(today_trades))
+
         return self.evaluate_order_risk(
             symbol=symbol,
             side=side,
@@ -256,5 +289,7 @@ class RiskEngine:
             current_trades_count=len(today_trades),
             current_open_positions_count=len(open_positions),
             unrealized_loss=min(0.0, unrealized_pnl),
-            existing_symbols=existing_symbols
+            existing_symbols=existing_symbols,
+            today_orders_count=today_orders_count,
+            deployed_cash=deployed_cash
         )
