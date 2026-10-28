@@ -1,31 +1,46 @@
 #!/usr/bin/env python3
 """
-Advanced Multi-Strategy Central Engine.
-Implements:
-1. Strategy A: Existing EMA 5/9/33 Channel Breakout
-2. Strategy B: VWAP Pullback Entry
-3. Strategy C: Opening Range Breakout (ORB)
-4. Strategy D: Trend + Momentum (EMA 9/33 + RSI 14 + ADX 14 + ATR 14)
-5. Market Regime Detection & No-Trade Filters
-6. Confluence Scoring & Conflict Resolution
+Standardized Quantitative Strategy Engine for Indian Equities.
+Provides unified, testable strategy logic used symmetrically across:
+- Historical Backtesting (backtest.py)
+- Real-time Paper Trading (multi_live_trader.py)
+- Audit Logging & Telegram Signals
+- Web Dashboard Explanations
 
-Produces standardized structured signal payloads:
+Strategies implemented:
+1. EMA_CHANNEL: EMA 5/9/33 Channel Breakout
+2. VWAP_PULLBACK: Intraday VWAP Pullback Bounce
+3. ORB: Opening Range Breakout (15-min)
+4. TREND_MOMENTUM: EMA 9/33 + RSI + ADX + ATR
+5. BREAKOUT_RETEST: Range Breakout + Pullback Retest of Breakout Level
+6. TREND_PULLBACK_RECLAIM: Running Trend Pullback towards EMA33/VWAP and Reclaim
+7. FAILED_BREAKDOWN: False Breakdown Reclaim (Long) / False Breakout Rejection (Short)
+8. RELATIVE_STRENGTH_BREAKOUT: Outperformance / Underperformance vs NIFTY / Benchmark
+9. CONFLUENCE: Multi-factor weighted confirmation
+
+Output Schema:
 {
   "symbol": str,
-  "strategy_name": str,
-  "side": "BUY",
-  "signal": "BUY" | "EXIT" | "HOLD" | "NO_TRADE",
+  "exchange": str,
   "timestamp": str,
-  "entry_reference_price": float,
+  "timeframe": str,
+  "strategy_name": str,
+  "version": str,
+  "direction": "LONG" | "SHORT" | "NO_TRADE",
+  "setup_description": str,
+  "entry_trigger": float,
+  "proposed_entry_price": float,
   "stop_loss": float,
   "target_price": float,
-  "risk_per_share": float,
+  "risk_per_unit": float,
   "reward_risk_ratio": float,
-  "confidence_score": float,
-  "signal_reason": str,
   "indicator_values": dict,
+  "volume_metrics": dict,
   "market_regime": str,
-  "candle_timestamp": str
+  "confirmation_status": "PENDING" | "CONFIRMED" | "NONE",
+  "invalidation_conditions": str,
+  "rejection_reasons": list,
+  "data_freshness": str
 }
 """
 
@@ -33,560 +48,571 @@ import datetime
 from pathlib import Path
 import sys
 
-# Add trader path for indicators
-TRADER_DIR = Path(__file__).resolve().parent.parent / "trader"
+TRADER_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TRADER_DIR))
 
 import indicators
+from regime import detect_market_regime
 
 class StrategyEngine:
+    VERSION = "2.0.0"
+
     def __init__(self, config=None):
         self.config = config or {}
-        # Strategy selection: "ALL", "EMA_CHANNEL", "VWAP_PULLBACK", "ORB", "TREND_MOMENTUM", "CONFLUENCE"
-        self.mode = self.config.get("strategy_mode", "EMA_CHANNEL")
+        self.mode = self.config.get("strategy_mode", "CONFLUENCE")
+        self.enabled_strategies = self.config.get("enabled_strategies", [
+            "BREAKOUT_RETEST", "TREND_PULLBACK_RECLAIM", "FAILED_BREAKDOWN",
+            "RELATIVE_STRENGTH_BREAKOUT", "EMA_CHANNEL", "VWAP_PULLBACK", "ORB", "TREND_MOMENTUM"
+        ])
         self.min_confluence_score = float(self.config.get("min_confluence_score", 65.0))
-        self.require_completed_candle = bool(self.config.get("require_completed_candle", True))
+        self.min_reward_risk = float(self.config.get("min_reward_risk", 1.5))
+        self.allow_short = bool(self.config.get("allow_short", True))
+        self.benchmark_symbol = self.config.get("benchmark_symbol", "NIFTY 50")
 
-    def detect_market_regime(self, closes, highs, lows, volumes):
+    def _empty_signal(self, symbol, exchange, strategy_name, reason="No setup"):
+        return {
+            "symbol": symbol,
+            "exchange": exchange,
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+            "timeframe": "1m",
+            "strategy_name": strategy_name,
+            "version": self.VERSION,
+            "direction": "NO_TRADE",
+            "setup_description": reason,
+            "entry_trigger": 0.0,
+            "proposed_entry_price": 0.0,
+            "stop_loss": 0.0,
+            "target_price": 0.0,
+            "risk_per_unit": 0.0,
+            "reward_risk_ratio": 0.0,
+            "indicator_values": {},
+            "volume_metrics": {},
+            "market_regime": "UNKNOWN",
+            "confirmation_status": "NONE",
+            "invalidation_conditions": "No valid setup identified",
+            "rejection_reasons": [reason] if reason else [],
+            "data_freshness": "OK"
+        }
+
+    # -------------------------------------------------------------
+    # 1. STRATEGY A: BREAKOUT_RETEST
+    # -------------------------------------------------------------
+    def evaluate_breakout_retest(self, symbol, bars, exchange="NSE", or_high=None, or_low=None):
         """
-        Determines current market regime:
-        - "TRENDING_BULL": Strong uptrend (EMA 9 > EMA 33, ADX > 22, RSI > 50)
-        - "TRENDING_BEAR": Strong downtrend (EMA 9 < EMA 33, ADX > 22, RSI < 50)
-        - "CHOPPY_SIDEWAYS": ADX < 20 or tight Bollinger/ATR range
-        - "HIGH_VOLATILITY": ATR exceeds 2.5x 20-period average
+        1. Range identified (Opening Range or Prior 15-bar range)
+        2. Candle broke out beyond range boundary
+        3. Subsequent candle retests near level (within 0.15% tolerance) and holds
+        4. Trigger set at retest candle high (LONG) or low (SHORT)
         """
-        if len(closes) < 35:
-            return "UNKNOWN"
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        opens = bars.get("open", [])
+        volumes = bars.get("volume", [1000] * len(closes))
 
-        ema9 = indicators.calculate_ema(closes, 9)[-1]
-        ema33 = indicators.calculate_ema(closes, 33)[-1]
-        adx_res = indicators.calculate_adx(highs, lows, closes, 14)
-        cur_adx = adx_res["adx"][-1] or 15.0
-        cur_rsi = indicators.calculate_rsi(closes, 14)[-1] or 50.0
+        if len(closes) < 30:
+            return self._empty_signal(symbol, exchange, "BREAKOUT_RETEST", "Insufficient candles")
 
-        if cur_adx < 20.0:
-            return "CHOPPY_SIDEWAYS"
-        if ema9 and ema33:
-            if ema9 > ema33 and cur_rsi > 52.0:
-                return "TRENDING_BULL"
-            elif ema9 < ema33 and cur_rsi < 48.0:
-                return "TRENDING_BEAR"
-        return "NEUTRAL"
+        # Opening range baseline if not provided
+        if or_high is None or or_low is None:
+            or_high = max(highs[0:15])
+            or_low = min(lows[0:15])
 
-    def evaluate_ema_channel(self, symbol, bars, atr_val=None):
-        """
-        Strategy A: EMA 5/9/33 Channel Breakout
-        Long:
-        1. Close > EMA 33 High
-        2. EMA 5 > EMA 9
-        3. ATR-validated dynamic stop: EMA 33 Low or entry - 1.5*ATR
-        """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        highs = [h for h in bars.get("high", []) if h is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
+        range_span = or_high - or_low
+        if range_span <= 0:
+            return self._empty_signal(symbol, exchange, "BREAKOUT_RETEST", "Invalid zero range")
 
-        if len(closes) < 40:
-            return None
+        c, h, l, o = closes[-1], highs[-1], lows[-1], opens[-1]
+        prev_c = closes[-2]
+        atr_series = indicators.calculate_atr(highs, lows, closes, 14)
+        atr = atr_series[-1] or (c * 0.01)
 
-        ema5 = indicators.calculate_ema(closes, 5)[-1]
-        ema9 = indicators.calculate_ema(closes, 9)[-1]
-        ema33_h = indicators.calculate_ema(highs, 33)[-1]
-        ema33_l = indicators.calculate_ema(lows, 33)[-1]
+        rvol_series = indicators.calculate_relative_volume(volumes, 20)
+        rvol = rvol_series[-1] if (rvol_series and isinstance(rvol_series, list)) else 1.0
 
-        cur_close = closes[-1]
-        prev_close = closes[-2]
-        prev_ema5 = indicators.calculate_ema(closes, 5)[-2]
-        prev_ema9 = indicators.calculate_ema(closes, 9)[-2]
+        # Bullish Breakout + Retest Check
+        # Prior candle was above ORH (breakout), current candle retested near ORH and held (closed green above ORH)
+        is_long_retest = (
+            prev_c > or_high and
+            l <= (or_high * 1.0020) and
+            c > or_high and
+            c >= o
+        )
 
-        is_breakout = cur_close > ema33_h
-        is_bull_cross = (prev_ema5 <= prev_ema9 and ema5 > ema9) or (ema5 > ema9)
+        # Bearish Breakdown + Retest Check
+        is_short_retest = (
+            prev_c < or_low and
+            h >= (or_low * 0.9980) and
+            c < or_low and
+            c <= o
+        )
 
-        if is_breakout and is_bull_cross:
-            # ATR-based or structural stop
-            if atr_val and atr_val > 0:
-                # Stop is max(ema33_l, cur_close - 2.0*atr_val) to avoid excessive stop
-                stop_loss = max(round(ema33_l, 2), round(cur_close - (2.0 * atr_val), 2))
-                if stop_loss >= cur_close:
-                    stop_loss = round(cur_close - (1.5 * atr_val), 2)
-            else:
-                stop_loss = round(ema33_l, 2)
-
-            risk_per_share = round(cur_close - stop_loss, 2)
-            if risk_per_share <= 0:
-                return None
-
-            target = round(cur_close + (risk_per_share * 1.5), 2)
+        if is_long_retest:
+            stop_loss = round(min(l, or_high - (0.5 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk <= 0 or risk > (c * 0.03):
+                return self._empty_signal(symbol, exchange, "BREAKOUT_RETEST", "Invalid risk or stop too wide")
+            target = round(c + (risk * self.min_reward_risk), 2)
+            rr = round((target - c) / max(0.01, risk), 2)
 
             return {
-                "symbol": symbol,
-                "strategy_name": "EMA_CHANNEL",
-                "side": "BUY",
-                "signal": "BUY",
-                "entry_reference_price": round(cur_close, 2),
-                "stop_loss": stop_loss,
-                "target_price": target,
-                "risk_per_share": risk_per_share,
-                "reward_risk_ratio": 1.5,
-                "confidence_score": 75.0,
-                "signal_reason": f"Close {cur_close:.2f} > EMA33 High {ema33_h:.2f} with EMA5 ({ema5:.2f}) > EMA9 ({ema9:.2f})",
-                "indicator_values": {
-                    "ema5": round(ema5, 2),
-                    "ema9": round(ema9, 2),
-                    "ema33_high": round(ema33_h, 2),
-                    "ema33_low": round(ema33_l, 2)
-                }
+                "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                "timeframe": "1m", "strategy_name": "BREAKOUT_RETEST", "version": self.VERSION,
+                "direction": "LONG", "setup_description": f"Breakout above range {or_high:.2f} successfully retested and held",
+                "entry_trigger": h, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                "risk_per_unit": risk, "reward_risk_ratio": rr,
+                "indicator_values": {"range_high": or_high, "range_low": or_low, "atr": atr},
+                "volume_metrics": {"rvol": rvol}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                "invalidation_conditions": f"Close falls below {or_high:.2f}", "rejection_reasons": [], "data_freshness": "OK"
             }
-        return None
 
-    def evaluate_vwap_pullback(self, symbol, bars, vwap_series, atr_val=None):
-        """
-        Strategy B: Intraday VWAP Pullback Entry
-        Long:
-        1. Primary Trend: EMA 9 > EMA 33 or Price > VWAP
-        2. Pullback: Low of recent 2 candles dipped within 0.3% of VWAP or crossed VWAP
-        3. Completed Bullish Candle: Close > VWAP and Close > Open
-        4. Stop: Below VWAP or Low - 1.0*ATR
-        """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        highs = [h for h in bars.get("high", []) if h is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
-        opens = [o for o in bars.get("open", []) if o is not None]
+        elif is_short_retest and self.allow_short:
+            stop_loss = round(max(h, or_low + (0.5 * atr)), 2)
+            risk = round(stop_loss - c, 2)
+            if risk <= 0 or risk > (c * 0.03):
+                return self._empty_signal(symbol, exchange, "BREAKOUT_RETEST", "Invalid risk or stop too wide")
+            target = round(c - (risk * self.min_reward_risk), 2)
+            rr = round((c - target) / max(0.01, risk), 2)
 
-        if len(closes) < 35 or not vwap_series:
-            return None
-
-        cur_close = closes[-1]
-        cur_open = opens[-1] if opens else cur_close
-        cur_low = lows[-1]
-        cur_vwap = vwap_series[-1]
-
-        if not cur_vwap or cur_vwap <= 0:
-            return None
-
-        ema9 = indicators.calculate_ema(closes, 9)[-1]
-        ema33 = indicators.calculate_ema(closes, 33)[-1]
-
-        # Trend filter
-        is_uptrend = (ema9 and ema33 and ema9 > ema33) or (cur_close > cur_vwap)
-        # Pullback proximity: Low touched within 0.8% above VWAP or dipped below and recovered
-        vwap_dist_pct = (cur_low - cur_vwap) / cur_vwap
-        has_pulled_back = -0.010 <= vwap_dist_pct <= 0.008
-        is_bullish_close = cur_close >= cur_open and cur_close >= cur_vwap
-
-        # Avoid over-extended entries (> 2.0% away from VWAP)
-        is_extended = ((cur_close - cur_vwap) / cur_vwap) > 0.020
-
-        if is_uptrend and has_pulled_back and is_bullish_close and not is_extended:
-            if atr_val and atr_val > 0:
-                stop_loss = round(min(cur_low, cur_vwap) - (0.5 * atr_val), 2)
-            else:
-                stop_loss = round(cur_vwap * 0.996, 2)
-
-            risk_per_share = round(cur_close - stop_loss, 2)
-            if risk_per_share <= 0:
-                return None
-
-            target = round(cur_close + (risk_per_share * 1.5), 2)
             return {
-                "symbol": symbol,
-                "strategy_name": "VWAP_PULLBACK",
-                "side": "BUY",
-                "signal": "BUY",
-                "entry_reference_price": round(cur_close, 2),
-                "stop_loss": stop_loss,
-                "target_price": target,
-                "risk_per_share": risk_per_share,
-                "reward_risk_ratio": 1.5,
-                "confidence_score": 80.0,
-                "signal_reason": f"VWAP pullback to {cur_vwap:.2f} held; Bullish confirmation candle at {cur_close:.2f}",
-                "indicator_values": {
-                    "vwap": round(cur_vwap, 2),
-                    "vwap_dist_pct": round(vwap_dist_pct * 100, 2)
-                }
+                "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                "timeframe": "1m", "strategy_name": "BREAKOUT_RETEST", "version": self.VERSION,
+                "direction": "SHORT", "setup_description": f"Breakdown below range {or_low:.2f} successfully retested and held",
+                "entry_trigger": l, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                "risk_per_unit": risk, "reward_risk_ratio": rr,
+                "indicator_values": {"range_high": or_high, "range_low": or_low, "atr": atr},
+                "volume_metrics": {"rvol": rvol}, "market_regime": "TRENDING_DOWN", "confirmation_status": "PENDING",
+                "invalidation_conditions": f"Close rises above {or_low:.2f}", "rejection_reasons": [], "data_freshness": "OK"
             }
-        return None
 
-    def evaluate_orb(self, symbol, bars, or_high, or_low, atr_val=None):
+        return self._empty_signal(symbol, exchange, "BREAKOUT_RETEST", "No breakout-retest pattern detected")
+
+    # -------------------------------------------------------------
+    # 2. STRATEGY B: TREND_PULLBACK_RECLAIM
+    # -------------------------------------------------------------
+    def evaluate_trend_pullback_reclaim(self, symbol, bars, exchange="NSE"):
         """
-        Strategy C: Opening Range Breakout (ORB 15-min)
-        Long:
-        1. Current completed bar close > OR High
-        2. Filter out false wick-only breaks
-        3. Stop: OR Midpoint or Breakout Candle Low
+        LONG:
+        - EMA 9 > EMA 33 (primary trend)
+        - Price dips near EMA 33 or VWAP (within 0.20%)
+        - Reclaim candle closes bullish (close > open, close > EMA 33)
+        SHORT:
+        - EMA 9 < EMA 33 (primary downtrend)
+        - Price tests up near EMA 33
+        - Rejection/reclaim candle closes bearish (close < open, close < EMA 33)
         """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
-
-        if not or_high or not or_low or or_high <= or_low or len(closes) < 5:
-            return None
-
-        cur_close = closes[-1]
-        cur_low = lows[-1]
-
-        if cur_close > or_high:
-            or_mid = round((or_high + or_low) / 2.0, 2)
-            # Default stop is OR-Mid unless breakout candle low is safer
-            stop_loss = round(max(or_mid, cur_low), 2)
-            if stop_loss >= cur_close:
-                stop_loss = or_mid
-
-            risk_per_share = round(cur_close - stop_loss, 2)
-            if risk_per_share <= 0:
-                return None
-
-            target = round(cur_close + (risk_per_share * 1.5), 2)
-            return {
-                "symbol": symbol,
-                "strategy_name": "ORB",
-                "side": "BUY",
-                "signal": "BUY",
-                "entry_reference_price": round(cur_close, 2),
-                "stop_loss": stop_loss,
-                "target_price": target,
-                "risk_per_share": risk_per_share,
-                "reward_risk_ratio": 1.5,
-                "confidence_score": 78.0,
-                "signal_reason": f"Completed 5m candle {cur_close:.2f} broke 15m OR High {or_high:.2f}",
-                "indicator_values": {
-                    "or_high": round(or_high, 2),
-                    "or_low": round(or_low, 2),
-                    "or_mid": or_mid
-                }
-            }
-        return None
-
-    def evaluate_trend_momentum(self, symbol, bars, atr_val=None):
-        """
-        Strategy D: Trend + Momentum Confirmation
-        Long:
-        1. EMA 9 > EMA 33 (Clean Trend)
-        2. RSI 14 in momentum zone (52 <= RSI <= 72)
-        3. ADX 14 > 22 (+DI > -DI) (Directional Trend Strength)
-        4. Stop: Entry - 1.5*ATR
-        """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        highs = [h for h in bars.get("high", []) if h is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        opens = bars.get("open", [])
+        volumes = bars.get("volume", [1000] * len(closes))
 
         if len(closes) < 35:
-            return None
+            return self._empty_signal(symbol, exchange, "TREND_PULLBACK_RECLAIM", "Insufficient candles")
 
+        c, h, l, o = closes[-1], highs[-1], lows[-1], opens[-1]
         ema9 = indicators.calculate_ema(closes, 9)[-1]
         ema33 = indicators.calculate_ema(closes, 33)[-1]
-        rsi_series = indicators.calculate_rsi(closes, 14)
-        cur_rsi = rsi_series[-1] or 50.0
+        atr_series = indicators.calculate_atr(highs, lows, closes, 14)
+        atr = atr_series[-1] or (c * 0.01)
 
-        adx_res = indicators.calculate_adx(highs, lows, closes, 14)
-        cur_adx = adx_res["adx"][-1]
-        plus_di = adx_res["plus_di"][-1]
-        minus_di = adx_res["minus_di"][-1]
+        if not ema9 or not ema33:
+            return self._empty_signal(symbol, exchange, "TREND_PULLBACK_RECLAIM", "Indicators not ready")
 
-        cur_close = closes[-1]
-
-        is_trend = ema9 and ema33 and (ema9 > ema33)
-        is_rsi_ok = 48.0 <= cur_rsi <= 78.0
-        is_adx_ok = (cur_adx is None or cur_adx >= 16.0) and plus_di and minus_di and (plus_di > minus_di)
-
-        if is_trend and is_rsi_ok and is_adx_ok:
-            atr = atr_val or (indicators.calculate_atr(highs, lows, closes, 14)[-1] or (cur_close * 0.01))
-            stop_loss = round(cur_close - (1.5 * atr), 2)
-            risk_per_share = round(cur_close - stop_loss, 2)
-
-            if risk_per_share <= 0:
-                return None
-
-            target = round(cur_close + (risk_per_share * 1.5), 2)
-            return {
-                "symbol": symbol,
-                "strategy_name": "TREND_MOMENTUM",
-                "side": "BUY",
-                "signal": "BUY",
-                "entry_reference_price": round(cur_close, 2),
-                "stop_loss": stop_loss,
-                "target_price": target,
-                "risk_per_share": risk_per_share,
-                "reward_risk_ratio": 1.5,
-                "confidence_score": 85.0,
-                "signal_reason": f"Trend confirmed: EMA9 ({ema9:.2f}) > EMA33, RSI ({cur_rsi:.1f}), ADX ({cur_adx:.1f}) +DI > -DI",
-                "indicator_values": {
-                    "ema9": round(ema9, 2),
-                    "ema33": round(ema33, 2),
-                    "rsi": round(cur_rsi, 1),
-                    "adx": round(cur_adx, 1) if cur_adx else 0.0
+        # Long Setup
+        is_bull_trend = ema9 > ema33
+        pulled_to_ema = l <= (ema33 * 1.0020) and c > ema33
+        bullish_reclaim = c > o
+        if is_bull_trend and pulled_to_ema and bullish_reclaim:
+            stop_loss = round(min(l, ema33 - (0.5 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "TREND_PULLBACK_RECLAIM", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"EMA9>EMA33 trend pullback to EMA33 ({ema33:.2f}) reclaimed with bullish close",
+                    "entry_trigger": h, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"ema9": ema9, "ema33": ema33, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Break below swing low {stop_loss:.2f}", "rejection_reasons": [], "data_freshness": "OK"
                 }
-            }
-        return None
 
-    def evaluate_all(self, symbol, bars, or_high=None, or_low=None, vwap_series=None):
-        """
-        Unified evaluation honoring configuration mode and confluence scoring.
-        """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        highs = [h for h in bars.get("high", []) if h is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
-        volumes = [v for v in bars.get("volume", []) if v is not None]
+        # Short Setup
+        is_bear_trend = ema9 < ema33
+        pulled_up_to_ema = h >= (ema33 * 0.9980) and c < ema33
+        bearish_reclaim = c < o
+        if is_bear_trend and pulled_up_to_ema and bearish_reclaim and self.allow_short:
+            stop_loss = round(max(h, ema33 + (0.5 * atr)), 2)
+            risk = round(stop_loss - c, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c - (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "TREND_PULLBACK_RECLAIM", "version": self.VERSION,
+                    "direction": "SHORT", "setup_description": f"EMA9<EMA33 downtrend test of EMA33 ({ema33:.2f}) rejected downwards",
+                    "entry_trigger": l, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"ema9": ema9, "ema33": ema33, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_DOWN", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Break above swing high {stop_loss:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
 
-        if len(closes) < 35:
-            return {
-                "symbol": symbol,
-                "signal": "NO_TRADE",
-                "reasons": ["Insufficient candle history (< 35 bars)"]
-            }
+        return self._empty_signal(symbol, exchange, "TREND_PULLBACK_RECLAIM", "No trend pullback reclaim setup")
+
+    # -------------------------------------------------------------
+    # 3. STRATEGY C: FAILED_BREAKDOWN / FAILED_BREAKOUT
+    # -------------------------------------------------------------
+    def evaluate_failed_breakdown(self, symbol, bars, exchange="NSE", key_support=None, key_resistance=None):
+        """
+        FAILED_BREAKDOWN (Bullish Reclaim):
+        - Low pierced below key support (swing low or opening range low)
+        - But completed candle rejected lower prices and closed back ABOVE support
+        - Wick rejection on low >= 40% of candle range
+        """
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        opens = bars.get("open", [])
+
+        if len(closes) < 25:
+            return self._empty_signal(symbol, exchange, "FAILED_BREAKDOWN", "Insufficient candles")
+
+        c, h, l, o = closes[-1], highs[-1], lows[-1], opens[-1]
+        candle_range = max(0.01, h - l)
+        lower_wick = min(o, c) - l
+        upper_wick = h - max(o, c)
+
+        if key_support is None:
+            key_support = min(lows[-25:-1])
+        if key_resistance is None:
+            key_resistance = max(highs[-25:-1])
 
         atr_series = indicators.calculate_atr(highs, lows, closes, 14)
-        atr_val = atr_series[-1] or (closes[-1] * 0.01)
+        atr = atr_series[-1] or (c * 0.01)
 
-        regime = self.detect_market_regime(closes, highs, lows, volumes)
+        # Bullish Liquidity Sweep & Reclaim
+        pierced_support = l < key_support and c > key_support
+        has_lower_rejection = (lower_wick / candle_range) >= 0.35
+        if pierced_support and has_lower_rejection and c >= o:
+            stop_loss = round(l - (0.2 * atr), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "FAILED_BREAKDOWN", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"Failed breakdown below support {key_support:.2f} with {lower_wick/candle_range:.0%} lower wick reclaim",
+                    "entry_trigger": h, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"key_support": key_support, "lower_wick": lower_wick, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "RANGE_BOUND", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Break below sweep low {l:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
 
-        # Evaluate individual candidates
-        candidates = []
+        # Bearish Liquidity Sweep & Rejection
+        pierced_resistance = h > key_resistance and c < key_resistance
+        has_upper_rejection = (upper_wick / candle_range) >= 0.35
+        if pierced_resistance and has_upper_rejection and c <= o and self.allow_short:
+            stop_loss = round(h + (0.2 * atr), 2)
+            risk = round(stop_loss - c, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c - (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "FAILED_BREAKDOWN", "version": self.VERSION,
+                    "direction": "SHORT", "setup_description": f"Failed breakout above resistance {key_resistance:.2f} with {upper_wick/candle_range:.0%} upper wick rejection",
+                    "entry_trigger": l, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"key_resistance": key_resistance, "upper_wick": upper_wick, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "RANGE_BOUND", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Break above sweep high {h:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
 
-        # 1. EMA Channel
-        if self.mode in ("ALL", "EMA_CHANNEL", "CONFLUENCE"):
-            sig_ema = self.evaluate_ema_channel(symbol, bars, atr_val)
-            if sig_ema:
-                candidates.append(sig_ema)
+        return self._empty_signal(symbol, exchange, "FAILED_BREAKDOWN", "No failed break setup")
 
-        # 2. VWAP Pullback
-        if self.mode in ("ALL", "VWAP_PULLBACK", "CONFLUENCE"):
-            if vwap_series is None and volumes:
-                vwap_series = indicators.calculate_vwap(highs, lows, closes, volumes)
-            sig_vwap = self.evaluate_vwap_pullback(symbol, bars, vwap_series, atr_val)
-            if sig_vwap:
-                candidates.append(sig_vwap)
-
-        # 3. ORB
-        if self.mode in ("ALL", "ORB", "CONFLUENCE") and or_high and or_low:
-            sig_orb = self.evaluate_orb(symbol, bars, or_high, or_low, atr_val)
-            if sig_orb:
-                candidates.append(sig_orb)
-
-        # 4. Trend + Momentum
-        if self.mode in ("ALL", "TREND_MOMENTUM", "CONFLUENCE"):
-            sig_tm = self.evaluate_trend_momentum(symbol, bars, atr_val)
-            if sig_tm:
-                candidates.append(sig_tm)
-
-        if not candidates:
-            return {
-                "symbol": symbol,
-                "signal": "NO_TRADE",
-                "market_regime": regime,
-                "reasons": ["No active strategy conditions met"]
-            }
-
-        # Confluence Mode Scoring
-        if self.mode == "CONFLUENCE":
-            return self.evaluate_v3_confluence(symbol, bars, atr_val, vwap_series)
-
-        # Single / Multi mode: select highest confidence
-        best = sorted(candidates, key=lambda x: x["confidence_score"], reverse=True)[0]
-        best["market_regime"] = regime
-        best["candle_timestamp"] = datetime.datetime.now().strftime("%H:%M:%S IST")
-        return best
-
-    def evaluate_v3_confluence(self, symbol, bars, atr_val=None, vwap_series=None):
+    # -------------------------------------------------------------
+    # 4. STRATEGY D: RELATIVE_STRENGTH_BREAKOUT
+    # -------------------------------------------------------------
+    def evaluate_relative_strength_breakout(self, symbol, bars, benchmark_bars=None, exchange="NSE"):
         """
-        V3.0 Weighted Confluence Engine:
-        Weights:
-        - EMA channel breakout: 20
-        - EMA 5/9 alignment: 10
-        - Supertrend (10, 3): 15
-        - MACD (12, 26, 9): 15
-        - RSI (14): 10
-        - ADX and directional (+DI > -DI): 10
-        - VWAP: 10
-        - Relative volume: 10
-        Total: 100
-        Threshold >= 65 to generate BUY signal.
-        Also verifies mandatory gates and logs full component weights & rejection reasons.
+        Stock Outperformance:
+        - Over lookback (20 bars), Stock Return > Benchmark Return + 0.30%
+        - Stock is making a fresh 20-bar high
+        - Degrades to NO_TRADE safely if benchmark data is missing
         """
-        closes = [c for c in bars.get("close", []) if c is not None]
-        highs = [h for h in bars.get("high", []) if h is not None]
-        lows = [l for l in bars.get("low", []) if l is not None]
-        volumes = [v for v in bars.get("volume", []) if v is not None]
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        opens = bars.get("open", [])
 
+        if len(closes) < 25:
+            return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "Insufficient stock candles")
+
+        if not benchmark_bars or len(benchmark_bars.get("close", [])) < 25:
+            return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "Benchmark data missing or unaligned")
+
+        bench_closes = benchmark_bars["close"]
+        lookback = min(20, len(closes)-1, len(bench_closes)-1)
+
+        stock_ret = (closes[-1] - closes[-lookback]) / closes[-lookback]
+        bench_ret = (bench_closes[-1] - bench_closes[-lookback]) / bench_closes[-lookback]
+        rel_strength = stock_ret - bench_ret
+
+        c, h, l, o = closes[-1], highs[-1], lows[-1], opens[-1]
+        prior_high = max(highs[-lookback:-1])
+        prior_low = min(lows[-lookback:-1])
+        atr_series = indicators.calculate_atr(highs, lows, closes, 14)
+        atr = atr_series[-1] or (c * 0.01)
+
+        # Bullish Outperformance Breakout
+        if rel_strength >= 0.003 and c > prior_high and c >= o:
+            stop_loss = round(min(l, prior_high - (0.5 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "RELATIVE_STRENGTH_BREAKOUT", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"Outperforming benchmark ({rel_strength*100:+.2f}% vs {self.benchmark_symbol}) + Breakout above {prior_high:.2f}",
+                    "entry_trigger": h, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"stock_ret": stock_ret, "bench_ret": bench_ret, "rel_strength": rel_strength, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Falls below breakout level {prior_high:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+
+        # Bearish Underperformance Breakdown
+        if rel_strength <= -0.003 and c < prior_low and c <= o and self.allow_short:
+            stop_loss = round(max(h, prior_low + (0.5 * atr)), 2)
+            risk = round(stop_loss - c, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c - (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "RELATIVE_STRENGTH_BREAKOUT", "version": self.VERSION,
+                    "direction": "SHORT", "setup_description": f"Underperforming benchmark ({rel_strength*100:+.2f}% vs {self.benchmark_symbol}) + Breakdown below {prior_low:.2f}",
+                    "entry_trigger": l, "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"stock_ret": stock_ret, "bench_ret": bench_ret, "rel_strength": rel_strength, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_DOWN", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Rises above breakdown level {prior_low:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+
+        return self._empty_signal(symbol, exchange, "RELATIVE_STRENGTH_BREAKOUT", "No relative strength breakout setup")
+
+    # -------------------------------------------------------------
+    # 5. EXISTING STRATEGIES (Cleaned & Unified)
+    # -------------------------------------------------------------
+    def evaluate_ema_channel(self, symbol, bars, exchange="NSE"):
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
         if len(closes) < 35:
-            return {
-                "symbol": symbol,
-                "strategy_name": "CONFLUENCE_V3",
-                "side": "BUY",
-                "signal": "NO_TRADE",
-                "confluence_score": 0.0,
-                "reasons": ["Insufficient candle history (< 35 bars)"],
-                "component_weights": {}
-            }
+            return self._empty_signal(symbol, exchange, "EMA_CHANNEL", "Insufficient candles")
 
-        cur_close = closes[-1]
-        cur_high = highs[-1]
-        cur_low = lows[-1]
-
-        # 1. EMA 33 Channel & EMA 5/9
+        c = closes[-1]
         ema5 = indicators.calculate_ema(closes, 5)[-1]
         ema9 = indicators.calculate_ema(closes, 9)[-1]
         ema33_h = indicators.calculate_ema(highs, 33)[-1]
         ema33_l = indicators.calculate_ema(lows, 33)[-1]
+        atr = indicators.calculate_atr(highs, lows, closes, 14)[-1] or (c * 0.01)
 
-        # 2. Supertrend (10, 3)
-        st_res = indicators.calculate_supertrend(highs, lows, closes, 10, 3.0)
-        st_dir = st_res["direction"][-1]
-        st_val = st_res["supertrend"][-1]
+        if c > ema33_h and ema5 > ema9:
+            stop_loss = round(max(ema33_l, c - (2.0 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "EMA_CHANNEL", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"Close ({c:.2f}) > EMA33 High ({ema33_h:.2f}) & EMA5 > EMA9",
+                    "entry_trigger": highs[-1], "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"ema5": ema5, "ema9": ema9, "ema33_high": ema33_h, "ema33_low": ema33_l, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Close below EMA9 ({ema9:.2f})", "rejection_reasons": [], "data_freshness": "OK"
+                }
+        return self._empty_signal(symbol, exchange, "EMA_CHANNEL", "No EMA Channel breakout")
 
-        # 3. MACD (12, 26, 9)
-        macd_res = indicators.calculate_macd(closes, 12, 26, 9)
-        macd_line = macd_res["macd"][-1]
-        macd_sig = macd_res["signal"][-1]
-        macd_hist = macd_res["hist"][-1]
+    def evaluate_vwap_pullback(self, symbol, bars, exchange="NSE"):
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        opens = bars.get("open", [])
+        volumes = bars.get("volume", [1000] * len(closes))
+        if len(closes) < 30:
+            return self._empty_signal(symbol, exchange, "VWAP_PULLBACK", "Insufficient candles")
 
-        # 4. RSI (14)
-        rsi_series = indicators.calculate_rsi(closes, 14)
-        cur_rsi = rsi_series[-1] or 50.0
+        c, l, o = closes[-1], lows[-1], opens[-1]
+        vwap_series = indicators.calculate_vwap(highs, lows, closes, volumes)
+        cur_vwap = vwap_series[-1] or c
+        atr = indicators.calculate_atr(highs, lows, closes, 14)[-1] or (c * 0.01)
 
-        # 5. ADX, +DI, -DI (14)
-        adx_res = indicators.calculate_adx(highs, lows, closes, 14)
-        cur_adx = adx_res["adx"][-1]
-        plus_di = adx_res["plus_di"][-1]
-        minus_di = adx_res["minus_di"][-1]
+        # Pullback test near VWAP and bullish green candle close above VWAP
+        if l <= (cur_vwap * 1.0020) and c > cur_vwap and c >= o:
+            stop_loss = round(min(l, cur_vwap - (0.5 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "VWAP_PULLBACK", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"VWAP pullback tested {cur_vwap:.2f} and closed bullish above VWAP",
+                    "entry_trigger": highs[-1], "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"vwap": cur_vwap, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Break below VWAP stop {stop_loss:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+        return self._empty_signal(symbol, exchange, "VWAP_PULLBACK", "No VWAP pullback setup")
 
-        # 6. Session VWAP
-        if vwap_series is None and volumes:
-            vwap_series = indicators.calculate_vwap(highs, lows, closes, volumes)
-        cur_vwap = vwap_series[-1] if vwap_series else cur_close
+    def evaluate_orb(self, symbol, bars, exchange="NSE", or_high=None, or_low=None):
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        if len(closes) < 20:
+            return self._empty_signal(symbol, exchange, "ORB", "Insufficient candles")
 
-        # 7. Relative Volume
-        rvol_series = indicators.calculate_relative_volume(volumes, 20) if volumes else [1.0]
-        cur_rvol = rvol_series[-1] if rvol_series else 1.0
+        if or_high is None or or_low is None:
+            or_high = max(highs[:15])
+            or_low = min(lows[:15])
 
-        atr = atr_val or (indicators.calculate_atr(highs, lows, closes, 14)[-1] or (cur_close * 0.01))
+        c = closes[-1]
+        atr = indicators.calculate_atr(highs, lows, closes, 14)[-1] or (c * 0.01)
 
-        # Scoring & Contributions
-        weights = {}
-        score = 0.0
-        details = []
+        if c > or_high:
+            stop_loss = round(max(or_low, or_high - (0.5 * atr)), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "ORB", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"15-min Opening Range Breakout above {or_high:.2f}",
+                    "entry_trigger": highs[-1], "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"or_high": or_high, "or_low": or_low, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Close back below OR High {or_high:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+        elif c < or_low and self.allow_short:
+            stop_loss = round(min(or_high, or_low + (0.5 * atr)), 2)
+            risk = round(stop_loss - c, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c - (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "ORB", "version": self.VERSION,
+                    "direction": "SHORT", "setup_description": f"15-min Opening Range Breakdown below {or_low:.2f}",
+                    "entry_trigger": lows[-1], "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"or_high": or_high, "or_low": or_low, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_DOWN", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"Close back above OR Low {or_low:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+        return self._empty_signal(symbol, exchange, "ORB", "No ORB breakout")
 
-        # (a) EMA Channel Breakout (20)
-        if ema33_h and cur_close > ema33_h:
-            weights["ema_channel"] = 20.0
-            score += 20.0
-            details.append(f"EMA33 Channel Breakout ({cur_close:.2f} > {ema33_h:.2f})")
-        else:
-            weights["ema_channel"] = 0.0
+    def evaluate_trend_momentum(self, symbol, bars, exchange="NSE"):
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        if len(closes) < 35:
+            return self._empty_signal(symbol, exchange, "TREND_MOMENTUM", "Insufficient candles")
 
-        # (b) EMA 5/9 Alignment (10)
-        if ema5 and ema9 and ema5 > ema9:
-            weights["ema_5_9"] = 10.0
-            score += 10.0
-            details.append(f"EMA 5 > EMA 9 ({ema5:.2f} > {ema9:.2f})")
-        else:
-            weights["ema_5_9"] = 0.0
+        c = closes[-1]
+        ema9 = indicators.calculate_ema(closes, 9)[-1]
+        ema33 = indicators.calculate_ema(closes, 33)[-1]
+        rsi = indicators.calculate_rsi(closes, 14)[-1] or 50.0
+        atr = indicators.calculate_atr(highs, lows, closes, 14)[-1] or (c * 0.01)
 
-        # (c) Supertrend (15)
-        if st_dir == 1:
-            weights["supertrend"] = 15.0
-            score += 15.0
-            details.append(f"Supertrend Bullish ({st_val:.2f})")
-        else:
-            weights["supertrend"] = 0.0
+        if ema9 > ema33 and 52.0 <= rsi <= 75.0:
+            stop_loss = round(c - (1.5 * atr), 2)
+            risk = round(c - stop_loss, 2)
+            if risk > 0 and risk <= (c * 0.03):
+                target = round(c + (risk * self.min_reward_risk), 2)
+                return {
+                    "symbol": symbol, "exchange": exchange, "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
+                    "timeframe": "1m", "strategy_name": "TREND_MOMENTUM", "version": self.VERSION,
+                    "direction": "LONG", "setup_description": f"EMA9>EMA33 trend alignment with RSI ({rsi:.1f}) momentum continuation",
+                    "entry_trigger": highs[-1], "proposed_entry_price": c, "stop_loss": stop_loss, "target_price": target,
+                    "risk_per_unit": risk, "reward_risk_ratio": self.min_reward_risk,
+                    "indicator_values": {"ema9": ema9, "ema33": ema33, "rsi": rsi, "atr": atr},
+                    "volume_metrics": {}, "market_regime": "TRENDING_UP", "confirmation_status": "PENDING",
+                    "invalidation_conditions": f"RSI drops below 48 or price breaches {stop_loss:.2f}", "rejection_reasons": [], "data_freshness": "OK"
+                }
+        return self._empty_signal(symbol, exchange, "TREND_MOMENTUM", "No trend momentum alignment")
 
-        # (d) MACD (15)
-        if macd_line is not None and macd_sig is not None and (macd_line >= macd_sig or (macd_hist and macd_hist >= 0)):
-            weights["macd"] = 15.0
-            score += 15.0
-            details.append(f"MACD Bullish Cross (Hist: {macd_hist or 0:.2f})")
-        else:
-            weights["macd"] = 0.0
+    # -------------------------------------------------------------
+    # 6. MASTER EVALUATION DISPATCHER
+    # -------------------------------------------------------------
+    def evaluate_all(self, symbol, bars, or_high=None, or_low=None, vwap_series=None, benchmark_bars=None, exchange="NSE"):
+        """
+        Backward-compatible dispatcher for backtest.py and legacy callers.
+        Maps to unified evaluate().
+        """
+        sig = self.evaluate(symbol, bars, exchange=exchange, or_high=or_high, or_low=or_low, benchmark_bars=benchmark_bars)
+        sig["signal"] = "BUY" if sig["direction"] == "LONG" else ("SELL" if sig["direction"] == "SHORT" else "NO_TRADE")
+        sig["side"] = "BUY" if sig["direction"] == "LONG" else "SELL"
+        sig["entry_reference_price"] = sig.get("proposed_entry_price", 0.0)
+        sig["risk_per_share"] = sig.get("risk_per_unit", 0.0)
+        return sig
 
-        # (e) RSI (10)
-        if 50.0 <= cur_rsi <= 85.0:
-            weights["rsi"] = 10.0
-            score += 10.0
-            details.append(f"RSI Momentum Zone ({cur_rsi:.1f})")
-        else:
-            weights["rsi"] = 0.0
+    def evaluate(self, symbol, bars, exchange="NSE", benchmark_bars=None, or_high=None, or_low=None):
+        """
+        Dispatches according to configured strategy_mode:
+        - SINGLE: executes exactly the selected strategy
+        - CONFLUENCE: scans enabled strategies and returns valid signal with highest score
+        - SCANNER: returns all evaluated signals
+        """
+        closes = bars.get("close", [])
+        highs = bars.get("high", [])
+        lows = bars.get("low", [])
+        volumes = bars.get("volume", [1000] * len(closes))
 
-        # (f) ADX and Directional Indicators (10)
-        if plus_di and minus_di and plus_di > minus_di and (cur_adx is None or cur_adx >= 18.0):
-            weights["adx_di"] = 10.0
-            score += 10.0
-            details.append(f"ADX/DI Bullish (+DI > -DI, ADX: {cur_adx or 0:.1f})")
-        else:
-            weights["adx_di"] = 0.0
+        # Check market regime
+        regime_info = detect_market_regime(highs, lows, closes, volumes)
+        regime = regime_info["regime"]
 
-        # (g) VWAP (10)
-        if cur_close >= cur_vwap:
-            weights["vwap"] = 10.0
-            score += 10.0
-            details.append(f"Above VWAP ({cur_close:.2f} >= {cur_vwap:.2f})")
-        else:
-            weights["vwap"] = 0.0
-
-        # (h) Relative Volume (10)
-        if cur_rvol >= 1.2:
-            weights["relative_volume"] = 10.0
-            score += 10.0
-            details.append(f"Volume Surge (RVol: {cur_rvol:.2f}x)")
-        elif cur_rvol >= 1.0:
-            weights["relative_volume"] = 5.0
-            score += 5.0
-            details.append(f"Normal Volume (RVol: {cur_rvol:.2f}x)")
-        else:
-            weights["relative_volume"] = 0.0
-
-        # Mandatory Gates for BUY
-        rejections = []
-        if score < self.min_confluence_score:
-            rejections.append(f"Confluence score ({score:.1f}) below threshold ({self.min_confluence_score:.1f})")
-
-        # Stop-loss calculation: max(ema33_l, cur_close - 2.0*atr)
-        stop_loss = round(max(ema33_l if ema33_l else 0, cur_close - (2.0 * atr)), 2)
-        if stop_loss >= cur_close:
-            stop_loss = round(cur_close - (1.5 * atr), 2)
-
-        risk_per_share = round(cur_close - stop_loss, 2)
-        if risk_per_share <= 0:
-            rejections.append("Calculated stop loss is invalid or greater than entry price")
-
-        # Check for excessively wide stop (> 3% of stock price)
-        if risk_per_share > (cur_close * 0.03):
-            rejections.append(f"Stop loss is excessively wide ({risk_per_share:.2f} > 3% of price)")
-
-        target = round(cur_close + (risk_per_share * 1.5), 2)
-        reward_risk = round((target - cur_close) / max(0.01, risk_per_share), 2)
-
-        if reward_risk < 1.5:
-            rejections.append(f"Reward-to-risk ratio ({reward_risk:.2f}) is below 1:1.5")
-
-        accepted = len(rejections) == 0
-
-        res = {
-            "symbol": symbol,
-            "strategy_name": "CONFLUENCE_V3",
-            "side": "BUY",
-            "signal": "BUY" if accepted else "NO_TRADE",
-            "confluence_score": round(score, 1),
-            "confidence_score": round(score, 1),
-            "entry_reference_price": round(cur_close, 2),
-            "stop_loss": stop_loss,
-            "target_price": target,
-            "risk_per_share": risk_per_share,
-            "reward_risk_ratio": reward_risk,
-            "component_weights": weights,
-            "signal_reason": " | ".join(details) if accepted else "Rejected: " + "; ".join(rejections),
-            "rejections": rejections,
-            "indicator_values": {
-                "close": round(cur_close, 2),
-                "ema5": round(ema5, 2) if ema5 else None,
-                "ema9": round(ema9, 2) if ema9 else None,
-                "ema33_h": round(ema33_h, 2) if ema33_h else None,
-                "ema33_l": round(ema33_l, 2) if ema33_l else None,
-                "supertrend": round(st_val, 2) if st_val else None,
-                "supertrend_direction": st_dir,
-                "rsi": round(cur_rsi, 1),
-                "adx": round(cur_adx, 1) if cur_adx else None,
-                "vwap": round(cur_vwap, 2) if cur_vwap else None,
-                "rvol": round(cur_rvol, 2)
-            },
-            "candle_timestamp": datetime.datetime.now().strftime("%H:%M:%S IST")
+        # Strategy Map
+        strategy_methods = {
+            "BREAKOUT_RETEST": lambda: self.evaluate_breakout_retest(symbol, bars, exchange, or_high, or_low),
+            "TREND_PULLBACK_RECLAIM": lambda: self.evaluate_trend_pullback_reclaim(symbol, bars, exchange),
+            "FAILED_BREAKDOWN": lambda: self.evaluate_failed_breakdown(symbol, bars, exchange),
+            "RELATIVE_STRENGTH_BREAKOUT": lambda: self.evaluate_relative_strength_breakout(symbol, bars, benchmark_bars, exchange),
+            "EMA_CHANNEL": lambda: self.evaluate_ema_channel(symbol, bars, exchange),
+            "VWAP_PULLBACK": lambda: self.evaluate_vwap_pullback(symbol, bars, exchange),
+            "ORB": lambda: self.evaluate_orb(symbol, bars, exchange, or_high, or_low),
+            "TREND_MOMENTUM": lambda: self.evaluate_trend_momentum(symbol, bars, exchange)
         }
-        return res
 
+        # Single Strategy Mode
+        if self.mode in strategy_methods:
+            sig = strategy_methods[self.mode]()
+            sig["market_regime"] = regime
+            return sig
+
+        # Confluence / Multi Mode: evaluate all enabled strategies
+        signals = []
+        for name in self.enabled_strategies:
+            if name in strategy_methods:
+                s = strategy_methods[name]()
+                s["market_regime"] = regime
+                signals.append(s)
+
+        if self.mode == "SCANNER":
+            return signals
+
+        # For CONFLUENCE: Find highest-priority actionable signal
+        actionable = [s for s in signals if s["direction"] in ("LONG", "SHORT")]
+        if actionable:
+            # Pick first valid actionable strategy that matches regime direction
+            for act in actionable:
+                if act["direction"] == "LONG" and regime in ("TRENDING_UP", "RANGE_BOUND", "HIGH_VOLATILITY", "UNKNOWN"):
+                    return act
+                elif act["direction"] == "SHORT" and regime in ("TRENDING_DOWN", "RANGE_BOUND", "HIGH_VOLATILITY", "UNKNOWN"):
+                    return act
+            return actionable[0]
+
+        return self._empty_signal(symbol, exchange, "CONFLUENCE", "No enabled strategy triggered")

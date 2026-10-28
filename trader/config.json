@@ -34,12 +34,25 @@
   "currency": "INR",
   "market": "NSE",
   "strategy_mode": "CONFLUENCE",
-  "enabled_strategies": ["CONFLUENCE", "EMA_CHANNEL", "VWAP_PULLBACK", "ORB", "TREND_MOMENTUM"],
+  "enabled_strategies": [
+    "BREAKOUT_RETEST",
+    "TREND_PULLBACK_RECLAIM",
+    "FAILED_BREAKDOWN",
+    "RELATIVE_STRENGTH_BREAKOUT",
+    "EMA_CHANNEL",
+    "VWAP_PULLBACK",
+    "ORB",
+    "TREND_MOMENTUM"
+  ],
   "min_confluence_score": 65.0,
   "enable_partial_profit": true,
-  "partial_profit_ratio": 0.50,
+  "partial_profit_ratio": 0.5,
   "atr_period": 14,
   "atr_trailing_multiplier": 1.5,
   "peak_reversal_threshold": 0.002,
-  "orb_minutes": 15
+  "orb_minutes": 15,
+  "confirmation_window_candles": 2,
+  "require_completed_candles": true,
+  "require_fresh_market_data": true,
+  "benchmark_symbol": "NIFTY 50"
 }

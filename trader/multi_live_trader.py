@@ -30,6 +30,8 @@ sys.path.append(str(BASE_DIR / "trader-alerts"))
 
 import indicators
 from risk_engine import RiskEngine
+from strategy_engine import StrategyEngine
+from regime import detect_market_regime
 import telegram_bot
 import download_historical_1min as dh
 
@@ -203,6 +205,7 @@ def run_multi_symbol_trader():
 
     capital = float(cfg.get("budget", 1000000.0))
     risk_engine = RiskEngine(cfg)
+    strategy_engine = StrategyEngine(cfg)
 
     print("=" * 75)
     print("[START] MULTI-SYMBOL LIVE PAPER TRADER")
@@ -393,12 +396,59 @@ def run_multi_symbol_trader():
                             continue
 
                     # 2. Check Pending Signal Confirmation for this Symbol (BUY or SELL)
+                    # NOTE: Always evaluate the incoming completed confirmation candle FIRST
+                    # before expiring or timing out the signal!
                     if sym in pending_signals:
                         ps = pending_signals[sym]
+                        sig_time = ps.get("signal_time")
                         current_candle_count = len(raw_bars)
-                        # Cancel if 2 new bars passed without confirmation
-                        if current_candle_count >= ps["signal_idx"] + 2:
-                            cancel_msg = "Price did not break trigger level within confirmation window"
+
+                        is_confirmed = False
+                        if ps["side"] == "BUY" and c > ps["trigger_level"]:
+                            is_confirmed = True
+                        elif ps["side"] == "SELL" and c < ps["trigger_level"]:
+                            is_confirmed = True
+
+                        if is_confirmed and bar_time != sig_time:
+                            # Confirmed by a distinct subsequent completed candle
+                            side = ps["side"]
+                            est_sl = ps["stop_loss"]
+                            risk_pts = abs(c - est_sl)
+                            est_tgt = round(c + (risk_pts * 1.5) if side == "BUY" else c - (risk_pts * 1.5), 2)
+                            risk_check = risk_engine.evaluate_order_risk(
+                                sym, side, c, est_sl, est_tgt, capital, 0, len(trades_today), len(open_positions)
+                            )
+                            if risk_check["passed"]:
+                                qty = risk_check["quantity"]
+                                open_positions[sym] = {
+                                    "symbol": sym, "side": side, "entry_time": bar_time,
+                                    "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
+                                }
+                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c}", trade_taken=True)
+                                telegram_bot.send_trade_alert({
+                                    "symbol": sym, "side": side, "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
+                                    "currency": "INR", "exchange": exch, "free_cash": capital - (qty * c) if side == "BUY" else capital,
+                                    "strategy": f"{ps.get('strategy_name', 'Unified Engine')} ({ps.get('setup_tag', 'Breakout')})"
+                                })
+                                update_ledger("ENTRY", open_positions[sym])
+                                print(f"🚨 [{bar_time}] ENTRY EXECUTED: {side} {sym} @ Rs {c:.2f} | Qty: {qty} | Strategy: {ps.get('strategy_name')}")
+                                del pending_signals[sym]
+                                continue
+                            else:
+                                reject_reason = f"Risk Engine Blocked: {'; '.join(risk_check.get('reasons', []))}"
+                                print(f"🛡️ [{bar_time}] {side} {sym} Blocked by Risk Gate: {reject_reason}")
+                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "REJECTED_BY_RISK", reject_reason, trade_taken=False)
+                                del pending_signals[sym]
+                                continue
+
+                        # If not confirmed, check if confirmation window has genuinely elapsed.
+                        # For window of 2 candles: if signal at idx 10 (bar count was 11),
+                        # candle 1 arrives at count 12, candle 2 arrives at count 13.
+                        # Expiry occurs strictly when candle count > signal_bar_count + window
+                        sig_bar_count = ps.get("signal_idx", 0) + 1
+                        window_candles = int(cfg.get("confirmation_window_candles", 2))
+                        if current_candle_count > sig_bar_count + window_candles:
+                            cancel_msg = f"Price did not break trigger level within confirmation window ({window_candles} bars elapsed)"
                             print(f"⚪ [{bar_time}] {ps['side']} {sym} Signal Cancelled ({cancel_msg})")
                             log_signal_to_csv(
                                 ps["side"], sym, sym, ps["spot"], ps["trigger_level"],
@@ -412,126 +462,39 @@ def run_multi_symbol_trader():
                                 "candle_time": bar_time
                             })
                             del pending_signals[sym]
-                        else:
-                            # Long Confirmation
-                            if ps["side"] == "BUY" and c > ps["trigger_level"]:
-                                est_sl = ps["stop_loss"]
-                                risk_pts = c - est_sl
-                                est_tgt = round(c + (risk_pts * 1.5), 2)
-                                risk_check = risk_engine.evaluate_order_risk(
-                                    sym, "BUY", c, est_sl, est_tgt, capital, 0, len(trades_today), len(open_positions)
-                                )
-                                if risk_check["passed"]:
-                                    qty = risk_check["quantity"]
-                                    open_positions[sym] = {
-                                        "symbol": sym, "side": "BUY", "entry_time": bar_time,
-                                        "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
-                                    }
-                                    log_signal_to_csv("BUY", sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"Bought {qty} shares @ Rs {c}", trade_taken=True)
-                                    telegram_bot.send_trade_alert({
-                                        "symbol": sym, "side": "BUY", "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
-                                        "currency": "INR", "exchange": exch, "free_cash": capital - (qty * c), "strategy": f"Multi-EMA + Supertrend ({ps.get('setup_tag', 'Breakout')})"
-                                    })
-                                    update_ledger("ENTRY", open_positions[sym])
-                                    print(f"🚨 [{bar_time}] ENTRY EXECUTED: BUY {sym} @ Rs {c:.2f} | Qty: {qty}")
-                                    del pending_signals[sym]
-                                    continue
 
-                            # Short Confirmation
-                            elif ps["side"] == "SELL" and c < ps["trigger_level"]:
-                                est_sl = ps["stop_loss"]
-                                risk_pts = est_sl - c
-                                est_tgt = round(c - (risk_pts * 1.5), 2)
-                                risk_check = risk_engine.evaluate_order_risk(
-                                    sym, "SELL", c, est_sl, est_tgt, capital, 0, len(trades_today), len(open_positions)
-                                )
-                                if risk_check["passed"]:
-                                    qty = risk_check["quantity"]
-                                    open_positions[sym] = {
-                                        "symbol": sym, "side": "SELL", "entry_time": bar_time,
-                                        "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
-                                    }
-                                    log_signal_to_csv("SELL", sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"Sold {qty} shares @ Rs {c}", trade_taken=True)
-                                    telegram_bot.send_trade_alert({
-                                        "symbol": sym, "side": "SELL", "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
-                                        "currency": "INR", "exchange": exch, "free_cash": capital, "strategy": f"Multi-EMA + Supertrend ({ps.get('setup_tag', 'Breakdown')})"
-                                    })
-                                    update_ledger("ENTRY", open_positions[sym])
-                                    print(f"🚨 [{bar_time}] ENTRY EXECUTED: SHORT SELL {sym} @ Rs {c:.2f} | Qty: {qty}")
-                                    del pending_signals[sym]
-                                    continue
-
-                    # 3. Detect New Signal Candle (Stage 1: Both BUY & SHORT SELL)
+                    # 3. Detect New Signal Candle via Unified Strategy Engine
                     if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time <= "15:00":
-                        # (A1) Fresh Bullish Flip
-                        is_bull_flip = (
-                            st_dir == 1 and st_dir_prev == -1 and
-                            (ema33 is None or c > ema33) and
-                            (macd_hist is not None and macd_hist >= 0)
-                        )
-                        # (A2) Low-Risk EMA 33 Pullback Bounce in Running Uptrend
-                        # Condition: Supertrend is Green + Price dipped to test near EMA 33 and bounced upwards + MACD bullish
-                        is_pullback_long = False
-                        if st_dir == 1 and ema33 is not None:
-                            tested_ema_low = l <= (ema33 * 1.0015) and c > ema33
-                            is_green_bar = c > o
-                            is_pullback_long = tested_ema_low and is_green_bar and (macd_hist is not None and macd_hist >= 0)
+                        bars_dict = {
+                            "open": opens, "high": highs, "low": lows, "close": closes, "volume": volumes
+                        }
+                        sig = strategy_engine.evaluate(sym, bars_dict, exchange=exch)
 
-                        is_bull_combo = is_bull_flip or is_pullback_long
-                        bull_tag = "Bullish Flip" if is_bull_flip else "EMA33 Pullback Bounce"
+                        if sig and sig.get("direction") in ("LONG", "SHORT"):
+                            side = "BUY" if sig["direction"] == "LONG" else "SELL"
+                            trigger = sig.get("entry_trigger", h if side == "BUY" else l)
+                            sl_level = sig.get("stop_loss", l if side == "BUY" else h)
+                            strat_title = sig.get("strategy_name", "UNIFIED_STRATEGY")
+                            desc = sig.get("setup_description", "Setup Triggered")
 
-                        # (B1) Fresh Bearish Flip
-                        is_bear_flip = (
-                            st_dir == -1 and st_dir_prev == 1 and
-                            (ema33 is None or c < ema33) and
-                            (macd_hist is not None and macd_hist <= 0)
-                        )
-                        # (B2) Low-Risk EMA 33 Pullback Rejection in Running Downtrend
-                        # Condition: Supertrend is Red + Price pulled up to touch/near EMA 33 and rejected downwards + MACD bearish
-                        is_pullback_short = False
-                        if st_dir == -1 and ema33 is not None:
-                            # Candle High tested near EMA33 (within 0.15%) and closed below it (rejection)
-                            tested_ema = h >= (ema33 * 0.9985) and c < ema33
-                            is_red_bar = c < o
-                            is_pullback_short = tested_ema and is_red_bar and (macd_hist is not None and macd_hist <= 0)
-
-                        is_bear_combo = is_bear_flip or is_pullback_short
-                        setup_tag = "Bearish Flip" if is_bear_flip else "EMA33 Pullback Rejection"
-
-                        if is_bull_combo:
-                            sl_level = round(min(l, ema33 if ema33 else l), 2)
                             pending_signals[sym] = {
-                                "side": "BUY",
+                                "side": side,
                                 "signal_time": bar_time,
                                 "signal_idx": len(raw_bars) - 1,
-                                "trigger_level": h,
+                                "trigger_level": trigger,
                                 "stop_loss": sl_level,
-                                "spot": c
+                                "spot": c,
+                                "strategy_name": strat_title,
+                                "setup_tag": strat_title
                             }
-                            log_signal_to_csv("BUY", sym, sym, c, h, "SIGNAL_GENERATED", f"{bull_tag} Triggered (Waiting Confirmation)", trade_taken=False)
+                            log_signal_to_csv(side, sym, sym, c, trigger, "SIGNAL_GENERATED", f"{strat_title} ({desc})", trade_taken=False)
                             telegram_bot.send_signal_alert({
-                                "symbol": sym, "exchange": exch, "side": f"BUY ({bull_tag})", "spot_price": c, "trigger_level": h, "stop_loss": sl_level,
-                                "strategy_name": f"Multi-EMA + Supertrend ({bull_tag})", "candle_time": bar_time
+                                "symbol": sym, "exchange": exch, "side": f"{side} ({strat_title})",
+                                "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
+                                "strategy_name": strat_title, "candle_time": bar_time
                             })
-                            print(f"🟢 [{bar_time}] STAGE 1 SIGNAL: {sym} {bull_tag} @ Rs {c:.2f}. Waiting confirmation above Rs {h:.2f}")
-
-                        elif is_bear_combo:
-                            # Tight Stop Loss: High of rejection candle (Minimal risk)
-                            sl_level = round(max(h, ema33 if ema33 else h), 2)
-                            pending_signals[sym] = {
-                                "side": "SELL",
-                                "signal_time": bar_time,
-                                "signal_idx": len(raw_bars) - 1,
-                                "trigger_level": l,
-                                "stop_loss": sl_level,
-                                "spot": c
-                            }
-                            log_signal_to_csv("SELL", sym, sym, c, l, "SIGNAL_GENERATED", f"{setup_tag} Triggered (Waiting Confirmation)", trade_taken=False)
-                            telegram_bot.send_signal_alert({
-                                "symbol": sym, "exchange": exch, "side": f"SHORT SELL ({setup_tag})", "spot_price": c, "trigger_level": l, "stop_loss": sl_level,
-                                "strategy_name": f"Multi-EMA + Supertrend ({setup_tag})", "candle_time": bar_time
-                            })
-                            print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} {setup_tag} @ Rs {c:.2f}. Waiting confirmation below Rs {l:.2f}")
+                            emoji = "🟢" if side == "BUY" else "🟡"
+                            print(f"{emoji} [{bar_time}] STAGE 1 SIGNAL: {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
 
                 except Exception as inner_e:
                     pass

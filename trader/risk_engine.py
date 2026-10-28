@@ -120,8 +120,9 @@ class RiskEngine:
                 "reasons": ["Risk per share is non-positive"]
             }
 
-        rr_ratio = reward_per_share / risk_per_share
-        if round(rr_ratio, 2) < round(self.min_reward_risk, 2):
+        rr_ratio = reward_per_share / max(0.001, risk_per_share)
+        # Rounding tolerance of 1e-4 prevents 1.49999 floating-point rejection
+        if round(rr_ratio, 2) + 1e-4 < round(self.min_reward_risk, 2):
             return {
                 "passed": False,
                 "quantity": 0,

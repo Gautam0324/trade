@@ -32,7 +32,16 @@ def run_comparison():
     bars = {'open': prices, 'high': highs, 'low': lows, 'close': closes, 'volume': volumes}
 
     bt = BacktestEngine(starting_capital=100000.0, cost_pct=0.0005)
-    strategies = ['EMA_CHANNEL', 'VWAP_PULLBACK', 'ORB', 'TREND_MOMENTUM', 'CONFLUENCE']
+    strategies = [
+        'BREAKOUT_RETEST',
+        'TREND_PULLBACK_RECLAIM',
+        'FAILED_BREAKDOWN',
+        'EMA_CHANNEL',
+        'VWAP_PULLBACK',
+        'ORB',
+        'TREND_MOMENTUM',
+        'CONFLUENCE'
+    ]
     or_high = max(highs[:3])
     or_low = min(lows[:3])
 
