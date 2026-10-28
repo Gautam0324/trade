@@ -1,9 +1,9 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 1000497.57,
-  "deployed_cash": 0.0,
-  "realized_pnl": 497.57,
+  "free_cash": 1000172.67,
+  "deployed_cash": 0,
+  "realized_pnl": 172.67,
   "open_positions": [],
   "trade_history": [
     {
@@ -1255,12 +1255,45 @@
       "reason": "Short Stop Loss Hit (Wick Touch)",
       "date": "2026-10-28",
       "exit_date": "2026-10-28"
+    },
+    {
+      "id": "POS-75",
+      "legacy_id": "POS-75",
+      "symbol": "JPL",
+      "qty": 293,
+      "entry_price": 1362.4,
+      "exit_price": 1362.4,
+      "date": "2026-10-28",
+      "entry_date": "2026-10-28",
+      "exit_date": "2026-10-28",
+      "entry_time": "12:26",
+      "exit_time": "13:17:25 IST",
+      "entry_reason": "Strategy Entry",
+      "exit_reason": "Manual User Squareoff / Clear All Holdings",
+      "invested": 399183.2,
+      "returned": 399183.2,
+      "pnl": 0.0,
+      "reason": "Manual User Squareoff / Clear All Holdings"
+    },
+    {
+      "symbol": "RELIANCE_BSE",
+      "side": "BUY",
+      "qty": 342,
+      "entry_price": 1168.0,
+      "exit_price": 1167.05,
+      "entry_time": "13:35",
+      "exit_time": "13:38",
+      "pnl": -324.9,
+      "reason": "Stop Loss Hit (Wick Touch)",
+      "date": "2026-10-28",
+      "exit_date": "2026-10-28"
     }
   ],
-  "last_updated": "2026-10-28 11:56:13 IST",
+  "last_updated": "2026-10-28 13:38:18 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
-    "2026-10-26": 449.15
+    "2026-10-26": 449.15,
+    "2026-10-28": 0.0
   },
   "trades": []
 }

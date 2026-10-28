@@ -5,3 +5,18 @@ timestamp,signal_type,asset,option_contract,spot_price,trigger_level,status,reas
 "2026-10-28 11:37:57 IST","SELL","RELIANCE","RELIANCE",1175.30,1175.10,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
 "2026-10-28 11:38:17 IST","SELL","INFY","INFY",1105.10,1105.10,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
 "2026-10-28 11:38:28 IST","SELL","TCS","TCS",2408.20,2412.00,"CONFIRMED_EXECUTED","Sold 166 shares @ Rs 2408.2",True
+"2026-10-28 12:05:22 IST","SELL","HDFCBANK","HDFCBANK",680.55,680.55,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 12:25:36 IST","SELL","JPL","JPL",1362.60,1362.60,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 12:26:05 IST","SELL","JPL","JPL",1362.40,1362.60,"CONFIRMED_EXECUTED","Sold 293 shares @ Rs 1362.4",True
+"2026-10-28 12:26:38 IST","BUY","RELIANCE","RELIANCE",1174.30,1175.00,"SIGNAL_GENERATED","Bullish Combo Triggered (Waiting Confirmation)",False
+"2026-10-28 13:18:34 IST","SELL","JPL","JPL",1360.20,1360.20,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 13:23:07 IST","SELL","HDFCBANK","HDFCBANK",684.05,684.00,"SIGNAL_GENERATED","EMA33 Pullback Rejection Triggered (Waiting Confirmation)",False
+"2026-10-28 13:34:02 IST","BUY","HDFCBANK","HDFCBANK",685.10,685.15,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:34:47 IST","BUY","RELIANCE_BSE","RELIANCE_BSE",1167.65,1167.80,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:34:52 IST","BUY","HDFCBANK_BSE","HDFCBANK_BSE",685.50,685.50,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:35:28 IST","BUY","RELIANCE_BSE","RELIANCE_BSE",1168.00,1167.80,"CONFIRMED_EXECUTED","Bought 342 shares @ Rs 1168.0",True
+"2026-10-28 13:43:03 IST","BUY","HDFCBANK","HDFCBANK",685.60,685.75,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:44:38 IST","BUY","TCS_BSE","TCS_BSE",2458.90,2458.90,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:45:06 IST","BUY","HDFCBANK_BSE","HDFCBANK_BSE",686.60,686.90,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:45:17 IST","BUY","RELIANCE","RELIANCE",1167.60,1167.60,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False
+"2026-10-28 13:45:24 IST","BUY","RELIANCE_BSE","RELIANCE_BSE",1167.90,1167.90,"SIGNAL_GENERATED","EMA33 Pullback Bounce Triggered (Waiting Confirmation)",False

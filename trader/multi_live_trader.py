@@ -34,11 +34,16 @@ import telegram_bot
 import download_historical_1min as dh
 
 WATCHLIST = [
-    {"symbol": "JPL", "token": "766830", "name": "JPL (Newly Listed)"},
-    {"symbol": "TCS", "token": "11536", "name": "Tata Consultancy Services"},
-    {"symbol": "RELIANCE", "token": "2885", "name": "Reliance Industries"},
-    {"symbol": "INFY", "token": "1594", "name": "Infosys"},
-    {"symbol": "HDFCBANK", "token": "1333", "name": "HDFC Bank"}
+    # Top Liquid NSE Stocks
+    {"symbol": "JPL", "token": "766830", "exchange": "NSE", "name": "JPL (Newly Listed)"},
+    {"symbol": "TCS", "token": "11536", "exchange": "NSE", "name": "Tata Consultancy Services"},
+    {"symbol": "RELIANCE", "token": "2885", "exchange": "NSE", "name": "Reliance Industries"},
+    {"symbol": "INFY", "token": "1594", "exchange": "NSE", "name": "Infosys"},
+    {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"},
+    # High-Volume BSE Stocks
+    {"symbol": "RELIANCE_BSE", "token": "500325", "exchange": "BSE", "name": "Reliance Industries (BSE)"},
+    {"symbol": "TCS_BSE", "token": "532540", "exchange": "BSE", "name": "TCS (BSE)"},
+    {"symbol": "HDFCBANK_BSE", "token": "500180", "exchange": "BSE", "name": "HDFC Bank (BSE)"}
 ]
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger.json"
@@ -259,10 +264,11 @@ def run_multi_symbol_trader():
             for item in WATCHLIST:
                 sym = item["symbol"]
                 token = item["token"]
+                exch = item.get("exchange", "NSE")
 
                 try:
                     resp = api.getCandleData({
-                        "exchange": "NSE",
+                        "exchange": exch,
                         "symboltoken": token,
                         "interval": "ONE_MINUTE",
                         "fromdate": f"{today_str} 09:15",
@@ -389,8 +395,10 @@ def run_multi_symbol_trader():
                     # 2. Check Pending Signal Confirmation for this Symbol (BUY or SELL)
                     if sym in pending_signals:
                         ps = pending_signals[sym]
-                        if len(raw_bars) > ps["signal_idx"] + 2:
-                            cancel_msg = "Confirmation timeout: Price did not break trigger level within 2 minutes"
+                        current_candle_count = len(raw_bars)
+                        # Cancel if 2 new bars passed without confirmation
+                        if current_candle_count >= ps["signal_idx"] + 2:
+                            cancel_msg = "Price did not break trigger level within confirmation window"
                             print(f"⚪ [{bar_time}] {ps['side']} {sym} Signal Cancelled ({cancel_msg})")
                             log_signal_to_csv(
                                 ps["side"], sym, sym, ps["spot"], ps["trigger_level"],
@@ -398,6 +406,7 @@ def run_multi_symbol_trader():
                             )
                             telegram_bot.send_signal_cancelled_alert({
                                 "symbol": f"{sym} ({ps['side']})",
+                                "exchange": exch,
                                 "reason": cancel_msg,
                                 "trigger_level": ps["trigger_level"],
                                 "candle_time": bar_time
@@ -421,7 +430,7 @@ def run_multi_symbol_trader():
                                     log_signal_to_csv("BUY", sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"Bought {qty} shares @ Rs {c}", trade_taken=True)
                                     telegram_bot.send_trade_alert({
                                         "symbol": sym, "side": "BUY", "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
-                                        "currency": "INR", "exchange": "NSE", "free_cash": capital - (qty * c), "strategy": "Multi-EMA + Supertrend + MACD"
+                                        "currency": "INR", "exchange": exch, "free_cash": capital - (qty * c), "strategy": f"Multi-EMA + Supertrend ({ps.get('setup_tag', 'Breakout')})"
                                     })
                                     update_ledger("ENTRY", open_positions[sym])
                                     print(f"🚨 [{bar_time}] ENTRY EXECUTED: BUY {sym} @ Rs {c:.2f} | Qty: {qty}")
@@ -445,7 +454,7 @@ def run_multi_symbol_trader():
                                     log_signal_to_csv("SELL", sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"Sold {qty} shares @ Rs {c}", trade_taken=True)
                                     telegram_bot.send_trade_alert({
                                         "symbol": sym, "side": "SELL", "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
-                                        "currency": "INR", "exchange": "NSE", "free_cash": capital, "strategy": "Multi-EMA + Supertrend + MACD"
+                                        "currency": "INR", "exchange": exch, "free_cash": capital, "strategy": f"Multi-EMA + Supertrend ({ps.get('setup_tag', 'Breakdown')})"
                                     })
                                     update_ledger("ENTRY", open_positions[sym])
                                     print(f"🚨 [{bar_time}] ENTRY EXECUTED: SHORT SELL {sym} @ Rs {c:.2f} | Qty: {qty}")
@@ -454,19 +463,30 @@ def run_multi_symbol_trader():
 
                     # 3. Detect New Signal Candle (Stage 1: Both BUY & SHORT SELL)
                     if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time <= "15:00":
-                        # (A) Fresh Bullish Flip
-                        is_bull_combo = (
+                        # (A1) Fresh Bullish Flip
+                        is_bull_flip = (
                             st_dir == 1 and st_dir_prev == -1 and
                             (ema33 is None or c > ema33) and
                             (macd_hist is not None and macd_hist >= 0)
                         )
-                        # (B) Fresh Bearish Flip
+                        # (A2) Low-Risk EMA 33 Pullback Bounce in Running Uptrend
+                        # Condition: Supertrend is Green + Price dipped to test near EMA 33 and bounced upwards + MACD bullish
+                        is_pullback_long = False
+                        if st_dir == 1 and ema33 is not None:
+                            tested_ema_low = l <= (ema33 * 1.0015) and c > ema33
+                            is_green_bar = c > o
+                            is_pullback_long = tested_ema_low and is_green_bar and (macd_hist is not None and macd_hist >= 0)
+
+                        is_bull_combo = is_bull_flip or is_pullback_long
+                        bull_tag = "Bullish Flip" if is_bull_flip else "EMA33 Pullback Bounce"
+
+                        # (B1) Fresh Bearish Flip
                         is_bear_flip = (
                             st_dir == -1 and st_dir_prev == 1 and
                             (ema33 is None or c < ema33) and
                             (macd_hist is not None and macd_hist <= 0)
                         )
-                        # (C) Low-Risk EMA 33 Pullback Rejection in Running Downtrend
+                        # (B2) Low-Risk EMA 33 Pullback Rejection in Running Downtrend
                         # Condition: Supertrend is Red + Price pulled up to touch/near EMA 33 and rejected downwards + MACD bearish
                         is_pullback_short = False
                         if st_dir == -1 and ema33 is not None:
@@ -479,20 +499,21 @@ def run_multi_symbol_trader():
                         setup_tag = "Bearish Flip" if is_bear_flip else "EMA33 Pullback Rejection"
 
                         if is_bull_combo:
+                            sl_level = round(min(l, ema33 if ema33 else l), 2)
                             pending_signals[sym] = {
                                 "side": "BUY",
                                 "signal_time": bar_time,
                                 "signal_idx": len(raw_bars) - 1,
                                 "trigger_level": h,
-                                "stop_loss": l,
+                                "stop_loss": sl_level,
                                 "spot": c
                             }
-                            log_signal_to_csv("BUY", sym, sym, c, h, "SIGNAL_GENERATED", "Bullish Combo Triggered (Waiting Confirmation)", trade_taken=False)
+                            log_signal_to_csv("BUY", sym, sym, c, h, "SIGNAL_GENERATED", f"{bull_tag} Triggered (Waiting Confirmation)", trade_taken=False)
                             telegram_bot.send_signal_alert({
-                                "symbol": sym, "side": "BUY", "spot_price": c, "trigger_level": h, "stop_loss": l,
-                                "strategy_name": "Multi-EMA + Supertrend + MACD", "candle_time": bar_time
+                                "symbol": sym, "exchange": exch, "side": f"BUY ({bull_tag})", "spot_price": c, "trigger_level": h, "stop_loss": sl_level,
+                                "strategy_name": f"Multi-EMA + Supertrend ({bull_tag})", "candle_time": bar_time
                             })
-                            print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} Bullish Combo @ Rs {c:.2f}. Waiting confirmation above Rs {h:.2f}")
+                            print(f"🟢 [{bar_time}] STAGE 1 SIGNAL: {sym} {bull_tag} @ Rs {c:.2f}. Waiting confirmation above Rs {h:.2f}")
 
                         elif is_bear_combo:
                             # Tight Stop Loss: High of rejection candle (Minimal risk)
@@ -507,7 +528,7 @@ def run_multi_symbol_trader():
                             }
                             log_signal_to_csv("SELL", sym, sym, c, l, "SIGNAL_GENERATED", f"{setup_tag} Triggered (Waiting Confirmation)", trade_taken=False)
                             telegram_bot.send_signal_alert({
-                                "symbol": sym, "side": f"SHORT SELL ({setup_tag})", "spot_price": c, "trigger_level": l, "stop_loss": sl_level,
+                                "symbol": sym, "exchange": exch, "side": f"SHORT SELL ({setup_tag})", "spot_price": c, "trigger_level": l, "stop_loss": sl_level,
                                 "strategy_name": f"Multi-EMA + Supertrend ({setup_tag})", "candle_time": bar_time
                             })
                             print(f"🟡 [{bar_time}] STAGE 1 SIGNAL: {sym} {setup_tag} @ Rs {c:.2f}. Waiting confirmation below Rs {l:.2f}")

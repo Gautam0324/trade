@@ -85,21 +85,24 @@ def send_signal_alert(signal_data):
     strategy = signal_data.get("strategy_name", "CONFLUENCE")
     opt_contract = signal_data.get("option_contract", "")
     candle_time = signal_data.get("candle_time") or datetime.datetime.now().strftime("%I:%M %p IST")
+    exchange = signal_data.get("exchange", "NSE")
 
+    side_emoji = "🟢" if "BUY" in side else "🔴"
     opt_line = f"🎯 <b>Watchlist Option:</b> <code>{opt_contract}</code>\n" if opt_contract else ""
 
     msg = (
-        f"🟡 <b>[STAGE 1: SIGNAL CANDLE FORMED]</b> 🟡\n"
-        f"🏷️ <b>Asset:</b> {sym} ({side})\n"
+        f"🟡 <b>[STAGE 1: SIGNAL FORMED] {side_emoji} {sym}</b>\n\n"
+        f"📌 <b>Stock Symbol:</b> <code>{sym}</code> ({exchange})\n"
+        f"🧭 <b>Action:</b> <b>{side}</b>\n"
         f"🧠 <b>Strategy:</b> <code>{strategy}</code>\n"
         f"🕒 <b>Candle Time:</b> <code>{candle_time}</code>\n"
-        f"📍 <b>Signal Close:</b> ₹{spot_price:,.2f}\n"
+        f"📍 <b>Signal Spot Close:</b> ₹{spot_price:,.2f}\n"
         f"{opt_line}"
         f"----------------------------------------\n"
-        f"👀 <b>Confirmation Condition:</b>\n"
-        f"  • Waiting for next 5-min candle to cross above <b>₹{trigger_level:,.2f}</b>\n"
-        f"  • Setup SL Benchmark: <b>₹{sl_level:,.2f}</b>\n\n"
-        f"⏳ <i>NO ENTRY YET. Waiting for Confirmation Candle close before placing order!</i>"
+        f"👀 <b>Confirmation Trigger:</b>\n"
+        f"  • Waiting for candle to cross: <b>₹{trigger_level:,.2f}</b>\n"
+        f"  • SL Benchmark Level: <b>₹{sl_level:,.2f}</b>\n\n"
+        f"⏳ <i>NO ENTRY YET. Waiting for confirmation breakout before placing order!</i>"
     )
     return send_telegram_message(msg)
 
@@ -112,15 +115,16 @@ def send_signal_cancelled_alert(cancel_data):
     reason = cancel_data.get("reason", "Price failed to cross trigger level / Timed out")
     trigger_level = float(cancel_data.get("trigger_level", 0.0))
     candle_time = cancel_data.get("candle_time") or datetime.datetime.now().strftime("%I:%M %p IST")
+    exchange = cancel_data.get("exchange", "NSE")
 
     msg = (
-        f"⚪ <b>[SIGNAL INVALIDATED / CANCELLED]</b> ⚪\n"
-        f"🏷️ <b>Asset:</b> {sym}\n"
+        f"⚪ <b>[SIGNAL CANCELLED] ❌ {sym}</b>\n\n"
+        f"📌 <b>Stock Symbol:</b> <code>{sym}</code> ({exchange})\n"
         f"🕒 <b>Time:</b> <code>{candle_time}</code>\n"
         f"⚠️ <b>Reason:</b> {reason}\n"
         f"🎯 <b>Unmet Trigger Level:</b> ₹{trigger_level:,.2f}\n"
         f"----------------------------------------\n"
-        f"🛡️ <i>No trade taken. Capital 100% safe! Waiting for fresh 1-min setup.</i>"
+        f"🛡️ <i>No trade taken. Capital 100% safe! Waiting for fresh setup.</i>"
     )
     return send_telegram_message(msg)
 
@@ -209,6 +213,8 @@ def send_exit_alert(exit_data):
     is_profit = total_pnl >= 0
 
     pnl_badge = f"🟢 PROFIT: +{sym_icon}{total_pnl:,.2f} (+{pnl_pct}%)" if is_profit else f"🔴 LOSS: -{sym_icon}{abs(total_pnl):,.2f} ({pnl_pct}%)"
+    header_title = "⚡ <b>TRADE EXITED: PROFIT BOOKED!</b> ⚡" if is_profit else "🛑 <b>TRADE EXITED: STOP-LOSS HIT / LOSS CUT</b> 🛑"
+    footer_text = "✅ <i>Profit locked in. Position closed and capital released.</i>" if is_profit else "🛡️ <i>Strict risk control enforced. Capital protected for next setup.</i>"
 
     free_cash = exit_data.get("free_cash")
     realized_pnl = exit_data.get("realized_pnl")
@@ -221,8 +227,8 @@ def send_exit_alert(exit_data):
         )
 
     msg = (
-        f"⚡ <b>TRADE EXITED: PROFIT BOOKED!</b> ⚡\n\n"
-        f"🏷️ <b>Stock:</b> {sym} ({exchange})\n"
+        f"{header_title}\n\n"
+        f"🏷️ <b>Stock:</b> <code>{sym}</code> ({exchange})\n"
         f"📦 <b>Quantity:</b> {qty} Shares\n"
         f"💵 <b>Result:</b> <b>{pnl_badge}</b>\n\n"
         f"📍 <b>Buy Entry Price:</b> {sym_icon}{entry_price:,.2f}\n"
@@ -231,7 +237,7 @@ def send_exit_alert(exit_data):
         f"🔍 <b>Trigger Reason:</b> {reason}\n"
         f"💰 <b>Cash Credited Back:</b> {sym_icon}{(qty * exit_price):,.2f}\n\n"
         f"{balance_block}"
-        f"✅ <i>Profit locked in. Position closed and capital released.</i>"
+        f"{footer_text}"
     )
     return send_telegram_message(msg)
 

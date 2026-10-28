@@ -95,7 +95,8 @@ def is_market_open():
 
 def check_daemon_status():
     """
-    Checks if trader-scanner/daemon.py is currently running by reading trader/state/daemon.lock.
+    Checks if trading bot is currently running.
+    Checks multi_trader.lock and daemon.lock.
     """
     global daemon_process
     if daemon_process is not None:
@@ -105,6 +106,20 @@ def check_daemon_status():
         else:
             daemon_process = None
 
+    # 1. Check multi_live_trader lock
+    multi_lock = TRADER_DIR / "multi_trader.lock"
+    if os.path.exists(multi_lock):
+        try:
+            with open(multi_lock, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content.isdigit():
+                    pid = int(content)
+                    if is_pid_running(pid):
+                        return {"status": "RUNNING", "pid": pid, "managed": False, "bot_type": "Multi-Live Trader"}
+        except Exception:
+            pass
+
+    # 2. Check daemon.lock
     lock_path = STATE_DIR / "daemon.lock"
     if os.path.exists(lock_path):
         try:
@@ -113,15 +128,10 @@ def check_daemon_status():
                 if content.isdigit():
                     pid = int(content)
                     if is_pid_running(pid):
-                        return {"status": "RUNNING", "pid": pid, "managed": False}
-                    else:
-                        # Stale lock file
-                        try:
-                            os.remove(lock_path)
-                        except OSError:
-                            pass
+                        return {"status": "RUNNING", "pid": pid, "managed": False, "bot_type": "Scanner Daemon"}
         except Exception:
             pass
+
     return {"status": "STOPPED", "pid": None, "managed": False}
 
 def is_pid_running(pid):
@@ -142,69 +152,117 @@ def is_pid_running(pid):
 
 def fetch_live_quote_data(symbol):
     now_ts = time.time()
-    if symbol in quote_cache:
-        cached = quote_cache[symbol]
+    clean_sym = symbol.replace(".NS", "").replace(".BO", "")
+
+    if clean_sym in quote_cache:
+        cached = quote_cache[clean_sym]
         if (now_ts - cached["timestamp"]) < QUOTE_CACHE_TTL:
             return cached["data"]
 
-    import daemon
-    quotes = daemon.fetch_candles(symbol)
-    if not quotes or not quotes.get("close"):
+    # First check live ticks SQLite DB updated by multi_live_trader
+    ticks_db = TRADER_DIR / "ticks_market_data.db"
+    if os.path.exists(ticks_db):
+        try:
+            import sqlite3
+            conn = sqlite3.connect(ticks_db, timeout=2)
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT open, high, low, close, volume, timestamp 
+                FROM ticks 
+                WHERE symbol = ? OR symbol = ? 
+                ORDER BY id DESC LIMIT 2
+            """, (clean_sym, symbol))
+            rows = cur.fetchall()
+            conn.close()
+
+            if rows:
+                latest = rows[0]
+                prev = rows[1] if len(rows) > 1 else latest
+                cur_p = round(float(latest[3]), 2)
+                prev_p = round(float(prev[3]), 2)
+                change = round(cur_p - prev_p, 2)
+                change_pct = round((change / prev_p) * 100, 2) if prev_p > 0 else 0.0
+
+                data = {
+                    "symbol": symbol,
+                    "price": cur_p,
+                    "prev_close": prev_p,
+                    "change": change,
+                    "change_pct": change_pct,
+                    "high": float(latest[1]),
+                    "low": float(latest[2]),
+                    "open": float(latest[0]),
+                    "volume": float(latest[4]) if latest[4] else 0,
+                    "signal": "HOLD",
+                    "confluence_score": 50.0,
+                    "confluence_weights": {},
+                    "rejections": [],
+                    "ema5": cur_p,
+                    "ema9": cur_p,
+                    "ema33_high": cur_p,
+                    "ema33_low": cur_p,
+                    "supertrend": None,
+                    "rsi": 50.0,
+                    "adx": 20.0,
+                    "vwap": cur_p,
+                    "rvol": 1.0,
+                    "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+                }
+                quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+                return data
+        except Exception:
+            pass
+
+    # Fallback to daemon if ticks DB didn't have it
+    try:
+        import daemon
+        quotes = daemon.fetch_candles(symbol)
+        if not quotes or not quotes.get("close"):
+            return None
+
+        closes = [c for c in quotes["close"] if c is not None]
+        highs = [h for h in quotes.get("high", []) if h is not None]
+        lows = [l for l in quotes.get("low", []) if l is not None]
+        opens = [o for o in quotes.get("open", []) if o is not None]
+        volumes = [v for v in quotes.get("volume", []) if v is not None]
+
+        if not closes:
+            return None
+
+        cur_p = round(float(closes[-1]), 2)
+        prev_close = round(float(closes[-2]), 2) if len(closes) > 1 else cur_p
+        change = round(cur_p - prev_close, 2)
+        change_pct = round((change / prev_close) * 100, 2) if prev_close > 0 else 0.0
+
+        data = {
+            "symbol": symbol,
+            "price": cur_p,
+            "prev_close": prev_close,
+            "change": change,
+            "change_pct": change_pct,
+            "high": max(highs) if highs else cur_p,
+            "low": min(lows) if lows else cur_p,
+            "open": opens[-1] if opens else cur_p,
+            "volume": volumes[-1] if volumes else 0,
+            "signal": "HOLD",
+            "confluence_score": 50.0,
+            "confluence_weights": {},
+            "rejections": [],
+            "ema5": cur_p,
+            "ema9": cur_p,
+            "ema33_high": cur_p,
+            "ema33_low": cur_p,
+            "supertrend": None,
+            "rsi": 50.0,
+            "adx": 20.0,
+            "vwap": cur_p,
+            "rvol": 1.0,
+            "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+        }
+        quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+        return data
+    except Exception:
         return None
-
-    closes = [c for c in quotes["close"] if c is not None]
-    highs = [h for h in quotes.get("high", []) if h is not None]
-    lows = [l for l in quotes.get("low", []) if l is not None]
-    opens = [o for o in quotes.get("open", []) if o is not None]
-    volumes = [v for v in quotes.get("volume", []) if v is not None]
-
-    if not closes:
-        return None
-
-    cur_p = round(float(closes[-1]), 2)
-    prev_close = round(float(closes[-2]), 2) if len(closes) > 1 else cur_p
-    change = round(cur_p - prev_close, 2)
-    change_pct = round((change / prev_close) * 100, 2) if prev_close > 0 else 0.0
-
-    # Indicator calculation
-    import ema_strategy
-    from strategy_engine import StrategyEngine
-    strat_eng = StrategyEngine({"strategy_mode": "CONFLUENCE"})
-    confluence_res = strat_eng.evaluate_all(symbol, quotes)
-
-    ema_eval = ema_strategy.evaluate_ema_setup(quotes)
-
-    data = {
-        "symbol": symbol,
-        "price": cur_p,
-        "prev_close": prev_close,
-        "change": change,
-        "change_pct": change_pct,
-        "high": max(highs) if highs else cur_p,
-        "low": min(lows) if lows else cur_p,
-        "open": opens[-1] if opens else cur_p,
-        "volume": volumes[-1] if volumes else 0,
-        "signal": confluence_res.get("signal", "HOLD"),
-        "confluence_score": confluence_res.get("confluence_score", 0.0),
-        "confluence_weights": confluence_res.get("component_weights", {}),
-        "rejections": confluence_res.get("rejections", []),
-        "ema5": ema_eval.get("ema5", cur_p),
-        "ema9": ema_eval.get("ema9", cur_p),
-        "ema33_high": ema_eval.get("ema33_high", cur_p),
-        "ema33_low": ema_eval.get("ema33_low", cur_p),
-        "supertrend": confluence_res.get("indicator_values", {}).get("supertrend"),
-        "rsi": confluence_res.get("indicator_values", {}).get("rsi"),
-        "adx": confluence_res.get("indicator_values", {}).get("adx"),
-        "vwap": confluence_res.get("indicator_values", {}).get("vwap"),
-        "rvol": confluence_res.get("indicator_values", {}).get("rvol"),
-        "last_updated": get_ist_now().strftime("%H:%M:%S IST")
-    }
-
-    quote_cache[symbol] = {
-        "timestamp": now_ts,
-        "data": data
-    }
-    return data
 
 def compute_dashboard_metrics():
     """
