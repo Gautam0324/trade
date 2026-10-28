@@ -55,11 +55,17 @@ def run_all():
 
         # Monitor processes
         while True:
-            for name, proc in processes:
+            for item in list(processes):
+                name, proc = item
                 poll = proc.poll()
                 if poll is not None:
-                    print(f"\n[ALERT] {name} exited with code {poll}.")
-                    return
+                    if name == "Live Trader" and poll == 0:
+                        print(f"\n[INFO] Live Trader completed trading session for today.")
+                        print(f"[*] Dashboard remains live on http://localhost:8080 (Press Ctrl+C to stop).")
+                        processes.remove(item)
+                    else:
+                        print(f"\n[ALERT] {name} exited with code {poll}.")
+                        return
             time.sleep(1)
 
     except KeyboardInterrupt:
