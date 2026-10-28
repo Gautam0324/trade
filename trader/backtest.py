@@ -43,6 +43,9 @@ class BacktestEngine:
             raise FileNotFoundError(f"Historical data file not found: {filepath}")
 
         df = pd.read_csv(filepath)
+        if max_bars and len(df) > max_bars * 2:
+            df = df.iloc[-(max_bars * 2):].reset_index(drop=True)
+
         required_cols = {"timestamp", "open", "high", "low", "close"}
         if not required_cols.issubset(set(df.columns)):
             raise ValueError(f"CSV missing required columns {required_cols}. Found: {df.columns.tolist()}")
@@ -198,13 +201,14 @@ class BacktestEngine:
 
             # 2. Check for New Entry if flat
             if open_position is None:
+                start_idx = max(0, i - 250)
                 sliced_bars = {
-                    "timestamp": timestamps[:i+1],
-                    "open": opens[:i+1],
-                    "high": highs[:i+1],
-                    "low": lows[:i+1],
-                    "close": closes[:i+1],
-                    "volume": volumes[:i+1]
+                    "timestamp": timestamps[start_idx:i+1],
+                    "open": opens[start_idx:i+1],
+                    "high": highs[start_idx:i+1],
+                    "low": lows[start_idx:i+1],
+                    "close": closes[start_idx:i+1],
+                    "volume": volumes[start_idx:i+1]
                 }
                 sig = strat_eng.evaluate(symbol, sliced_bars)
 
