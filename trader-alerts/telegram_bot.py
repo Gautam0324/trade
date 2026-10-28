@@ -210,11 +210,19 @@ def send_exit_alert(exit_data):
     profit_per_share = round(exit_price - entry_price, 2)
     total_pnl = round(profit_per_share * qty, 2)
     pnl_pct = round((profit_per_share / entry_price) * 100, 2) if entry_price > 0 else 0.0
-    is_profit = total_pnl >= 0
 
-    pnl_badge = f"🟢 PROFIT: +{sym_icon}{total_pnl:,.2f} (+{pnl_pct}%)" if is_profit else f"🔴 LOSS: -{sym_icon}{abs(total_pnl):,.2f} ({pnl_pct}%)"
-    header_title = "⚡ <b>TRADE EXITED: PROFIT BOOKED!</b> ⚡" if is_profit else "🛑 <b>TRADE EXITED: STOP-LOSS HIT / LOSS CUT</b> 🛑"
-    footer_text = "✅ <i>Profit locked in. Position closed and capital released.</i>" if is_profit else "🛡️ <i>Strict risk control enforced. Capital protected for next setup.</i>"
+    if total_pnl > 0:
+        pnl_badge = f"🟢 PROFIT: +{sym_icon}{total_pnl:,.2f} (+{pnl_pct}%)"
+        header_title = "⚡ <b>TRADE EXITED: PROFIT BOOKED!</b> ⚡"
+        footer_text = "✅ <i>Profit locked in. Position closed and capital released.</i>"
+    elif total_pnl < 0:
+        pnl_badge = f"🔴 LOSS: -{sym_icon}{abs(total_pnl):,.2f} ({pnl_pct}%)"
+        header_title = "🛑 <b>TRADE EXITED: LOSS CUT / STOP-LOSS HIT</b> 🛑"
+        footer_text = "🛡️ <i>Strict risk control enforced. Capital protected for next setup.</i>"
+    else:
+        pnl_badge = f"⚪ BREAKEVEN: ₹0.00 (0.00%)"
+        header_title = "🔄 <b>TRADE EXITED: BREAKEVEN / FLAT SQUARE-OFF</b> 🔄"
+        footer_text = "⚖️ <i>Position closed flat. Full capital released without loss.</i>"
 
     free_cash = exit_data.get("free_cash")
     realized_pnl = exit_data.get("realized_pnl")
