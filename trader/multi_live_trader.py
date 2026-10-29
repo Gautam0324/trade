@@ -48,16 +48,12 @@ import telegram_bot
 import download_historical_1min as dh
 
 WATCHLIST = [
-    # Top Liquid NSE Stocks
+    # Top Liquid NSE Stocks (NSE Only - BSE Trading Disabled)
     {"symbol": "JPL", "token": "766830", "exchange": "NSE", "name": "JPL (Newly Listed)"},
     {"symbol": "TCS", "token": "11536", "exchange": "NSE", "name": "Tata Consultancy Services"},
     {"symbol": "RELIANCE", "token": "2885", "exchange": "NSE", "name": "Reliance Industries"},
     {"symbol": "INFY", "token": "1594", "exchange": "NSE", "name": "Infosys"},
-    {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"},
-    # High-Volume BSE Stocks
-    {"symbol": "RELIANCE_BSE", "token": "500325", "exchange": "BSE", "name": "Reliance Industries (BSE)"},
-    {"symbol": "TCS_BSE", "token": "532540", "exchange": "BSE", "name": "TCS (BSE)"},
-    {"symbol": "HDFCBANK_BSE", "token": "500180", "exchange": "BSE", "name": "HDFC Bank (BSE)"}
+    {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"}
 ]
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger.json"
@@ -120,26 +116,28 @@ def log_signal_to_csv(signal_type, asset, contract, spot_price, trigger_level, s
     except Exception as e:
         print(f"[CSV LOG ERROR] {e}")
 
-def acquire_instance_lock():
-    """Ensures only ONE instance of the trading bot runs at any time."""
-    pid = os.getpid()
-    if os.path.exists(LOCK_PATH):
-        try:
-            with open(LOCK_PATH, "r") as f:
-                old_pid = int(f.read().strip())
-            import ctypes
-            kernel32 = ctypes.windll.kernel32
-            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-            h_proc = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, old_pid)
-            if h_proc:
-                kernel32.CloseHandle(h_proc)
-                print(f"[FATAL] Another bot instance is already running with PID {old_pid}! Exiting to prevent duplicate trades.")
-                sys.exit(0)
-        except Exception:
-            pass  # Lock is stale or unreadable
+_instance_lock_handle = None
 
-    with open(LOCK_PATH, "w") as f:
-        f.write(str(pid))
+def acquire_instance_lock():
+    """
+    Ensures only ONE instance of the trading bot runs at any time.
+    Uses kernel-level non-blocking file locking so locks are automatically
+    released by the OS even on unexpected process termination.
+    """
+    global _instance_lock_handle
+    try:
+        _instance_lock_handle = open(LOCK_PATH, "w")
+        if sys.platform == "win32":
+            import msvcrt
+            msvcrt.locking(_instance_lock_handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(_instance_lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _instance_lock_handle.write(str(os.getpid()))
+        _instance_lock_handle.flush()
+    except (IOError, OSError):
+        print(f"[FATAL] Another bot instance is already actively running! Exiting to prevent duplicate trades.")
+        sys.exit(0)
 
 # -------------------------------------------------------------------------
 # CANDLE MANAGEMENT & COMPLETED CANDLE ENFORCEMENT
@@ -399,6 +397,8 @@ def run_multi_symbol_trader():
 
     pending_signals = {}
     last_processed_times = {w["symbol"]: None for w in WATCHLIST}
+    last_benchmark_time = 0.0
+    benchmark_bars = None
 
     while True:
         try:
@@ -465,13 +465,19 @@ def run_multi_symbol_trader():
                 print(f"[MARKET CLOSED] End of session: {current_time_str}")
                 break
 
-            # Fetch benchmark data for relative strength calculations
-            benchmark_bars = fetch_benchmark_data(api, today_str, current_time_str, symbol=cfg.get("benchmark_symbol", "NIFTY 50"))
+            # Fetch benchmark data for relative strength calculations (cached for 60 seconds to respect API rate limits)
+            if not last_benchmark_time or (time.time() - last_benchmark_time) > 60:
+                benchmark_bars = fetch_benchmark_data(api, today_str, current_time_str, symbol=cfg.get("benchmark_symbol", "NIFTY 50"))
+                last_benchmark_time = time.time()
 
             for item in WATCHLIST:
                 sym = item["symbol"]
                 token = item["token"]
                 exch = item.get("exchange", "NSE")
+
+                # Strictly ignore any BSE tickers or exchange
+                if exch.upper() == "BSE" or sym.upper().endswith("_BSE") or sym.upper().endswith(".BO"):
+                    continue
 
                 try:
                     resp = api.getCandleData({
@@ -714,7 +720,10 @@ def run_multi_symbol_trader():
                                 print(f"[STAGE 1 SIGNAL] [{bar_time}] {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
 
                 except Exception as inner_e:
+                    err_msg = str(inner_e)
                     print(f"[PROCESSING ERROR] symbol={sym} time={current_time_str} error={type(inner_e).__name__}: {inner_e}")
+                    if "exceeding access rate" in err_msg:
+                        time.sleep(2.5)
 
                 time.sleep(1.8)
 
