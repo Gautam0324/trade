@@ -67,7 +67,29 @@ class RiskEngine:
                 "reasons": [f"Maximum daily orders count reached ({today_orders_count}/{self.max_orders_per_day})"]
             }
 
-        # 2. Futures / Options / Derivatives validation
+        # 2. Exchange & Blocked Ticker Verification (e.g. Block BSE)
+        allow_bse = bool(self.config.get("allow_bse", False))
+        blocked_exchanges = set(self.config.get("blocked_exchanges", []))
+        blocked_symbols = [b.upper() for b in self.config.get("blocked", [])]
+        sym_upper = symbol.upper()
+
+        if not allow_bse or "BSE" in blocked_exchanges:
+            if sym_upper.endswith("_BSE") or sym_upper.endswith(".BO"):
+                return {
+                    "passed": False,
+                    "quantity": 0,
+                    "reasons": [f"BSE exchange trading is disabled by risk policy ({symbol})"]
+                }
+
+        for b in blocked_symbols:
+            if sym_upper == b:
+                return {
+                    "passed": False,
+                    "quantity": 0,
+                    "reasons": [f"Symbol {symbol} is in blocked list"]
+                }
+
+        # 3. Futures / Options / Derivatives validation
         sym_upper = symbol.upper()
         # Option contracts have CE / PE at the end (e.g. RELIANCE24OCT1200CE or NIFTY 25000 CE), or contain FUT/FUTURES/OPT
         is_derivative = (

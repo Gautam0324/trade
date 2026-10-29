@@ -154,13 +154,11 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         elif path == "/api/watchlist":
             config = service.read_json_file(TRADER_DIR / "config.json", default={})
             symbols = config.get("watchlist", [
-                "RELIANCE.NS",
-                "TCS.NS",
-                "HDFCBANK.NS",
-                "INFY.NS",
-                "ICICIBANK.NS",
-                "TATAMOTORS.NS",
-                "SBIN.NS"
+                "JPL",
+                "TCS",
+                "RELIANCE",
+                "INFY",
+                "HDFCBANK"
             ])
             quotes = []
             for s in symbols:
@@ -254,7 +252,7 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({"status": "ALREADY_RUNNING", "pid": status["pid"], "message": "Bot is already running."})
                 return
 
-            daemon_script = BASE_DIR / "trader-scanner" / "daemon.py"
+            daemon_script = BASE_DIR / "trader" / "multi_live_trader.py"
             proc = subprocess.Popen(
                 [sys.executable, str(daemon_script)],
                 cwd=str(BASE_DIR),

@@ -143,6 +143,10 @@ def is_pid_running(pid):
             if h:
                 ctypes.windll.kernel32.CloseHandle(h)
                 return True
+            err = ctypes.windll.kernel32.GetLastError()
+            # ERROR_ACCESS_DENIED (5) means the process exists but permissions/session differ
+            if err == 5:
+                return True
             return False
         else:
             os.kill(pid, 0)

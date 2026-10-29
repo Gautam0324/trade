@@ -128,6 +128,12 @@ async function loadOverviewData() {
       mktBadge.className = `status-badge ${mkt === 'OPEN' ? 'open' : 'closed'}`;
     }
 
+    const modeBadge = document.getElementById('modeBadge');
+    if (modeBadge && data.trading_mode) {
+      modeBadge.textContent = `${data.trading_mode} MODE`;
+      modeBadge.className = `status-badge ${data.trading_mode === 'LIVE' ? 'open' : 'paper'}`;
+    }
+
     const botStatus = data.bot_status || {};
     const botBadge = document.getElementById('botStatusBadge');
     if (botBadge) {
