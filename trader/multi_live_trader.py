@@ -209,6 +209,11 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
     if flat_by and current_time_str and current_time_str >= flat_by:
         return True, c, f"Simulated EOD Square-Off (flat_by {flat_by} reached)"
 
+    # Track completed bars held for this position
+    bars_held = pos.get("bars_held", 0) + 1
+    pos["bars_held"] = bars_held
+    min_hold_bars = 4  # Prevent premature 1-min noise exit on discretionary indicators
+
     if side == "BUY":
         stop_touched = (l <= sl_p)
         target_touched = (h >= tgt_p)
@@ -229,9 +234,9 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
             exit_price = o if o > tgt_p else tgt_p
             return True, exit_price, "Target Hit (+1.5R - Wick Touch)"
 
-        # Supertrend reversal
-        if st_dir == -1:
-            return True, c, "Supertrend Bearish Reversal"
+        # Supertrend reversal (only after min_hold_bars to let trade breathe and prevent transaction fee churn)
+        if st_dir == -1 and bars_held >= min_hold_bars:
+            return True, c, f"Supertrend Bearish Reversal (Held {bars_held} bars)"
 
     elif side == "SELL":
         stop_touched = (h >= sl_p)
@@ -253,9 +258,9 @@ def evaluate_position_exit(pos, bar, flat_by=None, current_time_str=None, st_dir
             exit_price = o if o < tgt_p else tgt_p
             return True, exit_price, "Short Target Hit (+1.5R - Wick Touch)"
 
-        # Supertrend reversal
-        if st_dir == 1:
-            return True, c, "Supertrend Bullish Reversal"
+        # Supertrend reversal (only after min_hold_bars to let trade breathe)
+        if st_dir == 1 and bars_held >= min_hold_bars:
+            return True, c, f"Supertrend Bullish Reversal (Held {bars_held} bars)"
 
     return False, c, ""
 
@@ -399,6 +404,11 @@ def run_multi_symbol_trader():
     last_processed_times = {w["symbol"]: None for w in WATCHLIST}
     last_benchmark_time = 0.0
     benchmark_bars = None
+    last_exit_times = {}
+    for t in trades_today:
+        sym_t = t.get("symbol")
+        if sym_t:
+            last_exit_times[sym_t] = time.time()
 
     while True:
         try:
@@ -563,6 +573,7 @@ def run_multi_symbol_trader():
                                 print(f"[TELEGRAM ALERT ERROR] {te}")
 
                             print(f"[EXIT EXECUTED] {pos['side']} {sym} @ Rs {exit_price:.2f} | Gross: Rs {gross_pnl:+,.2f} | Fees: Rs {fees:.2f} | Net: Rs {net_pnl:+,.2f} | Reason: {exit_reason}")
+                            last_exit_times[sym] = time.time()
                             continue
 
                     # 2. Check Pending Signal Confirmation for this Symbol
@@ -683,6 +694,11 @@ def run_multi_symbol_trader():
 
                     # 3. Detect New Signal Candle (Stop admitting if >= no_entries_after)
                     if sym not in open_positions and sym not in pending_signals and "09:30" <= bar_time < no_entries_after:
+                        # Enforce Symbol Cooldown to prevent repetitive whipsaws
+                        cooldown_secs = int(cfg.get("cooldown_minutes", 15)) * 60
+                        time_since_exit = time.time() - last_exit_times.get(sym, 0)
+                        if time_since_exit < cooldown_secs:
+                            continue
                         bars_dict = {
                             "timestamp": [b[0] for b in completed_bars],
                             "open": opens, "high": highs, "low": lows, "close": closes, "volume": volumes

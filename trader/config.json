@@ -18,17 +18,21 @@
   "candle_range": "5d",
   "require_completed_candle": true,
   "entry_candle_close_only": true,
-  "cooldown_minutes": 5,
+  "cooldown_minutes": 15,
   "no_entries_before": "09:30",
   "no_entries_after": "15:20",
   "flat_by": "15:20",
   "fractional": false,
   "broker": "zerodha_kite_paper",
   "paper": true,
-  "blocked": [],
+  "blocked": [
+    "RELIANCE_BSE",
+    "TCS_BSE",
+    "HDFCBANK_BSE"
+  ],
   "allow_options": true,
   "allow_margin": true,
-  "allow_short": true,
+  "allow_short": false,
   "pdt_guard": false,
   "sec_user_agent": "Your Name you@example.com",
   "currency": "INR",
@@ -54,5 +58,9 @@
   "confirmation_window_candles": 2,
   "require_completed_candles": true,
   "require_fresh_market_data": true,
-  "benchmark_symbol": "NIFTY 50"
+  "benchmark_symbol": "NIFTY 50",
+  "allow_bse": false,
+  "blocked_exchanges": [
+    "BSE"
+  ]
 }
