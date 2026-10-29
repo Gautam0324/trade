@@ -621,13 +621,18 @@ class StrategyEngine:
         # Requires true multi-factor confirmation score or independent setup agreement:
         # 1. Base Strategy Confirmation: At least 2 independent strategies agreeing on direction OR
         # 2. Confluence Score >= min_confluence_score (e.g. 65.0)
+        # Filter entries during dangerous market regimes (low liquidity or extreme volatility shock)
+        if regime in ("HIGH_VOLATILITY", "LOW_LIQUIDITY"):
+            return self._empty_signal(symbol, exchange, "CONFLUENCE", f"Entries blocked in adverse market regime: {regime} ({regime_info.get('summary', '')})")
+
         long_candidates = [s for s in signals if s["direction"] == "LONG"]
         short_candidates = [s for s in signals if s["direction"] == "SHORT"]
 
         # Calculate directional confluence scores
-        # Weighting: Base setup = 35 pts, Supporting setup = 25 pts, Regime alignment = 20 pts, RVol = 10 pts, R:R >= 1.5 = 10 pts
-        regime_bullish = regime in ("TRENDING_UP", "RANGE_BOUND")
-        regime_bearish = regime in ("TRENDING_DOWN", "RANGE_BOUND")
+        # Strict regime alignment: Award bonus ONLY if regime explicitly matches trend direction.
+        # Never award a bullish or bearish bonus to RANGE_BOUND, UNKNOWN, or sideways conditions.
+        regime_bullish = (regime == "TRENDING_UP")
+        regime_bearish = (regime == "TRENDING_DOWN")
 
         if len(long_candidates) >= 1:
             score = 35.0  # primary setup

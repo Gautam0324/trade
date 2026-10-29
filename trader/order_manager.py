@@ -232,6 +232,10 @@ class OrderManager:
         }
 
     def record_position_exit(self, symbol, exit_price, exit_reason, fees=0.0):
+        # Validate exit price: do not close position if price is missing or non-positive
+        if exit_price is None or float(exit_price) <= 0:
+            return None
+
         now_ist = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
         time_short = datetime.datetime.now().strftime("%H:%M")
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")

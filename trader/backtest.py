@@ -62,6 +62,11 @@ class BacktestEngine:
         # Drop invalid rows
         df = df.dropna(subset=["open", "high", "low", "close"]).reset_index(drop=True)
 
+        # Ensure strict forward chronological order (oldest to newest)
+        df["dt"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df = df.dropna(subset=["dt"]).sort_values("dt", ascending=True).reset_index(drop=True)
+        df = df.drop(columns=["dt"])
+
         # Validate OHLC logic
         df = df[(df["high"] >= df["low"]) & (df["high"] >= df["open"]) & (df["high"] >= df["close"]) & (df["low"] <= df["open"]) & (df["low"] <= df["close"])]
 

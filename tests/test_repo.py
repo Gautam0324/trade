@@ -45,7 +45,8 @@ class Repo(unittest.TestCase):
         ignored_files = {
             "dashboard", "trader", "historical_data", "logs", "run.py", "clear_holdings.py",
             "entry.txt", "stockcodes.py", "stocks.csv", "stocks_daily_ohlc.csv",
-            "update_daily_bhavcopy.py", "Multi-EMA + Supertrend + MACD Combo"
+            "update_daily_bhavcopy.py", "Multi-EMA + Supertrend + MACD Combo",
+            "STRATEGY_AUDIT.md", "STRATEGY_CHANGELOG.md", "BACKTEST_REPORT.md"
         }
         root = sorted(d for d in os.listdir(ROOT) if not d.startswith((".git", ".pytest_cache", "__pycache__")) and d not in ignored_files)
         self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
