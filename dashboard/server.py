@@ -77,6 +77,15 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
 
+        if path == "/health":
+            self.send_json({
+                "status": "HEALTHY",
+                "paper_trading": True,
+                "live_trading": False,
+                "timestamp": service.get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
+            })
+            return
+
         if path.startswith("/api/"):
             try:
                 self.handle_api_get(path, query)
@@ -145,6 +154,17 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
                 "kpis": kpis,
                 "config": service.sanitize_config(config),
                 "api_token": DASHBOARD_API_TOKEN
+            })
+
+        elif path == "/api/system/status":
+            daemon_info = service.check_daemon_status()
+            ledger = service.read_json_file(TRADER_DIR / "ledger.json", default={})
+            positions = ledger.get("open_positions", [])
+            self.send_json({
+                "status": "HEALTHY" if daemon_info.get("running") else "DEGRADED",
+                "daemon": daemon_info,
+                "open_positions_count": len(positions),
+                "timestamp": service.get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
             })
 
         elif path == "/api/equity_curve":

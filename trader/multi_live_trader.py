@@ -47,6 +47,17 @@ from regime import detect_market_regime
 import telegram_bot
 import download_historical_1min as dh
 
+from market_data import (
+    InstrumentManager,
+    PriceStore,
+    CandleBuilder,
+    CandleStore,
+    ConnectionMonitor,
+    AngelClient,
+    SmartWebSocketManager
+)
+from risk import TickRiskMonitor, DailyRiskState
+
 WATCHLIST = [
     # Top Liquid NSE Stocks (NSE Only - BSE Trading Disabled)
     {"symbol": "JPL", "token": "766830", "exchange": "NSE", "name": "JPL (Newly Listed)"},
@@ -410,6 +421,56 @@ def run_multi_symbol_trader():
         if sym_t:
             last_exit_times[sym_t] = time.time()
 
+    # Initialize V2 Event-Driven Architecture
+    instrument_manager = InstrumentManager(WATCHLIST)
+    price_store = PriceStore(stale_threshold_secs=25.0)
+    candle_store = CandleStore()
+    connection_monitor = ConnectionMonitor()
+    candle_builder = CandleBuilder(on_candle_completed=lambda c: candle_store.add_candle(c))
+    angel_client = AngelClient()
+    daily_risk_state = DailyRiskState()
+
+    def on_tick_risk_exit(exit_event):
+        sym = exit_event["symbol"]
+        pos = open_positions.pop(sym, None)
+        if not pos:
+            return
+        exit_price = exit_event["exit_price"]
+        exit_reason = exit_event["exit_reason"]
+        exch = next((w.get("exchange", "NSE") for w in WATCHLIST if w["symbol"] == sym), "NSE")
+        roundtrip = cost_model.calculate_roundtrip_cost(pos["side"], pos["entry_price"], exit_price, pos["quantity"], exch)
+        gross_pnl = roundtrip["gross_pnl"]
+        fees = roundtrip["total_costs"]
+        net_pnl = roundtrip["net_pnl"]
+        order_manager.record_position_exit(sym, exit_price, exit_reason, fees=fees)
+        daily_risk_state.record_trade_completion(net_pnl)
+        last_exit_times[sym] = time.time()
+        print(f"[TICK RISK EXIT EXECUTED] {pos['side']} {sym} @ Rs {exit_price:.2f} | Reason: {exit_reason} | Net PnL: Rs {net_pnl:+,.2f}")
+        try:
+            telegram_bot.send_exit_alert({
+                "symbol": sym, "qty": pos["quantity"], "entry_price": pos["entry_price"],
+                "exit_price": exit_price, "peak_price": exit_price,
+                "reason": exit_reason, "free_cash": capital,
+                "realized_pnl": net_pnl, "currency": "INR", "exchange": exch
+            })
+        except Exception as te:
+            print(f"[TELEGRAM ALERT ERROR] {te}")
+
+    tick_risk_monitor = TickRiskMonitor(on_exit_triggered=on_tick_risk_exit)
+    for sym, pos in open_positions.items():
+        tick_risk_monitor.register_position(pos)
+
+    # Start WebSocket Stream Manager in background thread
+    ws_manager = SmartWebSocketManager(
+        angel_client=angel_client,
+        instrument_manager=instrument_manager,
+        price_store=price_store,
+        candle_builder=candle_builder,
+        connection_monitor=connection_monitor,
+        on_valid_tick=lambda tick: tick_risk_monitor.evaluate_tick(tick)
+    )
+    ws_manager.start()
+
     while True:
         try:
             now = datetime.datetime.now()
@@ -490,23 +551,37 @@ def run_multi_symbol_trader():
                     continue
 
                 try:
-                    resp = api.getCandleData({
-                        "exchange": exch,
-                        "symboltoken": token,
-                        "interval": "ONE_MINUTE",
-                        "fromdate": f"{today_str} 09:15",
-                        "todate": f"{today_str} {current_time_str}"
-                    })
+                    # 1. Prefer real-time completed candles from V2 CandleStore (WebSocket stream)
+                    cached_candles = candle_store.get_candles(sym, "1m", limit=100)
+                    if len(cached_candles) >= 10:
+                        completed_bars = [[c["timestamp"], c["open"], c["high"], c["low"], c["close"], c["volume"]] for c in cached_candles]
+                    else:
+                        resp = api.getCandleData({
+                            "exchange": exch,
+                            "symboltoken": token,
+                            "interval": "ONE_MINUTE",
+                            "fromdate": f"{today_str} 09:15",
+                            "todate": f"{today_str} {current_time_str}"
+                        })
 
-                    if not resp or not resp.get("status") or not resp.get("data"):
-                        time.sleep(1.5)
-                        continue
+                        if not resp or not resp.get("status") or not resp.get("data"):
+                            time.sleep(1.5)
+                            continue
 
-                    # Filter only strictly completed candles
-                    completed_bars = filter_completed_candles(resp["data"], current_time_str)
-                    if len(completed_bars) < 5:
-                        time.sleep(1.5)
-                        continue
+                        # Filter only strictly completed candles
+                        completed_bars = filter_completed_candles(resp["data"], current_time_str)
+                        if len(completed_bars) < 5:
+                            time.sleep(1.5)
+                            continue
+
+                        # Populate candle_store with historical bars
+                        for b in completed_bars:
+                            candle_store.add_candle({
+                                "symbol": sym, "timeframe": "1m", "timestamp": b[0],
+                                "open": float(b[1]), "high": float(b[2]), "low": float(b[3]),
+                                "close": float(b[4]), "volume": float(b[5]) if len(b) > 5 else 0.0,
+                                "status": "completed"
+                            })
 
                     latest_bar = completed_bars[-1]
                     bar_time = latest_bar[0].split("T")[1][:5] if "T" in latest_bar[0] else latest_bar[0].split(" ")[1][:5]
@@ -543,11 +618,13 @@ def run_multi_symbol_trader():
                             if not pos:
                                 continue
 
+                            tick_risk_monitor.unregister_position(sym)
                             roundtrip = cost_model.calculate_roundtrip_cost(pos["side"], pos["entry_price"], exit_price, pos["quantity"], exch)
                             gross_pnl = roundtrip["gross_pnl"]
                             fees = roundtrip["total_costs"]
                             net_pnl = roundtrip["net_pnl"]
                             capital += net_pnl
+                            daily_risk_state.record_trade_completion(net_pnl)
 
                             # Record via OrderManager
                             exit_record = order_manager.record_position_exit(sym, exit_price, exit_reason, fees=fees)
@@ -653,6 +730,8 @@ def run_multi_symbol_trader():
                                     "symbol": sym, "side": side, "entry_time": bar_time,
                                     "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
                                 }
+                                tick_risk_monitor.register_position(open_positions[sym])
+                                daily_risk_state.record_order()
 
                                 log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c} [Order {order_id}]", trade_taken=True)
                                 
