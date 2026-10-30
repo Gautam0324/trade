@@ -731,3 +731,7 @@ timestamp,signal_type,asset,option_contract,spot_price,trigger_level,status,reas
 "2026-10-30 11:48:51 IST","BUY","INFY","INFY",1177.40,1177.85,"CANCELLED_NO_CONFIRMATION","Price did not break trigger level within confirmation window (2 bars elapsed)",False
 "2026-10-30 11:48:52 IST","BUY","INFY","INFY",1177.05,1177.70,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (115.0 pts >= 65.0): EMA_CHANNEL + ORB + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
 "2026-10-30 11:49:03 IST","BUY","JPL","JPL",1420.00,1420.80,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (95.0 pts >= 65.0): FAILED_BREAKDOWN + VWAP_PULLBACK + TREND_MOMENTUM + Favorable R:R (1.50))",False
+"2026-10-30 12:19:01 IST","BUY","INFY","INFY",1176.55,1176.55,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (95.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + VWAP_PULLBACK + ORB + Favorable R:R (1.50))",False
+"2026-10-30 12:19:03 IST","BUY","HDFCBANK","HDFCBANK",693.20,693.20,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + ORB + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-10-30 12:20:01 IST","BUY","HDFCBANK","HDFCBANK",693.35,693.20,"CONFIRMED_EXECUTED","BUY 521 shares @ Rs 693.35 [Order ORD-20261030122001-EAD0C5-HDFCBANK]",True
+"2026-10-30 12:20:06 IST","BUY","JPL","JPL",1421.90,1422.40,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (70.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + ORB + Favorable R:R (1.50))",False
