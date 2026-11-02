@@ -1,0 +1,42 @@
+{
+  "strategy_id": "V3_TREND_PULLBACK",
+  "strategy_version": "3.0.0",
+  "enabled": false,
+  "mode": "paper",
+  "markets": {
+    "cash": true,
+    "options": true
+  },
+  "timeframes": {
+    "entry": "5m",
+    "confirmation": "15m"
+  },
+  "risk": {
+    "risk_per_trade_pct": 0.5,
+    "max_daily_loss_pct": 1.5,
+    "max_consecutive_losses": 2,
+    "max_open_positions": 3,
+    "max_trades_per_day": 5,
+    "max_concurrent_open_risk_pct": 1.0,
+    "max_capital_allocation_pct": 40.0
+  },
+  "indicators": {
+    "ema_fast": 9,
+    "ema_pullback": 21,
+    "ema_trend": 50,
+    "ema_long": 200,
+    "adx_period": 14,
+    "adx_minimum": 20.0,
+    "atr_period": 14,
+    "atr_multiplier": 1.5,
+    "rsi_period": 14
+  },
+  "execution": {
+    "paper_only": true,
+    "use_completed_candles": true,
+    "entry_on_next_executable_price": true,
+    "entry_cutoff_time": "15:15",
+    "flat_by_time": "15:20"
+  }
+}
+

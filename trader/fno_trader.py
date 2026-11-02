@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Day Trader Pro V2 — F&O Options Desk (Paper Trading Engine).
+Day Trader Pro V2 - F&O Options Desk (Paper Trading Engine).
 Dedicated standalone event-driven trading engine for NIFTY & BANKNIFTY Weekly Options.
 Features:
 - Completely isolated from Cash Day Trading engine (zero collision, independent process)

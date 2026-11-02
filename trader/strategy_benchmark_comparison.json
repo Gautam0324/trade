@@ -1,0 +1,62 @@
+[
+  {
+    "strategy": "EMA_CHANNEL",
+    "trades": 93,
+    "wins": 30,
+    "losses": 63,
+    "win_rate": 32.3,
+    "gross_pnl": -11082.39,
+    "fees": 32745.34,
+    "net_pnl": -43827.73,
+    "profit_factor": 0.85,
+    "expectancy": -471.27
+  },
+  {
+    "strategy": "TREND_MOMENTUM",
+    "trades": 96,
+    "wins": 38,
+    "losses": 58,
+    "win_rate": 39.6,
+    "gross_pnl": 1759.73,
+    "fees": 33808.68,
+    "net_pnl": -32048.95,
+    "profit_factor": 1.03,
+    "expectancy": -333.84
+  },
+  {
+    "strategy": "VWAP_PULLBACK",
+    "trades": 40,
+    "wins": 16,
+    "losses": 24,
+    "win_rate": 40.0,
+    "gross_pnl": 5632.52,
+    "fees": 14088.53,
+    "net_pnl": -8456.01,
+    "profit_factor": 1.22,
+    "expectancy": -211.4
+  },
+  {
+    "strategy": "CONFLUENCE",
+    "trades": 93,
+    "wins": 38,
+    "losses": 55,
+    "win_rate": 40.9,
+    "gross_pnl": 21661.12,
+    "fees": 32636.02,
+    "net_pnl": -10974.9,
+    "profit_factor": 1.32,
+    "expectancy": -118.01
+  },
+  {
+    "strategy": "V3_TREND_PULLBACK",
+    "trades": 34,
+    "wins": 18,
+    "losses": 16,
+    "win_rate": 52.9,
+    "gross_pnl": 44118.45,
+    "fees": 11850.43,
+    "net_pnl": 32268.02,
+    "profit_factor": 2.22,
+    "expectancy": 949.06
+  }
+]
