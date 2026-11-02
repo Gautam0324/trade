@@ -138,15 +138,22 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(response_bytes)
 
     def handle_api_get(self, path, query):
+        account = query.get("account", ["gautam"])[0].lower()
+        accounts_data = service.read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+        acc_meta = accounts_data.get("accounts", {}).get(account, {})
+        ledger_filename = acc_meta.get("ledger_file", f"ledger_{account}.json" if account != "gautam" else "ledger.json")
+
         if path == "/api/status" or path == "/api/overview":
             # Complete Overview Payload
-            kpis = service.compute_dashboard_metrics()
+            kpis = service.compute_dashboard_metrics(account_id=account)
             daemon_info = service.check_daemon_status()
             config = service.read_json_file(TRADER_DIR / "config.json", default={})
             market_status = service.is_market_open()
             ist_time = service.get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
 
             self.send_json({
+                "account": account,
+                "accounts": accounts_data.get("accounts", {}),
                 "market_status": market_status,
                 "trading_mode": "PAPER" if config.get("paper", True) else "LIVE",
                 "ist_time": ist_time,
@@ -158,45 +165,54 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/api/system/status":
             daemon_info = service.check_daemon_status()
-            ledger = service.read_json_file(TRADER_DIR / "ledger.json", default={})
+            ledger = service.read_json_file(TRADER_DIR / ledger_filename, default={})
             positions = ledger.get("open_positions", [])
             self.send_json({
+                "account": account,
                 "status": "HEALTHY" if daemon_info.get("running") else "DEGRADED",
                 "daemon": daemon_info,
                 "open_positions_count": len(positions),
                 "timestamp": service.get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
             })
 
+        elif path == "/api/accounts":
+            acc_file = TRADER_DIR / "accounts.json"
+            acc_data = service.read_json_file(acc_file, default={"accounts": {}})
+            self.send_json(acc_data)
+
         elif path == "/api/equity_curve":
-            points = service.get_equity_curve_data()
-            self.send_json({"points": points})
+            points = service.get_equity_curve_data(account_id=account)
+            self.send_json({"points": points, "account": account})
 
         elif path == "/api/watchlist":
-            config = service.read_json_file(TRADER_DIR / "config.json", default={})
-            symbols = config.get("watchlist", [
-                "JPL",
-                "TCS",
-                "RELIANCE",
-                "INFY",
-                "HDFCBANK"
-            ])
+            symbols = acc_meta.get("watchlist", [])
+            if not symbols:
+                config = service.read_json_file(TRADER_DIR / "config.json", default={})
+                symbols = config.get("watchlist", [
+                    "JPL",
+                    "TCS",
+                    "RELIANCE",
+                    "INFY",
+                    "HDFCBANK"
+                ])
             quotes = []
             for s in symbols:
                 q = service.fetch_live_quote_data(s)
                 if q:
                     quotes.append(q)
-            self.send_json({"symbols": quotes})
+            self.send_json({"symbols": quotes, "account": account})
 
         elif path == "/api/positions":
-            kpis = service.compute_dashboard_metrics()
+            kpis = service.compute_dashboard_metrics(account_id=account)
             self.send_json({
+                "account": account,
                 "open_positions": kpis["enriched_positions"],
                 "total_unrealized_pnl": kpis["unrealized_pnl"],
                 "total_deployed_cash": kpis["deployed_cash"]
             })
 
         elif path == "/api/trades":
-            ledger = service.read_json_file(TRADER_DIR / "ledger.json", default={})
+            ledger = service.read_json_file(TRADER_DIR / ledger_filename, default={})
             history = ledger.get("trade_history", [])
             
             # Support symbol, strategy, and outcome filters

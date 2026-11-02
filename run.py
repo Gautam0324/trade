@@ -49,6 +49,17 @@ def run_all():
         )
         processes.append(("Live Trader", trader_proc))
 
+        time.sleep(1)
+
+        # 3. Start Telegram Interactive Onboarding Listener
+        onboard_script = BASE_DIR / "trader-alerts" / "telegram_onboarding.py"
+        print(f"[*] Starting Telegram Multi-User Onboarding Listener ...")
+        onboard_proc = subprocess.Popen(
+            [python_exe, str(onboard_script)],
+            cwd=str(BASE_DIR)
+        )
+        processes.append(("Telegram Onboarding", onboard_proc))
+
         print("\n" + "=" * 65)
         print("[READY] All services running. Press Ctrl+C to terminate.")
         print("=" * 65 + "\n")

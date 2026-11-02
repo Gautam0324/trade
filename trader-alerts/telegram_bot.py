@@ -41,15 +41,16 @@ def get_telegram_creds():
             
     return token, chat_id
 
-def send_telegram_message(text, parse_mode="HTML"):
-    token, chat_id = get_telegram_creds()
-    if not token or not chat_id:
+def send_telegram_message(text, parse_mode="HTML", chat_id=None):
+    token, default_chat_id = get_telegram_creds()
+    target_chat_id = chat_id or default_chat_id
+    if not token or not target_chat_id:
         print("[TELEGRAM] Missing bot token or chat ID. Update trader/config.json or set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.")
         return False, "Missing credentials"
         
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
-        "chat_id": chat_id,
+        "chat_id": str(target_chat_id),
         "text": text,
         "parse_mode": parse_mode,
         "disable_web_page_preview": True
@@ -72,7 +73,7 @@ def send_telegram_message(text, parse_mode="HTML"):
         print(f"[TELEGRAM] Error sending message: {e}")
         return False, str(e)
 
-def send_signal_alert(signal_data):
+def send_signal_alert(signal_data, chat_id=None):
     """
     Stage 1: Sends a Telegram alert immediately when a SIGNAL CANDLE completes.
     Notifies that setup criteria are met and watching for Confirmation Candle.
@@ -104,9 +105,9 @@ def send_signal_alert(signal_data):
         f"  • SL Benchmark Level: <b>₹{sl_level:,.2f}</b>\n\n"
         f"⏳ <i>NO ENTRY YET. Waiting for confirmation breakout before placing order!</i>"
     )
-    return send_telegram_message(msg)
+    return send_telegram_message(msg, chat_id=chat_id)
 
-def send_signal_cancelled_alert(cancel_data):
+def send_signal_cancelled_alert(cancel_data, chat_id=None):
     """
     Sends an alert when a signal candle does not receive confirmation
     within the allowed window or if price invalidates the setup.
@@ -126,9 +127,9 @@ def send_signal_cancelled_alert(cancel_data):
         f"----------------------------------------\n"
         f"🛡️ <i>No trade taken. Capital 100% safe! Waiting for fresh setup.</i>"
     )
-    return send_telegram_message(msg)
+    return send_telegram_message(msg, chat_id=chat_id)
 
-def send_trade_alert(trade_data):
+def send_trade_alert(trade_data, chat_id=None):
     """
     Format and send a trade alert to Telegram with clean emojis and key levels,
     including the actual deployed capital amount and expected profit.
@@ -189,9 +190,9 @@ def send_trade_alert(trade_data):
         f"{balance_line}"
         f"🛡️ <i>Risk Check: PASSED. Capital deducted from available cash.</i>"
     )
-    return send_telegram_message(msg)
+    return send_telegram_message(msg, chat_id=chat_id)
 
-def send_exit_alert(exit_data):
+def send_exit_alert(exit_data, chat_id=None):
     """
     Format and send an immediate profit booking / trailing exit alert
     when price dips below EMA5 / trailing peak, showing updated available cash.
@@ -247,7 +248,7 @@ def send_exit_alert(exit_data):
         f"{balance_block}"
         f"{footer_text}"
     )
-    return send_telegram_message(msg)
+    return send_telegram_message(msg, chat_id=chat_id)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

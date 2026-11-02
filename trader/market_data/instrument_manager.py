@@ -11,7 +11,15 @@ class InstrumentManager:
         {"symbol": "TCS", "token": "11536", "exchange": "NSE", "name": "Tata Consultancy Services"},
         {"symbol": "RELIANCE", "token": "2885", "exchange": "NSE", "name": "Reliance Industries"},
         {"symbol": "INFY", "token": "1594", "exchange": "NSE", "name": "Infosys"},
-        {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"}
+        {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"},
+        {"symbol": "SBIN", "token": "3045", "exchange": "NSE", "name": "State Bank of India"},
+        {"symbol": "ICICIBANK", "token": "4963", "exchange": "NSE", "name": "ICICI Bank"},
+        {"symbol": "LT", "token": "11483", "exchange": "NSE", "name": "Larsen & Toubro"},
+        {"symbol": "TATASTEEL", "token": "3499", "exchange": "NSE", "name": "Tata Steel"},
+        {"symbol": "BAJFINANCE", "token": "317", "exchange": "NSE", "name": "Bajaj Finance"},
+        {"symbol": "ITC", "token": "1660", "exchange": "NSE", "name": "ITC Limited"},
+        {"symbol": "AXISBANK", "token": "5900", "exchange": "NSE", "name": "Axis Bank"},
+        {"symbol": "WIPRO", "token": "3787", "exchange": "NSE", "name": "Wipro Limited"}
     ]
 
     def __init__(self, initial_instruments: Optional[List[Dict]] = None):

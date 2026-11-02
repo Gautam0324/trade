@@ -116,6 +116,9 @@ def check_daemon_status():
                     pid = int(content)
                     if is_pid_running(pid):
                         return {"status": "RUNNING", "pid": pid, "managed": False, "bot_type": "Multi-Live Trader"}
+        except (PermissionError, OSError):
+            # File is actively locked by the running live trader process!
+            return {"status": "RUNNING", "pid": "Active", "managed": False, "bot_type": "Multi-Live Trader"}
         except Exception:
             pass
 
@@ -268,14 +271,20 @@ def fetch_live_quote_data(symbol):
     except Exception:
         return None
 
-def compute_dashboard_metrics():
+def compute_dashboard_metrics(account_id="gautam"):
     """
-    Computes all mathematical KPIs using the single source of truth: ledger.json
+    Computes all mathematical KPIs using the single source of truth for the account:
+    ledger.json (Gautam), ledger_himanshu.json (Himanshu), or ledger_prateek.json (Prateek).
     """
-    ledger = read_json_file(TRADER_DIR / "ledger.json", default={})
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+
+    ledger = read_json_file(TRADER_DIR / ledger_filename, default={})
     config = read_json_file(TRADER_DIR / "config.json", default={})
 
-    starting_cap = float(ledger.get("starting_capital", config.get("budget", 100000.0)))
+    starting_cap = float(acc_meta.get("capital", ledger.get("starting_capital", ledger.get("initial_capital", config.get("budget", 1000000.0)))))
     free_cash = float(ledger.get("free_cash", starting_cap))
     deployed_cash = float(ledger.get("deployed_cash", 0.0))
     realized_pnl = float(ledger.get("realized_pnl", 0.0))
@@ -380,12 +389,17 @@ def compute_dashboard_metrics():
         "data_freshness": "FRESH" if is_reconciled else "WARNING_DISCREPANCY"
     }
 
-def get_equity_curve_data():
+def get_equity_curve_data(account_id="gautam"):
     """
-    Builds equity trajectory over time using trade history.
+    Builds equity trajectory over time using trade history for the specified account.
     """
-    ledger = read_json_file(TRADER_DIR / "ledger.json", default={})
-    starting_cap = float(ledger.get("starting_capital", 100000.0))
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+
+    ledger = read_json_file(TRADER_DIR / ledger_filename, default={})
+    starting_cap = float(acc_meta.get("capital", ledger.get("starting_capital", ledger.get("initial_capital", 1000000.0))))
     trade_history = ledger.get("trade_history", [])
 
     points = []

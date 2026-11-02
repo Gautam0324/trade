@@ -15,5 +15,14 @@
       "exit_price": 1410.6
     },
     "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-02 11:55:56 IST",
+    "action": "MANUAL_CLOSE_POSITION",
+    "details": {
+      "symbol": "RELIANCE",
+      "exit_price": 1256.4
+    },
+    "status": "SUCCESS"
   }
 ]

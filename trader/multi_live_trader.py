@@ -57,14 +57,25 @@ from market_data import (
     SmartWebSocketManager
 )
 from risk import TickRiskMonitor, DailyRiskState
+from account_manager import MultiAccountManager
 
 WATCHLIST = [
-    # Top Liquid NSE Stocks (NSE Only - BSE Trading Disabled)
+    # Gautam's Watchlist
     {"symbol": "JPL", "token": "766830", "exchange": "NSE", "name": "JPL (Newly Listed)"},
     {"symbol": "TCS", "token": "11536", "exchange": "NSE", "name": "Tata Consultancy Services"},
     {"symbol": "RELIANCE", "token": "2885", "exchange": "NSE", "name": "Reliance Industries"},
     {"symbol": "INFY", "token": "1594", "exchange": "NSE", "name": "Infosys"},
-    {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"}
+    {"symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "name": "HDFC Bank"},
+    # Himanshu's Watchlist
+    {"symbol": "SBIN", "token": "3045", "exchange": "NSE", "name": "State Bank of India"},
+    {"symbol": "ICICIBANK", "token": "4963", "exchange": "NSE", "name": "ICICI Bank"},
+    {"symbol": "LT", "token": "11483", "exchange": "NSE", "name": "Larsen & Toubro"},
+    {"symbol": "TATASTEEL", "token": "3499", "exchange": "NSE", "name": "Tata Steel"},
+    # Prateek's Watchlist
+    {"symbol": "BAJFINANCE", "token": "317", "exchange": "NSE", "name": "Bajaj Finance"},
+    {"symbol": "ITC", "token": "1660", "exchange": "NSE", "name": "ITC Limited"},
+    {"symbol": "AXISBANK", "token": "5900", "exchange": "NSE", "name": "Axis Bank"},
+    {"symbol": "WIPRO", "token": "3787", "exchange": "NSE", "name": "Wipro Limited"}
 ]
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger.json"
@@ -72,6 +83,25 @@ CONFIG_PATH = BASE_DIR / "trader" / "config.json"
 SIGNALS_CSV_PATH = BASE_DIR / "trader" / "signals_audit.csv"
 DB_PATH = BASE_DIR / "trader" / "ticks_market_data.db"
 LOCK_PATH = BASE_DIR / "trader" / "multi_trader.lock"
+
+def get_chat_ids_for_symbol(symbol: str) -> list:
+    """Returns list of telegram chat_ids for users interested in this symbol."""
+    acc_file = BASE_DIR / "trader" / "accounts.json"
+    if not acc_file.exists():
+        return []
+    try:
+        with open(acc_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        cids = []
+        sym_clean = symbol.upper().replace(".NS", "").replace(".BO", "")
+        for acc_id, acc in data.get("accounts", {}).items():
+            wl = [s.upper() for s in acc.get("watchlist", [])]
+            cid = acc.get("telegram_chat_id")
+            if cid and (sym_clean in wl or not wl):
+                cids.append(str(cid))
+        return cids
+    except Exception:
+        return []
 
 # -------------------------------------------------------------------------
 # DATABASE & AUDIT LOGGING
@@ -371,14 +401,29 @@ def run_multi_symbol_trader():
     init_tick_db()
     api = dh.get_smart_api_session()
 
-    telegram_bot.send_telegram_message(
-        "🚀 <b>Multi-Stock Day Trader Bot LIVE!</b>\n"
-        f"📋 <b>Watchlist:</b> <code>JPL, TCS, RELIANCE, INFY, HDFCBANK</code>\n"
-        f"💰 <b>Paper Capital:</b> ₹{capital:,.2f}\n"
-        "⚡ <b>Engine:</b> OrderManager State Machine + Completed Candles + CostModel Active\n"
-        "💾 <b>Tick Storage:</b> SQLite DB with unique constraint idempotent insertion.\n"
-        "📝 Real-time CSV Audit & Telegram Alerts Connected."
-    )
+    # Broadcast startup message to all active linked accounts
+    try:
+        acc_file = BASE_DIR / "trader" / "accounts.json"
+        if acc_file.exists():
+            with open(acc_file, "r", encoding="utf-8") as af:
+                acc_data = json.load(af)
+            for aid, ainfo in acc_data.get("accounts", {}).items():
+                cid = ainfo.get("telegram_chat_id")
+                if cid:
+                    aname = ainfo.get("name", aid.capitalize())
+                    awl = ", ".join(ainfo.get("watchlist", [])) or "All"
+                    acap = float(ainfo.get("capital", capital))
+                    startup_msg = (
+                        f"🚀 <b>Day Trader Pro V2 is LIVE for {aname}!</b>\n\n"
+                        f"📋 <b>Your Watchlist:</b> <code>{awl}</code>\n"
+                        f"💰 <b>Paper Capital:</b> ₹{acap:,.2f}\n"
+                        f"⚡ <b>Engine:</b> Live Market Stream & Confluence Algorithm Active\n"
+                        f"🛡️ <b>Risk Gate:</b> Max 1% Risk per Trade | Daily Limit Active\n"
+                        f"🔔 <i>Live market ticks are actively scanning. Signals will arrive here!</i>"
+                    )
+                    telegram_bot.send_telegram_message(startup_msg, chat_id=cid)
+    except Exception as se:
+        print(f"[STARTUP BROADCAST ERROR] {se}")
 
     # 1. Recover active open positions from OrderManager and ledger.json
     open_positions = {}
@@ -429,6 +474,7 @@ def run_multi_symbol_trader():
     candle_builder = CandleBuilder(on_candle_completed=lambda c: candle_store.add_candle(c))
     angel_client = AngelClient()
     daily_risk_state = DailyRiskState()
+    multi_account_manager = MultiAccountManager(cost_model=cost_model)
 
     def on_tick_risk_exit(exit_event):
         sym = exit_event["symbol"]
@@ -444,6 +490,7 @@ def run_multi_symbol_trader():
         net_pnl = roundtrip["net_pnl"]
         order_manager.record_position_exit(sym, exit_price, exit_reason, fees=fees)
         daily_risk_state.record_trade_completion(net_pnl)
+        multi_account_manager.execute_exit_for_all(sym, exit_price, exit_reason, exch)
         last_exit_times[sym] = time.time()
         print(f"[TICK RISK EXIT EXECUTED] {pos['side']} {sym} @ Rs {exit_price:.2f} | Reason: {exit_reason} | Net PnL: Rs {net_pnl:+,.2f}")
         try:
@@ -563,6 +610,7 @@ def run_multi_symbol_trader():
                             "fromdate": f"{today_str} 09:15",
                             "todate": f"{today_str} {current_time_str}"
                         })
+                        time.sleep(0.5)
 
                         if not resp or not resp.get("status") or not resp.get("data"):
                             time.sleep(1.5)
@@ -625,6 +673,7 @@ def run_multi_symbol_trader():
                             net_pnl = roundtrip["net_pnl"]
                             capital += net_pnl
                             daily_risk_state.record_trade_completion(net_pnl)
+                            multi_account_manager.execute_exit_for_all(sym, exit_price, exit_reason, exch)
 
                             # Record via OrderManager
                             exit_record = order_manager.record_position_exit(sym, exit_price, exit_reason, fees=fees)
@@ -652,6 +701,22 @@ def run_multi_symbol_trader():
                             print(f"[EXIT EXECUTED] {pos['side']} {sym} @ Rs {exit_price:.2f} | Gross: Rs {gross_pnl:+,.2f} | Fees: Rs {fees:.2f} | Net: Rs {net_pnl:+,.2f} | Reason: {exit_reason}")
                             last_exit_times[sym] = time.time()
                             continue
+                    else:
+                        # Check if any multi-account (Himanshu / Prateek) holds an open position for this symbol
+                        multi_pos = None
+                        for acc in multi_account_manager.get_all_accounts():
+                            if sym in acc.open_positions:
+                                multi_pos = acc.open_positions[sym]
+                                break
+                        if multi_pos:
+                            exit_trade, exit_price, exit_reason = evaluate_position_exit(
+                                multi_pos, latest_bar, flat_by=flat_by, current_time_str=current_time_str, st_dir=st_dir
+                            )
+                            if exit_trade:
+                                multi_account_manager.execute_exit_for_all(sym, exit_price, exit_reason, exch)
+                                print(f"[MULTI-ACCOUNT EXIT EXECUTED] {sym} @ Rs {exit_price:.2f} | Reason: {exit_reason}")
+                                last_exit_times[sym] = time.time()
+                                continue
 
                     # 2. Check Pending Signal Confirmation for this Symbol
                     if sym in pending_signals:
@@ -680,77 +745,89 @@ def run_multi_symbol_trader():
                                 del pending_signals[sym]
                                 continue
 
-                            # 2b. Central Risk Gate Evaluation
-                            ledger_data = {}
-                            if os.path.exists(LEDGER_PATH):
-                                try:
-                                    with open(LEDGER_PATH, "r", encoding="utf-8") as lf:
-                                        ledger_data = json.load(lf)
-                                except Exception as le:
-                                    print(f"[LEDGER READ ERROR] {le}")
+                            # 2b. Check watchlist routing & Central Risk Gate Evaluation
+                            gautam_acc = multi_account_manager.get_account("gautam")
+                            gautam_wl = [s.upper() for s in (gautam_acc.watchlist if gautam_acc and gautam_acc.watchlist else ["JPL", "TCS", "RELIANCE", "INFY", "HDFCBANK"])]
+                            is_gautam_symbol = (sym.upper() in gautam_wl)
 
-                            risk_check = risk_engine.evaluate_from_ledger(
-                                ledger=ledger_data,
-                                symbol=sym,
-                                side=side,
-                                entry_price=c,
-                                stop_loss=est_sl,
-                                target_price=est_tgt,
-                                current_quotes={sym: c}
-                            )
+                            if is_gautam_symbol:
+                                ledger_data = {}
+                                if os.path.exists(LEDGER_PATH):
+                                    try:
+                                        with open(LEDGER_PATH, "r", encoding="utf-8") as lf:
+                                            ledger_data = json.load(lf)
+                                    except Exception as le:
+                                        print(f"[LEDGER READ ERROR] {le}")
 
-                            if risk_check["passed"]:
-                                qty = risk_check["quantity"]
-
-                                # 2c. Atomic order creation in OrderManager (State: CREATED)
-                                order_record = order_manager.create_order(
-                                    symbol=sym, side=side, quantity=qty, price=c,
-                                    stop_loss=est_sl, target_price=est_tgt,
-                                    signal_id=sig_id, strategy_name=ps.get("strategy_name")
+                                risk_check = risk_engine.evaluate_from_ledger(
+                                    ledger=ledger_data,
+                                    symbol=sym,
+                                    side=side,
+                                    entry_price=c,
+                                    stop_loss=est_sl,
+                                    target_price=est_tgt,
+                                    current_quotes={sym: c}
                                 )
 
-                                if not order_record.get("success"):
-                                    print(f"[ORDER CREATION BLOCKED] {sym}: {order_record.get('reason')}")
-                                    del pending_signals[sym]
-                                    continue
+                                if risk_check["passed"]:
+                                    qty = risk_check["quantity"]
 
-                                order_id = order_record["order_id"]
+                                    # 2c. Atomic order creation in OrderManager (State: CREATED)
+                                    order_record = order_manager.create_order(
+                                        symbol=sym, side=side, quantity=qty, price=c,
+                                        stop_loss=est_sl, target_price=est_tgt,
+                                        signal_id=sig_id, strategy_name=ps.get("strategy_name")
+                                    )
 
-                                # Transition state to SUBMITTED
-                                order_manager.update_order_status(order_id, OrderState.SUBMITTED)
+                                    if not order_record.get("success"):
+                                        print(f"[ORDER CREATION BLOCKED] {sym}: {order_record.get('reason')}")
+                                        del pending_signals[sym]
+                                        continue
 
-                                # 2d. Safe Order Routing via BrokerAdapter (Paper Mode Guaranteed)
-                                order_res = broker_adapter.place_order(sym, side, qty, c)
+                                    order_id = order_record["order_id"]
 
-                                # 2e. Simulated Fill & Position Creation (State: FILLED)
-                                fill_res = order_manager.record_simulated_fill(order_id, fill_price=c, fill_qty=qty)
+                                    # Transition state to SUBMITTED
+                                    order_manager.update_order_status(order_id, OrderState.SUBMITTED)
 
-                                open_positions[sym] = {
-                                    "id": fill_res["position_id"],
-                                    "symbol": sym, "side": side, "entry_time": bar_time,
-                                    "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
-                                }
-                                tick_risk_monitor.register_position(open_positions[sym])
-                                daily_risk_state.record_order()
+                                    # 2d. Safe Order Routing via BrokerAdapter (Paper Mode Guaranteed)
+                                    order_res = broker_adapter.place_order(sym, side, qty, c)
 
-                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c} [Order {order_id}]", trade_taken=True)
-                                
-                                fresh_free_cash = float(ledger_data.get("free_cash", capital)) - (qty * c)
-                                telegram_bot.send_trade_alert({
-                                    "symbol": sym, "side": side, "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
-                                    "currency": "INR", "exchange": exch, "free_cash": fresh_free_cash,
-                                    "strategy": f"{ps.get('strategy_name', 'Unified Engine')} ({ps.get('setup_tag', 'Breakout')})"
-                                })
+                                    # 2e. Simulated Fill & Position Creation (State: FILLED)
+                                    fill_res = order_manager.record_simulated_fill(order_id, fill_price=c, fill_qty=qty)
 
-                                print(f"[ENTRY EXECUTED] {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_id} | PosId: {fill_res['position_id']}")
-                                del pending_signals[sym]
-                                continue
-                            else:
-                                reject_reason = f"Risk Engine Blocked: {'; '.join(risk_check.get('reasons', []))}"
-                                print(f"[RISK BLOCKED] [{bar_time}] {side} {sym}: {reject_reason}")
-                                log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "REJECTED_BY_RISK", reject_reason, trade_taken=False)
-                                del pending_signals[sym]
-                                continue
+                                    open_positions[sym] = {
+                                        "id": fill_res["position_id"],
+                                        "symbol": sym, "side": side, "entry_time": bar_time,
+                                        "entry_price": c, "sl_price": est_sl, "target_price": est_tgt, "quantity": qty
+                                    }
+                                    tick_risk_monitor.register_position(open_positions[sym])
+                                    daily_risk_state.record_order()
+
+                                    log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "CONFIRMED_EXECUTED", f"{side} {qty} shares @ Rs {c} [Order {order_id}]", trade_taken=True)
+                                    
+                                    fresh_free_cash = float(ledger_data.get("free_cash", capital)) - (qty * c)
+                                    telegram_bot.send_trade_alert({
+                                        "symbol": sym, "side": side, "qty": qty, "entry": c, "stop": est_sl, "target": est_tgt,
+                                        "currency": "INR", "exchange": exch, "free_cash": fresh_free_cash,
+                                        "strategy": f"{ps.get('strategy_name', 'Unified Engine')} ({ps.get('setup_tag', 'Breakout')})"
+                                    })
+
+                                    print(f"[ENTRY EXECUTED - GAUTAM] {side} {sym} @ Rs {c:.2f} | Qty: {qty} | OrderId: {order_id} | PosId: {fill_res['position_id']}")
+                                else:
+                                    reject_reason = f"Risk Engine Blocked: {'; '.join(risk_check.get('reasons', []))}"
+                                    print(f"[RISK BLOCKED - GAUTAM] [{bar_time}] {side} {sym}: {reject_reason}")
+                                    log_signal_to_csv(side, sym, sym, c, ps["trigger_level"], "REJECTED_BY_RISK", reject_reason, trade_taken=False)
+
+                            # Multi-Account Execution for Himanshu and Prateek
+                            try:
+                                multi_res = multi_account_manager.execute_entry_for_all(sym, side, c, est_sl, est_tgt, ps.get("strategy_name", "Unified Engine"), base_qty=100)
+                                if multi_res:
+                                    print(f"[MULTI-ACCOUNT ENTRY] Executed {sym} for {[r['account'] for r in multi_res]}")
+                            except Exception as mae:
+                                print(f"[MULTI-ACCOUNT ENTRY ERROR] {mae}")
+
+                            del pending_signals[sym]
+                            continue
 
                         # Expiry condition
                         sig_bar_count = ps.get("signal_idx", 0) + 1
@@ -762,13 +839,15 @@ def run_multi_symbol_trader():
                                 ps["side"], sym, sym, ps["spot"], ps["trigger_level"],
                                 "CANCELLED_NO_CONFIRMATION", cancel_msg, trade_taken=False
                             )
-                            telegram_bot.send_signal_cancelled_alert({
-                                "symbol": f"{sym} ({ps['side']})",
-                                "exchange": exch,
-                                "reason": cancel_msg,
-                                "trigger_level": ps["trigger_level"],
-                                "candle_time": bar_time
-                            })
+                            target_cids = get_chat_ids_for_symbol(sym)
+                            for tcid in target_cids:
+                                telegram_bot.send_signal_cancelled_alert({
+                                    "symbol": f"{sym} ({ps['side']})",
+                                    "exchange": exch,
+                                    "reason": cancel_msg,
+                                    "trigger_level": ps["trigger_level"],
+                                    "candle_time": bar_time
+                                }, chat_id=tcid)
                             del pending_signals[sym]
 
                     # 3. Detect New Signal Candle (Stop admitting if >= no_entries_after)
@@ -807,11 +886,13 @@ def run_multi_symbol_trader():
                                     "setup_tag": strat_title
                                 }
                                 log_signal_to_csv(side, sym, sym, c, trigger, "SIGNAL_GENERATED", f"{strat_title} ({desc})", trade_taken=False)
-                                telegram_bot.send_signal_alert({
-                                    "symbol": sym, "exchange": exch, "side": f"{side} ({strat_title})",
-                                    "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
-                                    "strategy_name": strat_title, "candle_time": bar_time
-                                })
+                                target_cids = get_chat_ids_for_symbol(sym)
+                                for tcid in target_cids:
+                                    telegram_bot.send_signal_alert({
+                                        "symbol": sym, "exchange": exch, "side": f"{side} ({strat_title})",
+                                        "spot_price": c, "trigger_level": trigger, "stop_loss": sl_level,
+                                        "strategy_name": strat_title, "candle_time": bar_time
+                                    }, chat_id=tcid)
                                 print(f"[STAGE 1 SIGNAL] [{bar_time}] {sym} {strat_title} ({side}) @ Rs {c:.2f}. Waiting confirmation beyond Rs {trigger:.2f}")
 
                 except Exception as inner_e:

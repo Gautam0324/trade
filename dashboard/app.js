@@ -2,7 +2,20 @@
 let equityChartInstance = null;
 let activeView = "overview";
 let cachedDashboardData = null;
+let currentAccount = new URLSearchParams(window.location.search).get("account") || "gautam";
 let dashboardApiToken = "";
+
+function switchAccount(acc) {
+  currentAccount = acc || "gautam";
+  const url = new URL(window.location);
+  url.searchParams.set("account", currentAccount);
+  window.history.replaceState({}, "", url);
+
+  const sel = document.getElementById("accountSelector");
+  if (sel) sel.value = currentAccount;
+
+  refreshCurrentView();
+}
 
 // Helper for authenticated POST requests
 async function authFetch(url, options = {}) {
@@ -113,7 +126,7 @@ async function refreshCurrentView() {
 // 1. Overview Loader
 async function loadOverviewData() {
   try {
-    const res = await fetch('/api/overview');
+    const res = await fetch('/api/overview?account=' + encodeURIComponent(currentAccount));
     const data = await res.json();
     cachedDashboardData = data;
     if (data.api_token) {
@@ -196,7 +209,7 @@ async function loadOverviewData() {
 // Equity Chart Renderer using Chart.js
 async function renderEquityChart() {
   try {
-    const res = await fetch('/api/equity_curve');
+    const res = await fetch('/api/equity_curve?account=' + encodeURIComponent(currentAccount));
     const data = await res.json();
     const points = data.points || [];
 
@@ -289,7 +302,7 @@ async function renderEquityChart() {
 function renderQuickWatchlist() {
   const el = document.getElementById('quickWatchlist');
   if (!el) return;
-  fetch('/api/watchlist').then(r => r.json()).then(data => {
+  fetch('/api/watchlist?account=' + encodeURIComponent(currentAccount)).then(r => r.json()).then(data => {
     const list = data.symbols || [];
     if (!list.length) {
       el.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem;">No watchlist data available.</span>`;
@@ -318,6 +331,20 @@ function renderQuickWatchlist() {
   });
 }
 
+function formatPositionSymbol(p) {
+  const sym = p.symbol || '';
+  const optType = p.option_type || (sym.endsWith('CE') ? 'CE' : (sym.endsWith('PE') ? 'PE' : null));
+  if (optType) {
+    const isCall = optType === 'CE';
+    const badge = isCall 
+      ? `<span style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; margin-right: 6px;">🟢 CALL (CE)</span>`
+      : `<span style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; margin-right: 6px;">🔴 PUT (PE)</span>`;
+    const strikeText = p.strike ? `${p.underlying || ''} ${p.strike} ${optType}` : sym;
+    return `${badge}<span style="color: #fff; font-weight: 700;">${strikeText}</span> <span style="color: var(--text-muted); font-size: 0.72rem; margin-left: 4px;">(${sym})</span>`;
+  }
+  return `<span style="color: #fff; font-weight: 700;">${sym}</span>`;
+}
+
 function renderQuickPositions(positions) {
   const el = document.getElementById('quickPositions');
   if (!el) return;
@@ -327,15 +354,33 @@ function renderQuickPositions(positions) {
   }
   let html = `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
   positions.forEach(p => {
-    const isGreen = p.unrealized_pnl >= 0;
+    const isGreen = (p.unrealized_pnl || 0) >= 0;
+    const sym = p.symbol || '';
+    const optType = p.option_type || (sym.endsWith('CE') ? 'CE' : (sym.endsWith('PE') ? 'PE' : null));
+    let badge = '';
+    let label = sym;
+    if (optType) {
+      const isCall = optType === 'CE';
+      badge = isCall 
+        ? `<span style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; margin-right: 6px;">🟢 CALL (CE)</span>`
+        : `<span style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; margin-right: 6px;">🔴 PUT (PE)</span>`;
+      label = p.strike ? `${p.underlying || ''} ${p.strike} ${optType}` : sym;
+    }
+
     html += `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.6rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px;">
         <div>
-          <strong style="color: #fff; font-size: 0.82rem;">${p.symbol}</strong>
-          <span style="font-size: 0.72rem; color: var(--text-secondary); margin-left: 0.4rem;">Qty: ${p.qty} @ ₹${p.entry_price}</span>
+          <div style="display: flex; align-items: center; margin-bottom: 2px;">
+            ${badge}
+            <strong style="color: #fff; font-size: 0.84rem;">${label}</strong>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary);">
+            Contract: <code style="color: #94a3b8; font-size: 0.7rem;">${p.symbol}</code> | Qty: <strong>${p.qty}</strong> @ ₹${Number(p.entry_price).toFixed(2)}
+          </div>
         </div>
         <div style="text-align: right; font-family: var(--font-mono); font-size: 0.82rem;">
-          <div class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}₹${p.unrealized_pnl.toFixed(2)} (${p.unrealized_pnl_pct}%)</div>
+          <div class="${isGreen ? 'green' : 'red'}" style="font-weight: 600;">${isGreen ? '+' : ''}₹${Number(p.unrealized_pnl || 0).toFixed(2)} (${p.unrealized_pnl_pct || 0}%)</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">SL: ₹${Number(p.sl_price || p.current_stop || (p.entry_price * 0.85)).toFixed(2)} | Tgt: ₹${Number(p.target_price || (p.entry_price * 1.30)).toFixed(2)}</div>
         </div>
       </div>
     `;
@@ -349,7 +394,7 @@ async function loadWatchlistData() {
   const tbody = document.getElementById('watchlistTableBody');
   const tsEl = document.getElementById('watchlistTimestamp');
   try {
-    const res = await fetch('/api/watchlist');
+    const res = await fetch('/api/watchlist?account=' + encodeURIComponent(currentAccount));
     const data = await res.json();
     const symbols = data.symbols || [];
     if (tsEl) tsEl.textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' })} IST`;
@@ -387,7 +432,7 @@ async function loadPositionsData() {
   const tbody = document.getElementById('positionsTableBody');
   const summaryEl = document.getElementById('positionsSummary');
   try {
-    const res = await fetch('/api/positions');
+    const res = await fetch('/api/positions?account=' + encodeURIComponent(currentAccount));
     const data = await res.json();
     const positions = data.open_positions || [];
 
@@ -406,7 +451,7 @@ async function loadPositionsData() {
       rows += `
         <tr>
           <td>${p.id || 'POS'}</td>
-          <td style="font-weight: 700; color: #fff;">${p.symbol}</td>
+          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(p)}</td>
           <td>${p.qty}</td>
           <td>₹${Number(p.entry_price).toFixed(2)}</td>
           <td>₹${Number(p.current_price).toFixed(2)}</td>
@@ -435,7 +480,7 @@ async function loadTradesTable() {
   const outcomeFilter = document.getElementById('tradeOutcomeFilter').value;
 
   try {
-    let url = '/api/trades?';
+    let url = '/api/trades?account=' + encodeURIComponent(currentAccount) + '&';
     if (symFilter) url += `symbol=${encodeURIComponent(symFilter)}&`;
     if (outcomeFilter) url += `outcome=${encodeURIComponent(outcomeFilter)}&`;
 
@@ -460,7 +505,7 @@ async function loadTradesTable() {
       rows += `
         <tr>
           <td>${t.id || 'POS'}</td>
-          <td style="font-weight: 700; color: #fff;">${t.symbol}</td>
+          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(t)}</td>
           <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">BUY</span></td>
           <td>${t.qty}</td>
           <td>₹${Number(t.entry_price).toFixed(2)}</td>
@@ -552,7 +597,7 @@ async function loadRiskData() {
 // 7. Bot Control Loader
 async function loadControlData() {
   try {
-    const res = await fetch('/api/overview');
+    const res = await fetch('/api/overview?account=' + encodeURIComponent(currentAccount));
     const data = await res.json();
     const bot = data.bot_status || {};
     const isRunning = bot.status === "RUNNING";
@@ -750,6 +795,8 @@ function startAutoRefreshLoop() {
 
 // Initial Boot
 window.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('accountSelector');
+  if (sel) sel.value = currentAccount;
   loadOverviewData();
   const badge = document.getElementById('liveSyncBadge');
   if (badge) {

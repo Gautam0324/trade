@@ -86,6 +86,15 @@
         </div>
 
         <div class="topbar-right">
+          <div class="account-selector-box" style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.7); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);">
+            <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">User:</span>
+            <select id="accountSelector" onchange="switchAccount(this.value)" style="background: transparent; border: none; color: #38bdf8; font-weight: 700; font-size: 13px; outline: none; cursor: pointer;">
+              <option value="gautam" style="background: #0f172a; color: #fff;">👤 Gautam (Primary)</option>
+              <option value="himanshu" style="background: #0f172a; color: #fff;">👤 Himanshu (₹10L)</option>
+              <option value="prateek" style="background: #0f172a; color: #fff;">👤 Prateek (₹10L)</option>
+              <option value="fno" style="background: #0f172a; color: #fff;">⚡ F&O Options Desk (₹2L)</option>
+            </select>
+          </div>
           <div class="clock-widget" id="istClockDisplay">--:--:-- IST</div>
           <span class="status-badge closed" id="liveSyncBadge" style="cursor: pointer;" onclick="toggleAutoRefresh()" title="Click to pause/resume auto refresh">
             <span class="status-dot"></span> LIVE STREAMING (Click to Poll)

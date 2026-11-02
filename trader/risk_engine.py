@@ -266,6 +266,18 @@ class RiskEngine:
         """
         Calculates all risk state directly from the single source of truth (ledger.json).
         """
+        try:
+            cfg_p = Path(__file__).resolve().parent / "config.json"
+            if cfg_p.exists():
+                with open(cfg_p, "r", encoding="utf-8") as cf:
+                    d_cfg = json.load(cf)
+                    if "max_trades_per_day" in d_cfg:
+                        self.max_trades_per_day = int(d_cfg["max_trades_per_day"])
+                    if "max_orders_per_day" in d_cfg:
+                        self.max_orders_per_day = int(d_cfg["max_orders_per_day"])
+        except Exception:
+            pass
+
         starting_cap = float(ledger.get("starting_capital", self.starting_capital))
         open_positions = ledger.get("open_positions", [])
         deployed_cash = float(ledger.get("deployed_cash", 0.0))

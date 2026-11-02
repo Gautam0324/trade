@@ -169,11 +169,11 @@ The repository includes curated genuine market data across multiple resolutions:
 
 | Timeframe | History Length | Date Range | Total Records | Instruments Included |
 | :---: | :---: | :---: | :---: | :--- |
-| **1-Day (Daily)** | **248 Trading Days (~1 Year)** | Oct 2025 – Oct 2026 | ~248 bars/stock | HDFCBANK, INFY, RELIANCE, TCS, ICICIBANK, SBIN, **NIFTY 50** |
-| **5-Minute (5m)** | **~60 Trading Days (~3 Months)** | Jul 2026 – Oct 2026 | ~4,379 bars/stock | HDFCBANK, INFY, RELIANCE, TCS, ICICIBANK, SBIN, **NIFTY 50** |
-| **1-Minute (1m)** | **7–10 Trading Days** | Mid-Oct 2026 – Present | 17,614 bars | Watchlist stocks with all 29 precomputed quant indicators |
+| **1-Day (Daily)** | **248 Trading Days (~1 Year)** | Oct 2025 - Oct 2026 | ~248 bars/stock | HDFCBANK, INFY, RELIANCE, TCS, ICICIBANK, SBIN, **NIFTY 50** |
+| **5-Minute (5m)** | **~60 Trading Days (~3 Months)** | Jul 2026 - Oct 2026 | ~4,379 bars/stock | HDFCBANK, INFY, RELIANCE, TCS, ICICIBANK, SBIN, **NIFTY 50** |
+| **1-Minute (1m)** | **7-10 Trading Days** | Mid-Oct 2026 - Present | 17,614 bars | Watchlist stocks with all 29 precomputed quant indicators |
 | **Live Database** | **Continuous** | Live Sessions | ~2,500+ bars | Active SQLite tick archive (`ticks_market_data.db`) |
-| **Long-Term** | **10 Full Years (2,500+ Days)** | 2016 – 2026 | 500,000+ bars | Multi-year 1m archive in `historical_data/` |
+| **Long-Term** | **10 Full Years (2,500+ Days)** | 2016 - 2026 | 500,000+ bars | Multi-year 1m archive in `historical_data/` |
 
 ---
 
@@ -268,5 +268,6 @@ Open `http://localhost:8080` in any browser to access the live trading terminal:
 ## 📄 License & Attribution
 
 * **Maintainer & Lead Developer**: **Gautam** ([@Gautam0324](https://github.com/Gautam0324))
+* **Original Template & Architecture**: **Jake Schincariol**
 * **License**: Licensed under the [MIT License](file:///d:/Trade-agent/day-trader-skill/LICENSE).
 * **Disclaimer**: This system is designed and distributed strictly for quantitative research, backtesting, and paper trading on Indian Equities. Never deploy live trading without rigorous personal financial validation.

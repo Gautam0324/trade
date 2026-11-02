@@ -1,0 +1,65 @@
+{
+  "active_account": "gautam",
+  "accounts": {
+    "gautam": {
+      "id": "gautam",
+      "name": "Gautam",
+      "capital": 1000000.0,
+      "telegram_chat_id": "1081536667",
+      "ledger_file": "ledger.json",
+      "risk_state_file": "daily_risk_state.json",
+      "status": "ACTIVE",
+      "watchlist": [
+        "JPL",
+        "TCS",
+        "RELIANCE",
+        "INFY",
+        "HDFCBANK"
+      ]
+    },
+    "himanshu": {
+      "id": "himanshu",
+      "name": "Himanshu",
+      "capital": 1000000.0,
+      "telegram_chat_id": "1693281273",
+      "ledger_file": "ledger_himanshu.json",
+      "risk_state_file": "daily_risk_himanshu.json",
+      "status": "ACTIVE",
+      "linked_at": "2026-10-30 15:02:19",
+      "watchlist": [
+        "SBIN",
+        "ICICIBANK",
+        "LT",
+        "TATASTEEL"
+      ]
+    },
+    "prateek": {
+      "id": "prateek",
+      "name": "Prateek",
+      "capital": 1000000.0,
+      "telegram_chat_id": null,
+      "ledger_file": "ledger_prateek.json",
+      "risk_state_file": "daily_risk_prateek.json",
+      "status": "PENDING_TELEGRAM_LINK",
+      "watchlist": [
+        "BAJFINANCE",
+        "ITC",
+        "AXISBANK",
+        "WIPRO"
+      ]
+    },
+    "fno": {
+      "id": "fno",
+      "name": "F&O Options Desk",
+      "capital": 200000.0,
+      "telegram_chat_id": "1081536667",
+      "ledger_file": "ledger_fno.json",
+      "risk_state_file": "daily_risk_fno.json",
+      "status": "ACTIVE",
+      "watchlist": [
+        "NIFTY 50",
+        "BANKNIFTY"
+      ]
+    }
+  }
+}
