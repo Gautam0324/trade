@@ -450,6 +450,8 @@ def get_strategy_performance():
             strat = "TREND_MOMENTUM"
         elif "CONFLUENCE" in reason:
             strat = "CONFLUENCE"
+        elif "V3" in reason or "V3_TREND_PULLBACK" in reason:
+            strat = "V3_TREND_PULLBACK"
         elif "NIFTY" in reason or "Manual" in reason:
             strat = "MANUAL_INDEX"
 
