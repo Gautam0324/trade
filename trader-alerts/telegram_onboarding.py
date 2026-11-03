@@ -19,6 +19,18 @@ SECRETS_PATH = BASE_DIR / "trader" / "secrets.json"
 ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
 
 def get_bot_token():
+    try:
+        from dotenv import load_dotenv
+        env_path = BASE_DIR / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
+    except Exception:
+        pass
+
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if token:
+        return token
+
     if SECRETS_PATH.exists():
         try:
             with open(SECRETS_PATH, "r", encoding="utf-8") as f:

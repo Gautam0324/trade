@@ -33,23 +33,43 @@ DAYS_PER_CHUNK = 25  # ~6,000 to 7,500 candles per chunk (well within 10,000 lim
 RATE_LIMIT_DELAY = 1.35  # seconds between requests to prevent HTTP 429
 
 def get_smart_api_session(max_retries=3, retry_delay=4):
-    if not os.path.exists(SECRETS_FILE):
-        raise FileNotFoundError(f"Secrets file not found at {SECRETS_FILE}")
-    with open(SECRETS_FILE, "r") as f:
-        secrets = json.load(f)
+    # Try loading from .env first
+    try:
+        from dotenv import load_dotenv
+        env_path = BASE_DIR / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
+    except Exception:
+        pass
+
+    api_key = os.environ.get("SMARTAPI_API_KEY")
+    client_code = os.environ.get("SMARTAPI_CLIENT_CODE")
+    pin = os.environ.get("SMARTAPI_PIN")
+    totp_secret = os.environ.get("SMARTAPI_TOTP_SECRET")
+
+    if not all([api_key, client_code, pin, totp_secret]):
+        if os.path.exists(SECRETS_FILE):
+            with open(SECRETS_FILE, "r") as f:
+                secrets = json.load(f)
+            api_key = api_key or secrets.get("smartapi_api_key")
+            client_code = client_code or secrets.get("smartapi_client_code")
+            pin = pin or secrets.get("smartapi_pin")
+            totp_secret = totp_secret or secrets.get("smartapi_totp_secret")
+        else:
+            raise FileNotFoundError(f"SmartAPI credentials not found in .env or at {SECRETS_FILE}")
 
     for attempt in range(1, max_retries + 1):
         try:
-            smart_api = SmartConnect(api_key=secrets["smartapi_api_key"])
-            totp = pyotp.TOTP(secrets["smartapi_totp_secret"]).now()
+            smart_api = SmartConnect(api_key=api_key)
+            totp = pyotp.TOTP(totp_secret).now()
             session = smart_api.generateSession(
-                secrets["smartapi_client_code"],
-                secrets["smartapi_pin"],
+                client_code,
+                pin,
                 totp
             )
             if not session or not session.get("status"):
                 raise RuntimeError(f"SmartAPI Authentication failed: {session.get('message')}")
-            print(f"Authenticated with Angel One SmartAPI. Client: {secrets['smartapi_client_code']}")
+            print(f"Authenticated with Angel One SmartAPI. Client: {client_code}")
             return smart_api
         except Exception as e:
             if "exceeding access rate" in str(e) or "DataException" in str(e):

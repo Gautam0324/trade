@@ -49,7 +49,8 @@ class Repo(unittest.TestCase):
             "STRATEGY_AUDIT.md", "STRATEGY_CHANGELOG.md", "BACKTEST_REPORT.md",
             "AUDIT_REPORT.md", "ACCOUNTING_REPAIR_REPORT.md", "EXECUTION_REPAIR_REPORT.md",
             "RISK_ENGINE_REPORT.md", "V3_STRATEGY_REPORT.md", "MULTI_ACCOUNT_REPORT.md",
-            "BACKTEST_VALIDATION_REPORT.md", "FINAL_VALIDATION_REPORT.md", "config"
+            "BACKTEST_VALIDATION_REPORT.md", "FINAL_VALIDATION_REPORT.md", "config",
+            ".env", ".env.example"
         }
         root = sorted(d for d in os.listdir(ROOT) if not d.startswith((".git", ".pytest_cache", "__pycache__")) and d not in ignored_files)
         self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))

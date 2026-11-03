@@ -20,6 +20,13 @@ if sys.platform == "win32":
 
 BASE_DIR = Path(__file__).resolve().parent
 
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except Exception:
+    pass
+
 def run_all():
     python_exe = sys.executable
     processes = []
