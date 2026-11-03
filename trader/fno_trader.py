@@ -156,63 +156,6 @@ def calculate_option_costs(buy_price: float, sell_price: float, qty: int):
         }
     }
 
-class FnoOptionsTrader:
-    def __init__(self):
-        self.api = None
-        self.open_positions = {}
-        self.pending_signals = {}
-        self.completed_trades = []
-        self.capital = 200000.0
-        self.free_cash = 200000.0
-        self.realized_pnl = 0.0
-        self.load_ledger()
-
-    def load_ledger(self):
-        if LEDGER_PATH.exists():
-            try:
-                with open(LEDGER_PATH, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.capital = float(data.get("initial_capital", 200000.0))
-                    self.free_cash = float(data.get("free_cash", self.capital))
-                    self.realized_pnl = float(data.get("realized_pnl", 0.0))
-                    self.completed_trades = data.get("trade_history", [])
-                    for p in data.get("open_positions", []):
-                        self.open_positions[p["symbol"]] = p
-            except Exception as e:
-                print(f"[FNO LEDGER LOAD ERROR] {e}")
-
-    def save_ledger(self):
-        try:
-            data = {
-                "initial_capital": self.capital,
-                "free_cash": round(self.free_cash, 2),
-                "deployed_cash": round(sum(p["qty"] * p["entry_price"] for p in self.open_positions.values()), 2),
-                "realized_pnl": round(self.realized_pnl, 2),
-                "open_positions": list(self.open_positions.values()),
-                "trade_history": self.completed_trades
-            }
-            with open(LEDGER_PATH, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-        except Exception as e:
-            print(f"[FNO LEDGER SAVE ERROR] {e}")
-
-    def get_fno_chat_id(self):
-        if ACCOUNTS_PATH.exists():
-            try:
-                with open(ACCOUNTS_PATH, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    return d.get("accounts", {}).get("fno", {}).get("telegram_chat_id", "1081536667")
-            except Exception:
-                pass
-        return "1081536667"
-
-    def send_telegram(self, text: str):
-        cid = self.get_fno_chat_id()
-        try:
-            telegram_bot.send_telegram_message(text, chat_id=cid)
-        except Exception as e:
-            print(f"[TELEGRAM FNO ERROR] {e}")
-
 def get_all_active_accounts():
     if ACCOUNTS_PATH.exists():
         try:
@@ -384,6 +327,64 @@ def update_open_option_on_all_ledgers(opt_sym: str, cur_p: float):
                     json.dump(data, lf, indent=2)
         except Exception:
             pass
+
+
+class FnoOptionsTrader:
+    def __init__(self):
+        self.api = None
+        self.open_positions = {}
+        self.pending_signals = {}
+        self.completed_trades = []
+        self.capital = 200000.0
+        self.free_cash = 200000.0
+        self.realized_pnl = 0.0
+        self.load_ledger()
+
+    def load_ledger(self):
+        if LEDGER_PATH.exists():
+            try:
+                with open(LEDGER_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.capital = float(data.get("initial_capital", 200000.0))
+                    self.free_cash = float(data.get("free_cash", self.capital))
+                    self.realized_pnl = float(data.get("realized_pnl", 0.0))
+                    self.completed_trades = data.get("trade_history", [])
+                    for p in data.get("open_positions", []):
+                        self.open_positions[p["symbol"]] = p
+            except Exception as e:
+                print(f"[FNO LEDGER LOAD ERROR] {e}")
+
+    def save_ledger(self):
+        try:
+            data = {
+                "initial_capital": self.capital,
+                "free_cash": round(self.free_cash, 2),
+                "deployed_cash": round(sum(p["qty"] * p["entry_price"] for p in self.open_positions.values()), 2),
+                "realized_pnl": round(self.realized_pnl, 2),
+                "open_positions": list(self.open_positions.values()),
+                "trade_history": self.completed_trades
+            }
+            with open(LEDGER_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"[FNO LEDGER SAVE ERROR] {e}")
+
+    def get_fno_chat_id(self):
+        if ACCOUNTS_PATH.exists():
+            try:
+                with open(ACCOUNTS_PATH, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    return d.get("accounts", {}).get("fno", {}).get("telegram_chat_id", "1081536667")
+            except Exception:
+                pass
+        return "1081536667"
+
+    def send_telegram(self, text: str):
+        cid = self.get_fno_chat_id()
+        try:
+            telegram_bot.send_telegram_message(text, chat_id=cid)
+        except Exception as e:
+            print(f"[TELEGRAM FNO ERROR] {e}")
 
     def run(self):
         acquire_fno_lock()
