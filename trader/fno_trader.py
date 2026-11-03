@@ -7,7 +7,7 @@ Features:
 - Tracks NIFTY 50 & BANKNIFTY Spot with 1-Minute completed candles
 - Confluence Strategy Engine (Supertrend, EMA 5/9/33 Channel, VWAP)
 - Dynamic ATM Strike & Weekly Expiry Contract Resolver
-- 1-Lot Position Sizing with 15% Stop-Loss & 30% Target (+1:2 Risk-Reward)
+- 1-Lot Position Sizing with 5% Stop-Loss & 15% Target (+1:3 Risk-Reward)
 - Real Indian Regulatory Option CostModel (STT, GST, NSE Turnover, Brokerage)
 - Isolated ledger persistence in trader/ledger_fno.json
 - Real-time Telegram alerting with [⚡ F&O OPTIONS DESK] tag
@@ -46,6 +46,10 @@ INDICES = [
     {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "step": 50},
     {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "step": 100}
 ]
+
+# Risk Parameters: 5% Stop-Loss, 15% Target (1:3 Risk:Reward)
+STOP_LOSS_PCT = 0.05
+TARGET_PCT = 0.15
 
 _fno_lock_handle = None
 
@@ -224,7 +228,7 @@ class FnoOptionsTrader:
             "🎯 <b>Strategy:</b> Intraday Confluence Momentum (Supertrend + EMA Channel + VWAP)\n"
             "📦 <b>Strike Resolution:</b> Dynamic Weekly ATM Contracts\n"
             f"💰 <b>Paper Capital:</b> ₹{self.capital:,.2f}\n"
-            "🛡️ <b>Risk Rules:</b> 1 Lot | 15% SL | 30% Target (1:2 R:R)\n"
+            "🛡️ <b>Risk Rules:</b> 1 Lot | 5% SL | 15% Target (1:3 R:R)\n"
             "⏰ <b>Intraday Flat By:</b> 15:20 IST\n\n"
             "🔔 <i>Live NFO paper entries and exits will be reported here!</i>"
         )
@@ -351,8 +355,8 @@ class FnoOptionsTrader:
             print(f"[F&O BLOCKED] Insufficient cash for {opt_sym} (Need Rs {investment}, have Rs {self.free_cash})")
             return
 
-        sl_price = round(premium * 0.85, 2)     # -15% Stop-loss
-        tgt_price = round(premium * 1.30, 2)    # +30% Target (1:2 R:R)
+        sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)     # -5% Stop-loss
+        tgt_price = round(premium * (1.0 + TARGET_PCT), 2)       # +15% Target (1:3 R:R)
 
         pos_record = {
             "id": f"OPT-{int(time.time()*1000)}-{opt_sym}",
@@ -386,8 +390,8 @@ class FnoOptionsTrader:
             f"💰 <b>Premium Price:</b> ₹{premium:.2f}\n"
             f"📦 <b>Lot Size:</b> {qty} Shares\n"
             f"💵 <b>Deployed Amount:</b> ₹{investment:,.2f}\n"
-            f"🛑 <b>Stop-Loss (-15%):</b> ₹{sl_price:.2f}\n"
-            f"🏁 <b>Target (+30%):</b> ₹{tgt_price:.2f} (1:2 R:R)\n"
+            f"🛑 <b>Stop-Loss (-5%):</b> ₹{sl_price:.2f}\n"
+            f"🏁 <b>Target (+15%):</b> ₹{tgt_price:.2f} (1:3 R:R)\n"
             f"🧠 <b>Strategy Reason:</b> {reason}"
         )
         self.send_telegram(msg)
@@ -423,12 +427,12 @@ class FnoOptionsTrader:
 
         # Check Target Hit
         if current_premium >= tgt_p:
-            self.exit_position(opt_sym, f"🎯 Target Hit (+30% R:R) @ Rs {current_premium:.2f}", current_premium)
+            self.exit_position(opt_sym, f"🎯 Target Hit (+15% R:R) @ Rs {current_premium:.2f}", current_premium)
             return
 
         # Check Stop-Loss Hit
         if current_premium <= sl_p:
-            self.exit_position(opt_sym, f"🛑 Stop-Loss Hit (-15%) @ Rs {current_premium:.2f}", current_premium)
+            self.exit_position(opt_sym, f"🛑 Stop-Loss Hit (-5%) @ Rs {current_premium:.2f}", current_premium)
             return
 
         # Supertrend Reversal

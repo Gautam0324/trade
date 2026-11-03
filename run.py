@@ -49,7 +49,7 @@ def run_all():
         )
         processes.append(("Live Trader", trader_proc))
 
-        time.sleep(1)
+        time.sleep(4)  # Spacing to prevent SmartAPI login rate limits
 
         # 3. Start F&O Options Trader Engine (NIFTY & BANKNIFTY)
         fno_script = BASE_DIR / "trader" / "fno_trader.py"

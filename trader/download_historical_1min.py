@@ -32,23 +32,32 @@ START_DATE = END_DATE - timedelta(days=365 * 10)
 DAYS_PER_CHUNK = 25  # ~6,000 to 7,500 candles per chunk (well within 10,000 limit)
 RATE_LIMIT_DELAY = 1.35  # seconds between requests to prevent HTTP 429
 
-def get_smart_api_session():
+def get_smart_api_session(max_retries=3, retry_delay=4):
     if not os.path.exists(SECRETS_FILE):
         raise FileNotFoundError(f"Secrets file not found at {SECRETS_FILE}")
     with open(SECRETS_FILE, "r") as f:
         secrets = json.load(f)
 
-    smart_api = SmartConnect(api_key=secrets["smartapi_api_key"])
-    totp = pyotp.TOTP(secrets["smartapi_totp_secret"]).now()
-    session = smart_api.generateSession(
-        secrets["smartapi_client_code"],
-        secrets["smartapi_pin"],
-        totp
-    )
-    if not session or not session.get("status"):
-        raise RuntimeError(f"SmartAPI Authentication failed: {session.get('message')}")
-    print(f"Authenticated with Angel One SmartAPI. Client: {secrets['smartapi_client_code']}")
-    return smart_api
+    for attempt in range(1, max_retries + 1):
+        try:
+            smart_api = SmartConnect(api_key=secrets["smartapi_api_key"])
+            totp = pyotp.TOTP(secrets["smartapi_totp_secret"]).now()
+            session = smart_api.generateSession(
+                secrets["smartapi_client_code"],
+                secrets["smartapi_pin"],
+                totp
+            )
+            if not session or not session.get("status"):
+                raise RuntimeError(f"SmartAPI Authentication failed: {session.get('message')}")
+            print(f"Authenticated with Angel One SmartAPI. Client: {secrets['smartapi_client_code']}")
+            return smart_api
+        except Exception as e:
+            if "exceeding access rate" in str(e) or "DataException" in str(e):
+                if attempt < max_retries:
+                    print(f"Rate limited during login, retrying in {retry_delay}s (attempt {attempt}/{max_retries})...")
+                    time.sleep(retry_delay)
+                    continue
+            raise
 
 def load_master_instruments():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
