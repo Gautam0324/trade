@@ -213,6 +213,178 @@ class FnoOptionsTrader:
         except Exception as e:
             print(f"[TELEGRAM FNO ERROR] {e}")
 
+def get_all_active_accounts():
+    if ACCOUNTS_PATH.exists():
+        try:
+            with open(ACCOUNTS_PATH, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                return d.get("accounts", {})
+        except Exception:
+            pass
+    return {}
+
+def broadcast_option_entry_to_accounts(pos_record: dict, investment: float):
+    accounts = get_all_active_accounts()
+    for acc_id, acc_info in accounts.items():
+        if acc_id == "fno":
+            continue
+        
+        cid = acc_info.get("telegram_chat_id")
+        user_name = acc_info.get("name", acc_id.capitalize())
+        ledger_fname = acc_info.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+        ledger_file = BASE_DIR / "trader" / ledger_fname
+
+        try:
+            led_data = {}
+            if ledger_file.exists():
+                with open(ledger_file, "r", encoding="utf-8") as lf:
+                    led_data = json.load(lf)
+            
+            cur_free = float(led_data.get("free_cash", acc_info.get("capital", 1000000.0)))
+            if cur_free < investment:
+                print(f"[F&O {user_name}] Skipped: Insufficient free cash (Need Rs {investment}, have Rs {cur_free})")
+                continue
+
+            open_positions = led_data.setdefault("open_positions", [])
+            if not any(p.get("symbol") == pos_record["symbol"] for p in open_positions):
+                user_pos = dict(pos_record)
+                user_pos["id"] = f"OPT-{acc_id[:3].upper()}-{int(time.time()*1000)}-{pos_record['symbol']}"
+                open_positions.append(user_pos)
+                led_data["free_cash"] = round(cur_free - investment, 2)
+                led_data["deployed_cash"] = round(float(led_data.get("deployed_cash", 0.0)) + investment, 2)
+                
+                with open(ledger_file, "w", encoding="utf-8") as lf:
+                    json.dump(led_data, lf, indent=2)
+                print(f"[F&O {user_name}] Position recorded in {ledger_fname}")
+        except Exception as e:
+            print(f"[F&O {user_name}] Ledger entry error: {e}")
+
+        if cid:
+            try:
+                opt_sym = pos_record["symbol"]
+                type_emoji = "🟢 CALL (CE)" if pos_record["option_type"] == "CE" else "🔴 PUT (PE)"
+                msg = (
+                    f"⚡ <b>[F&O ENTRY EXECUTED - {user_name}] {type_emoji}</b>\n\n"
+                    f"🎯 <b>Contract:</b> <code>{opt_sym}</code>\n"
+                    f"📊 <b>Underlying Spot:</b> ₹{pos_record['entry_spot']:,.2f} ({pos_record['underlying']})\n"
+                    f"💰 <b>Premium Price:</b> ₹{pos_record['entry_price']:.2f}\n"
+                    f"📦 <b>Lot Size:</b> {pos_record['qty']} Shares\n"
+                    f"💵 <b>Deployed Amount:</b> ₹{investment:,.2f}\n"
+                    f"🛑 <b>Stop-Loss (-5%):</b> ₹{pos_record['sl_price']:.2f}\n"
+                    f"🏁 <b>Target (+15%):</b> ₹{pos_record['target_price']:.2f} (1:3 R:R)\n"
+                    f"🧠 <b>Strategy Reason:</b> {pos_record['reason']}"
+                )
+                telegram_bot.send_telegram_message(msg, chat_id=cid)
+            except Exception as te:
+                print(f"[TELEGRAM ERROR {user_name}] {te}")
+
+def broadcast_option_exit_to_accounts(opt_sym: str, exit_price: float, reason: str):
+    accounts = get_all_active_accounts()
+    for acc_id, acc_info in accounts.items():
+        if acc_id == "fno":
+            continue
+        
+        cid = acc_info.get("telegram_chat_id")
+        user_name = acc_info.get("name", acc_id.capitalize())
+        ledger_fname = acc_info.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+        ledger_file = BASE_DIR / "trader" / ledger_fname
+
+        try:
+            if not ledger_file.exists():
+                continue
+            with open(ledger_file, "r", encoding="utf-8") as lf:
+                led_data = json.load(lf)
+            
+            open_positions = led_data.get("open_positions", [])
+            pos_idx = next((i for i, p in enumerate(open_positions) if p.get("symbol") == opt_sym), None)
+            if pos_idx is None:
+                continue
+
+            pos = open_positions.pop(pos_idx)
+            entry_p = float(pos.get("entry_price", exit_price))
+            qty = int(pos.get("qty", 1))
+
+            costs = calculate_option_costs(entry_p, exit_price, qty)
+            net_pnl = costs["net_pnl"]
+            fees = costs["total_fees"]
+            gross_pnl = costs["gross_pnl"]
+
+            trade_record = {
+                "id": pos.get("id", f"OPT-{int(time.time()*1000)}-{opt_sym}"),
+                "symbol": opt_sym,
+                "side": pos.get("side", "BUY"),
+                "qty": qty,
+                "quantity": qty,
+                "entry_price": entry_p,
+                "exit_price": exit_price,
+                "entry_time": pos.get("entry_time", ""),
+                "exit_time": datetime.datetime.now().strftime("%H:%M:%S IST"),
+                "gross_pnl": gross_pnl,
+                "fees": fees,
+                "pnl": net_pnl,
+                "reason": reason,
+                "date": datetime.datetime.now().strftime("%Y-%m-%d"),
+                "exit_date": datetime.datetime.now().strftime("%Y-%m-%d")
+            }
+
+            th = led_data.setdefault("trade_history", [])
+            th.append(trade_record)
+            led_data["realized_pnl"] = round(float(led_data.get("realized_pnl", 0.0)) + net_pnl, 2)
+            returned_cash = (exit_price * qty) - fees
+            led_data["free_cash"] = round(float(led_data.get("free_cash", acc_info.get("capital", 1000000.0))) + returned_cash, 2)
+            led_data["deployed_cash"] = max(0.0, round(float(led_data.get("deployed_cash", 0.0)) - (entry_p * qty), 2))
+
+            with open(ledger_file, "w", encoding="utf-8") as lf:
+                json.dump(led_data, lf, indent=2)
+            print(f"[F&O {user_name}] Exit recorded in {ledger_fname} | Net: Rs {net_pnl:+.2f}")
+
+            if cid:
+                try:
+                    pnl_emoji = "🟢" if net_pnl >= 0 else "🔴"
+                    exit_msg = (
+                        f"{pnl_emoji} <b>[F&O EXIT EXECUTED - {user_name}]</b>\n\n"
+                        f"🎯 <b>Contract:</b> <code>{opt_sym}</code>\n"
+                        f"🏁 <b>Exit Premium:</b> ₹{exit_price:.2f}\n"
+                        f"📍 <b>Entry Premium:</b> ₹{entry_p:.2f}\n"
+                        f"📦 <b>Lotsize:</b> {qty} Shares\n"
+                        f"💡 <b>Reason:</b> {reason}\n"
+                        f"💵 <b>Net P&L:</b> ₹{net_pnl:+,.2f}\n"
+                        f"📊 <b>Account Realized Today:</b> ₹{led_data.get('realized_pnl', 0.0):+,.2f}"
+                    )
+                    telegram_bot.send_telegram_message(exit_msg, chat_id=cid)
+                except Exception as te:
+                    print(f"[TELEGRAM ERROR {user_name}] {te}")
+        except Exception as e:
+            print(f"[F&O {user_name}] Ledger exit error: {e}")
+
+def update_open_option_on_all_ledgers(opt_sym: str, cur_p: float):
+    accounts = get_all_active_accounts()
+    for acc_id, acc_info in accounts.items():
+        if acc_id == "fno":
+            continue
+        ledger_fname = acc_info.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+        ledger_file = BASE_DIR / "trader" / ledger_fname
+        try:
+            if not ledger_file.exists():
+                continue
+            with open(ledger_file, "r", encoding="utf-8") as lf:
+                data = json.load(lf)
+            modified = False
+            for p in data.get("open_positions", []):
+                if p.get("symbol") == opt_sym:
+                    ep = float(p.get("entry_price", cur_p))
+                    qty = int(p.get("qty", 1))
+                    p["current_price"] = cur_p
+                    p["peak_price"] = round(max(float(p.get("peak_price", ep)), cur_p), 2)
+                    p["unrealized_pnl"] = round((cur_p - ep) * qty, 2)
+                    p["amount"] = round(ep * qty, 2)
+                    modified = True
+            if modified:
+                with open(ledger_file, "w", encoding="utf-8") as lf:
+                    json.dump(data, lf, indent=2)
+        except Exception:
+            pass
+
     def run(self):
         acquire_fno_lock()
         print("=" * 75)
@@ -401,6 +573,8 @@ class FnoOptionsTrader:
         )
         self.send_telegram(msg)
         print(f"[F&O ENTRY] Bought {qty} {opt_sym} @ Rs {premium:.2f} | Deployed: Rs {investment}")
+        # Broadcast F&O Entry to all active accounts (Gautam, Himanshu, Prateek)
+        broadcast_option_entry_to_accounts(pos_record, investment)
 
     def evaluate_option_exit(self, pos: dict, current_spot: float, st_dir: int):
         opt_sym = pos["symbol"]
@@ -437,6 +611,7 @@ class FnoOptionsTrader:
         pos["unrealized_pnl"] = round((current_premium - entry_p) * qty, 2)
         pos["unrealized_pnl_pct"] = round(((current_premium - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
         self.save_ledger()
+        update_open_option_on_all_ledgers(opt_sym, current_premium)
 
         # Check Target Hit
         if current_premium >= tgt_p:
@@ -491,6 +666,8 @@ class FnoOptionsTrader:
 
         self.completed_trades.append(trade_record)
         self.save_ledger()
+        # Broadcast F&O Exit to all active accounts (Gautam, Himanshu, Prateek)
+        broadcast_option_exit_to_accounts(opt_sym, exit_price, reason)
 
         pnl_emoji = "🟢" if net_pnl >= 0 else "🔴"
         exit_msg = (
