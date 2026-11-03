@@ -370,7 +370,12 @@ class FnoOptionsTrader:
             "qty": qty,
             "quantity": qty,
             "entry_price": premium,
+            "current_price": premium,
+            "peak_price": premium,
+            "amount": investment,
+            "invested": investment,
             "sl_price": sl_price,
+            "current_stop": sl_price,
             "target_price": tgt_price,
             "entry_spot": spot_price,
             "entry_time": time_str,
@@ -424,6 +429,14 @@ class FnoOptionsTrader:
             spot_change = current_spot - pos.get("entry_spot", current_spot)
             delta = 0.50 if pos["option_type"] == "CE" else -0.50
             current_premium = max(1.0, round(entry_p + (spot_change * delta), 2))
+
+        # Update live tracking metrics on the open position
+        pos["current_price"] = current_premium
+        pos["peak_price"] = round(max(float(pos.get("peak_price", entry_p)), current_premium), 2)
+        pos["amount"] = round(entry_p * qty, 2)
+        pos["unrealized_pnl"] = round((current_premium - entry_p) * qty, 2)
+        pos["unrealized_pnl_pct"] = round(((current_premium - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
+        self.save_ledger()
 
         # Check Target Hit
         if current_premium >= tgt_p:

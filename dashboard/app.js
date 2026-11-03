@@ -453,13 +453,13 @@ async function loadPositionsData() {
           <td>${p.id || 'POS'}</td>
           <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(p)}</td>
           <td>${p.qty}</td>
-          <td>₹${Number(p.entry_price).toFixed(2)}</td>
-          <td>₹${Number(p.current_price).toFixed(2)}</td>
-          <td>₹${Number(p.amount).toFixed(2)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct}%</td>
-          <td>₹${Number(p.peak_price || p.entry_price).toFixed(2)}</td>
-          <td>₹${Number(p.current_stop || p.stop_loss || (p.entry_price * 0.99)).toFixed(2)}</td>
+          <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
+          <td style="font-weight: 600; color: #38bdf8;">₹${Number(p.current_price || p.entry_price || 0).toFixed(2)}</td>
+          <td>₹${Number(p.amount || p.invested || (p.qty * p.entry_price) || 0).toFixed(2)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl || 0)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct || 0}%</td>
+          <td>₹${Number(p.peak_price || p.current_price || p.entry_price || 0).toFixed(2)}</td>
+          <td>₹${Number(p.current_stop || p.sl_price || p.stop_loss || (p.entry_price * 0.95)).toFixed(2)}</td>
           <td>
             <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.72rem;" onclick="promptClosePosition('${p.symbol}', ${p.qty})">Close</button>
           </td>

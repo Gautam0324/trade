@@ -298,10 +298,29 @@ def compute_dashboard_metrics(account_id="gautam"):
         sym = p.get("symbol", "")
         qty = int(p.get("qty", 0))
         entry_p = float(p.get("entry_price", 0.0))
-        invested = float(p.get("amount", round(qty * entry_p, 2)))
-        
-        quote = fetch_live_quote_data(sym)
-        cur_p = quote["price"] if quote else entry_p
+        invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
+        quote = None
+
+        # Check if option contract
+        is_option = p.get("option_type") or sym.endswith("CE") or sym.endswith("PE")
+        if is_option:
+            cur_p = float(p.get("current_price", 0.0))
+            uname = p.get("underlying")
+            if uname and p.get("entry_spot"):
+                spot_sym = "NIFTY 50" if uname == "NIFTY" else ("BANKNIFTY" if uname == "BANKNIFTY" else uname)
+                spot_q = fetch_live_quote_data(spot_sym)
+                if spot_q and spot_q.get("price"):
+                    spot_cur = float(spot_q["price"])
+                    spot_change = spot_cur - float(p["entry_spot"])
+                    delta = 0.50 if (p.get("option_type") == "CE" or sym.endswith("CE")) else -0.50
+                    calc_p = max(1.0, round(entry_p + (spot_change * delta), 2))
+                    cur_p = calc_p if cur_p <= 0 else cur_p
+                    quote = {"last_updated": spot_q.get("last_updated", get_ist_now().strftime("%H:%M:%S IST"))}
+            if cur_p <= 0:
+                cur_p = entry_p
+        else:
+            quote = fetch_live_quote_data(sym)
+            cur_p = quote["price"] if quote else float(p.get("current_price", entry_p))
         
         pos_pnl = round((cur_p - entry_p) * qty, 2)
         pos_pnl_pct = round((pos_pnl / invested) * 100, 2) if invested > 0 else 0.0
@@ -309,11 +328,16 @@ def compute_dashboard_metrics(account_id="gautam"):
 
         enriched_positions.append({
             **p,
+            "amount": invested,
+            "invested": invested,
             "current_price": cur_p,
+            "current_stop": float(p.get("sl_price", p.get("current_stop", round(entry_p * 0.95, 2)))),
+            "target_price": float(p.get("target_price", round(entry_p * 1.15, 2))),
+            "peak_price": float(p.get("peak_price", max(cur_p, entry_p))),
             "unrealized_pnl": pos_pnl,
             "unrealized_pnl_pct": pos_pnl_pct,
             "market_value": round(qty * cur_p, 2),
-            "last_quote_time": quote["last_updated"] if quote else "N/A"
+            "last_quote_time": quote["last_updated"] if quote else get_ist_now().strftime("%H:%M:%S IST")
         })
 
     unrealized_pnl = round(unrealized_pnl, 2)
