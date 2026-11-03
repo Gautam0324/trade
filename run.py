@@ -40,7 +40,7 @@ def run_all():
 
         time.sleep(1)
 
-        # 2. Start Live Trader Engine
+        # 2. Start Live Trader Engine (Cash Equity)
         trader_script = BASE_DIR / "trader" / "multi_live_trader.py"
         print(f"[*] Starting Multi-Symbol Live Trader Engine ...")
         trader_proc = subprocess.Popen(
@@ -51,7 +51,18 @@ def run_all():
 
         time.sleep(1)
 
-        # 3. Start Telegram Interactive Onboarding Listener
+        # 3. Start F&O Options Trader Engine (NIFTY & BANKNIFTY)
+        fno_script = BASE_DIR / "trader" / "fno_trader.py"
+        print(f"[*] Starting F&O Options Desk Engine ...")
+        fno_proc = subprocess.Popen(
+            [python_exe, str(fno_script)],
+            cwd=str(BASE_DIR)
+        )
+        processes.append(("F&O Options Trader", fno_proc))
+
+        time.sleep(1)
+
+        # 4. Start Telegram Interactive Onboarding Listener
         onboard_script = BASE_DIR / "trader-alerts" / "telegram_onboarding.py"
         print(f"[*] Starting Telegram Multi-User Onboarding Listener ...")
         onboard_proc = subprocess.Popen(
@@ -70,9 +81,8 @@ def run_all():
                 name, proc = item
                 poll = proc.poll()
                 if poll is not None:
-                    if name == "Live Trader" and poll == 0:
-                        print(f"\n[INFO] Live Trader completed trading session for today.")
-                        print(f"[*] Dashboard remains live on http://localhost:8080 (Press Ctrl+C to stop).")
+                    if name in ("Live Trader", "F&O Options Trader") and poll == 0:
+                        print(f"\n[INFO] {name} completed trading session for today.")
                         processes.remove(item)
                     else:
                         print(f"\n[ALERT] {name} exited with code {poll}.")
