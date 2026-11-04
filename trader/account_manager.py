@@ -7,6 +7,7 @@ for Gautam, Himanshu, and Prateek.
 import os
 import json
 import time
+import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -29,6 +30,10 @@ class AccountPortfolio:
         self.risk_state_file = BASE_DIR / "trader" / info.get("risk_state_file", f"daily_risk_{account_id}.json")
         self.order_manager = OrderManager()
         self.open_positions: Dict[str, Dict[str, Any]] = {}
+        self.trade_history: List[Dict[str, Any]] = []
+        self.free_cash = self.capital
+        self.deployed_cash = 0.0
+        self.realized_pnl = 0.0
         self.load_ledger()
 
     def load_ledger(self):
@@ -36,6 +41,11 @@ class AccountPortfolio:
             try:
                 with open(self.ledger_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
+                    self.free_cash = float(data.get("free_cash", self.capital))
+                    self.deployed_cash = float(data.get("deployed_cash", 0.0))
+                    self.realized_pnl = float(data.get("realized_pnl", 0.0))
+                    self.trade_history = data.get("trade_history", [])
+                    self.open_positions.clear()
                     for p in data.get("open_positions", []):
                         self.open_positions[p["symbol"]] = dict(p)
             except Exception as e:
@@ -48,6 +58,10 @@ class AccountPortfolio:
                 with open(self.ledger_file, "r", encoding="utf-8") as f:
                     current_data = json.load(f)
             current_data["open_positions"] = list(self.open_positions.values())
+            current_data["free_cash"] = round(self.free_cash, 2)
+            current_data["deployed_cash"] = round(self.deployed_cash, 2)
+            current_data["realized_pnl"] = round(self.realized_pnl, 2)
+            current_data["trade_history"] = self.trade_history
             with open(self.ledger_file, "w", encoding="utf-8") as f:
                 json.dump(current_data, f, indent=2)
         except Exception as e:
@@ -109,6 +123,31 @@ class MultiAccountManager:
 
             if symbol in acc.open_positions:
                 continue
+
+            # Enforce max_trades_per_day limit
+            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            cfg_file = BASE_DIR / "trader" / "config.json"
+            max_trades = 30
+            if cfg_file.exists():
+                try:
+                    with open(cfg_file, "r", encoding="utf-8") as cf:
+                        max_trades = int(json.load(cf).get("max_trades_per_day", 30))
+                except Exception:
+                    pass
+
+            today_trades = [t for t in acc.trade_history if t.get("date") == today_str or t.get("exit_date") == today_str]
+            total_today_entries = len(today_trades) + len(acc.open_positions)
+            if total_today_entries >= max_trades:
+                print(f"[TRADE BLOCKED - {acc.name}] Daily trade limit reached ({total_today_entries}/{max_trades})")
+                continue
+
+            required_cash = price * base_qty
+            if acc.free_cash < required_cash:
+                print(f"[TRADE BLOCKED - {acc.name}] Insufficient cash for {symbol} (Need Rs {required_cash:,.2f}, have Rs {acc.free_cash:,.2f})")
+                continue
+
+            acc.free_cash = round(acc.free_cash - required_cash, 2)
+            acc.deployed_cash = round(acc.deployed_cash + required_cash, 2)
 
             order_id = f"ORD-{acc_id[:3].upper()}-{int(time.time() * 1000)}-{symbol}"
             pos_id = f"POS-{acc_id[:3].upper()}-{int(time.time() * 1000)}-{symbol}"

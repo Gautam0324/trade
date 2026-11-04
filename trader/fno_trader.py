@@ -183,6 +183,24 @@ def broadcast_option_entry_to_accounts(pos_record: dict, investment: float):
                 with open(ledger_file, "r", encoding="utf-8") as lf:
                     led_data = json.load(lf)
             
+            # Check daily trade quota for this account
+            cfg_file = BASE_DIR / "trader" / "config.json"
+            max_trades = 30
+            if cfg_file.exists():
+                try:
+                    with open(cfg_file, "r", encoding="utf-8") as cf:
+                        max_trades = int(json.load(cf).get("max_trades_per_day", 30))
+                except Exception:
+                    pass
+
+            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            today_trades = [t for t in led_data.get("trade_history", []) if t.get("date") == today_str or t.get("exit_date") == today_str]
+            acc_open = led_data.get("open_positions", [])
+            total_today_entries = len(today_trades) + len(acc_open)
+            if total_today_entries >= max_trades:
+                print(f"[F&O {user_name}] Skipped: Daily trade limit reached ({total_today_entries}/{max_trades})")
+                continue
+
             cur_free = float(led_data.get("free_cash", acc_info.get("capital", 1000000.0)))
             if cur_free < investment:
                 print(f"[F&O {user_name}] Skipped: Insufficient free cash (Need Rs {investment}, have Rs {cur_free})")
@@ -338,6 +356,7 @@ class FnoOptionsTrader:
         self.capital = 200000.0
         self.free_cash = 200000.0
         self.realized_pnl = 0.0
+        self.last_exit_times = {}
         self.load_ledger()
 
     def load_ledger(self):
@@ -429,18 +448,24 @@ class FnoOptionsTrader:
 
                     time.sleep(3.5)  # Rate-limit safety spacing
 
-                    try:
-                        resp = self.api.getCandleData({
-                            "exchange": "NSE",
-                            "symboltoken": token,
-                            "interval": "ONE_MINUTE",
-                            "fromdate": f"{today_str} 09:15",
-                            "todate": f"{today_str} {time_str}"
-                        })
-                    except Exception as ce:
-                        print(f"[CANDLE FETCH RETRY] {sym}: {ce}")
-                        time.sleep(3.0)
-                        continue
+                    resp = None
+                    for attempt in range(3):
+                        try:
+                            resp = self.api.getCandleData({
+                                "exchange": "NSE",
+                                "symboltoken": token,
+                                "interval": "ONE_MINUTE",
+                                "fromdate": f"{today_str} 09:15",
+                                "todate": f"{today_str} {time_str}"
+                            })
+                            if resp and resp.get("status") and resp.get("data"):
+                                break
+                            time.sleep(2.0)
+                        except Exception as ce:
+                            if attempt < 2:
+                                time.sleep(2.5)
+                            else:
+                                print(f"[CANDLE FETCH RETRY] {sym}: {ce}")
 
                     if not resp or not resp.get("status") or not resp.get("data"):
                         continue
@@ -502,6 +527,31 @@ class FnoOptionsTrader:
         qty = contract["lotsize"]
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.datetime.now().strftime("%H:%M")
+
+        # 1. Enforce max_trades_per_day quota (30 trades per day)
+        cfg_file = BASE_DIR / "trader" / "config.json"
+        max_trades = 30
+        if cfg_file.exists():
+            try:
+                with open(cfg_file, "r", encoding="utf-8") as cf:
+                    max_trades = int(json.load(cf).get("max_trades_per_day", 30))
+            except Exception:
+                pass
+
+        today_trades = [t for t in self.completed_trades if t.get("date") == today_str or t.get("exit_date") == today_str]
+        total_today_entries = len(today_trades) + len(self.open_positions)
+        if total_today_entries >= max_trades:
+            print(f"[F&O BLOCKED] Maximum daily trades quota reached ({total_today_entries}/{max_trades}). Halting new F&O entries for today.")
+            return
+
+        # 2. Enforce 15-min cooldown per underlying index after position exit
+        underlying = contract.get("underlying")
+        cooldown_secs = 900
+        time_since_exit = time.time() - self.last_exit_times.get(underlying, 0)
+        if time_since_exit < cooldown_secs:
+            rem_mins = int((cooldown_secs - time_since_exit) / 60)
+            print(f"[F&O COOLDOWN] {underlying} in exit cooldown ({rem_mins}m remaining). Skipping entry.")
+            return
 
         # Fetch live option premium
         time.sleep(1.2)
@@ -664,6 +714,11 @@ class FnoOptionsTrader:
             "date": datetime.datetime.now().strftime("%Y-%m-%d"),
             "exit_date": datetime.datetime.now().strftime("%Y-%m-%d")
         }
+
+        # Record exit time for underlying cooldown
+        underlying = pos.get("underlying")
+        if underlying:
+            self.last_exit_times[underlying] = time.time()
 
         self.completed_trades.append(trade_record)
         self.save_ledger()

@@ -40,7 +40,7 @@ def run_all():
         dashboard_script = BASE_DIR / "dashboard" / "server.py"
         print(f"[*] Starting Web Dashboard on http://localhost:8080 ...")
         dash_proc = subprocess.Popen(
-            [python_exe, str(dashboard_script), "8080"],
+            [python_exe, "-u", str(dashboard_script), "8080"],
             cwd=str(BASE_DIR)
         )
         processes.append(("Dashboard Server", dash_proc))
@@ -51,7 +51,7 @@ def run_all():
         trader_script = BASE_DIR / "trader" / "multi_live_trader.py"
         print(f"[*] Starting Multi-Symbol Live Trader Engine ...")
         trader_proc = subprocess.Popen(
-            [python_exe, str(trader_script)],
+            [python_exe, "-u", str(trader_script)],
             cwd=str(BASE_DIR)
         )
         processes.append(("Live Trader", trader_proc))
@@ -62,7 +62,7 @@ def run_all():
         fno_script = BASE_DIR / "trader" / "fno_trader.py"
         print(f"[*] Starting F&O Options Desk Engine ...")
         fno_proc = subprocess.Popen(
-            [python_exe, str(fno_script)],
+            [python_exe, "-u", str(fno_script)],
             cwd=str(BASE_DIR)
         )
         processes.append(("F&O Options Trader", fno_proc))
@@ -73,7 +73,7 @@ def run_all():
         onboard_script = BASE_DIR / "trader-alerts" / "telegram_onboarding.py"
         print(f"[*] Starting Telegram Multi-User Onboarding Listener ...")
         onboard_proc = subprocess.Popen(
-            [python_exe, str(onboard_script)],
+            [python_exe, "-u", str(onboard_script)],
             cwd=str(BASE_DIR)
         )
         processes.append(("Telegram Onboarding", onboard_proc))
