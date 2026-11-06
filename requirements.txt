@@ -1,0 +1,21 @@
+# =========================================================================
+# DAY TRADER PRO V3 - PRODUCTION DEPENDENCIES
+# =========================================================================
+
+# Broker API & Authentication
+smartapi-python>=1.5.5
+pyotp>=2.9.0
+websocket-client>=1.8.0
+cryptography>=42.0.0
+logzero>=1.7.0
+
+# Numerical & Quantitative Data Analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# HTTP Networking & Telegram Alerts
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Automated Testing
+pytest>=8.0.0
