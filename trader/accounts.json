@@ -15,7 +15,8 @@
         "RELIANCE",
         "INFY",
         "HDFCBANK"
-      ]
+      ],
+      "linked_at": "2026-11-03 17:14:32"
     },
     "himanshu": {
       "id": "himanshu",
@@ -37,16 +38,17 @@
       "id": "prateek",
       "name": "Prateek",
       "capital": 1000000.0,
-      "telegram_chat_id": null,
+      "telegram_chat_id": "1959190086",
       "ledger_file": "ledger_prateek.json",
       "risk_state_file": "daily_risk_prateek.json",
-      "status": "PENDING_TELEGRAM_LINK",
+      "status": "ACTIVE",
       "watchlist": [
         "BAJFINANCE",
         "ITC",
         "AXISBANK",
         "WIPRO"
-      ]
+      ],
+      "linked_at": "2026-11-03 17:18:04"
     },
     "fno": {
       "id": "fno",

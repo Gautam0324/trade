@@ -320,7 +320,7 @@ class RiskEngine:
             target_price=target_price,
             available_cash=free_cash,
             daily_realized_loss=daily_realized_loss,
-            current_trades_count=len(today_trades),
+            current_trades_count=len(today_trades) + len(open_positions),
             current_open_positions_count=len(open_positions),
             unrealized_loss=min(0.0, unrealized_pnl),
             existing_symbols=existing_symbols,

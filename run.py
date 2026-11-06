@@ -20,6 +20,13 @@ if sys.platform == "win32":
 
 BASE_DIR = Path(__file__).resolve().parent
 
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except Exception:
+    pass
+
 def run_all():
     python_exe = sys.executable
     processes = []
@@ -33,29 +40,40 @@ def run_all():
         dashboard_script = BASE_DIR / "dashboard" / "server.py"
         print(f"[*] Starting Web Dashboard on http://localhost:8080 ...")
         dash_proc = subprocess.Popen(
-            [python_exe, str(dashboard_script), "8080"],
+            [python_exe, "-u", str(dashboard_script), "8080"],
             cwd=str(BASE_DIR)
         )
         processes.append(("Dashboard Server", dash_proc))
 
         time.sleep(1)
 
-        # 2. Start Live Trader Engine
+        # 2. Start Live Trader Engine (Cash Equity)
         trader_script = BASE_DIR / "trader" / "multi_live_trader.py"
         print(f"[*] Starting Multi-Symbol Live Trader Engine ...")
         trader_proc = subprocess.Popen(
-            [python_exe, str(trader_script)],
+            [python_exe, "-u", str(trader_script)],
             cwd=str(BASE_DIR)
         )
         processes.append(("Live Trader", trader_proc))
 
+        time.sleep(4)  # Spacing to prevent SmartAPI login rate limits
+
+        # 3. Start F&O Options Trader Engine (NIFTY & BANKNIFTY)
+        fno_script = BASE_DIR / "trader" / "fno_trader.py"
+        print(f"[*] Starting F&O Options Desk Engine ...")
+        fno_proc = subprocess.Popen(
+            [python_exe, "-u", str(fno_script)],
+            cwd=str(BASE_DIR)
+        )
+        processes.append(("F&O Options Trader", fno_proc))
+
         time.sleep(1)
 
-        # 3. Start Telegram Interactive Onboarding Listener
+        # 4. Start Telegram Interactive Onboarding Listener
         onboard_script = BASE_DIR / "trader-alerts" / "telegram_onboarding.py"
         print(f"[*] Starting Telegram Multi-User Onboarding Listener ...")
         onboard_proc = subprocess.Popen(
-            [python_exe, str(onboard_script)],
+            [python_exe, "-u", str(onboard_script)],
             cwd=str(BASE_DIR)
         )
         processes.append(("Telegram Onboarding", onboard_proc))
@@ -70,9 +88,8 @@ def run_all():
                 name, proc = item
                 poll = proc.poll()
                 if poll is not None:
-                    if name == "Live Trader" and poll == 0:
-                        print(f"\n[INFO] Live Trader completed trading session for today.")
-                        print(f"[*] Dashboard remains live on http://localhost:8080 (Press Ctrl+C to stop).")
+                    if name in ("Live Trader", "F&O Options Trader") and poll == 0:
+                        print(f"\n[INFO] {name} completed trading session for today.")
                         processes.remove(item)
                     else:
                         print(f"\n[ALERT] {name} exited with code {poll}.")

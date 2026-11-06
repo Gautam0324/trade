@@ -18,6 +18,14 @@ SECRETS_PATH = BASE_DIR / "trader" / "secrets.json"
 CONFIG_PATH = BASE_DIR / "trader" / "config.json"
 
 def get_telegram_creds():
+    try:
+        from dotenv import load_dotenv
+        env_path = BASE_DIR / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
+    except Exception:
+        pass
+
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     

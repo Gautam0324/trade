@@ -41,6 +41,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Trade History
         </a>
+        <a class="nav-item" onclick="switchView('reports')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Reports & Tax PnL
+        </a>
         <a class="nav-item" onclick="switchView('strategies')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
           Strategy Analytics
@@ -309,16 +313,113 @@
                     <th>Symbol</th>
                     <th>Side</th>
                     <th>Qty</th>
-                    <th>Entry Price</th>
-                    <th>Exit Price</th>
-                    <th>Entry Time</th>
-                    <th>Exit Time</th>
+                    <th>Entry / Exit Price</th>
+                    <th>Gross P&L</th>
+                    <th>Taxes & Fees</th>
                     <th>Net P&L (INR)</th>
+                    <th>Time</th>
                     <th>Exit Reason</th>
                   </tr>
                 </thead>
                 <tbody id="tradesTableBody">
                   <tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Loading trades...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW: REPORTS & TAX PNL ==================== -->
+        <section id="view-reports" class="view-section">
+          <div class="panel" style="margin-bottom: 1.5rem;">
+            <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div class="panel-title" style="display: flex; align-items: center; gap: 8px;">
+                  <span>Financial Audit & Tax P&L Statement</span>
+                  <span class="status-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Verified Ledger</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                  Comprehensive reconciliation of Trade Turnover, Gross P&L, Statutory Deductions (STT, Exchange Txn, GST, Stamp Duty, Brokerage), and Realized Net P&L.
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; margin-left: auto;">
+                <button class="btn btn-primary" onclick="exportReportsCSV()" style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Export Detailed CSV
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()" style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Print / Save PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- Report KPI Summary Cards -->
+            <div class="kpi-grid" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+              <div class="kpi-card">
+                <div class="kpi-title">Total Trade Turnover</div>
+                <div class="kpi-value" id="repTotalTurnover" style="color: #38bdf8;">₹0.00</div>
+                <div class="kpi-subtext" id="repTurnoverSubtext">Executed Buy + Sell Volume</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Gross Realized P&L</div>
+                <div class="kpi-value" id="repGrossPnl">₹0.00</div>
+                <div class="kpi-subtext">Price diff before taxes & fees</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Total Taxes & Brokerage (Fees)</div>
+                <div class="kpi-value red" id="repTotalFees">₹0.00</div>
+                <div class="kpi-subtext" id="repFeesSubtext">STT, Exchange, GST, Stamp Duty, Brokerage</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Net Realized P&L (In-Pocket)</div>
+                <div class="kpi-value" id="repNetPnl">₹0.00</div>
+                <div class="kpi-subtext" id="repNetPnlSubtext">Actual net cash credited to account</div>
+              </div>
+            </div>
+
+            <!-- Filter Bar for Reports -->
+            <div class="filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <select id="reportDateFilter" onchange="loadReportsData()">
+                <option value="ALL">All Dates (Lifetime Statement)</option>
+                <option value="TODAY">Today Only</option>
+                <option value="YESTERDAY">Yesterday Only</option>
+              </select>
+              <select id="reportSegmentFilter" onchange="loadReportsData()">
+                <option value="ALL">All Segments (Cash Equities + F&O Options)</option>
+                <option value="CASH">Cash Equities Only</option>
+                <option value="FNO">F&O Options Desk Only</option>
+              </select>
+              <select id="reportOutcomeFilter" onchange="loadReportsData()">
+                <option value="ALL">All Outcomes</option>
+                <option value="WIN">Profitable Trades (Wins)</option>
+                <option value="LOSS">Losses Only</option>
+              </select>
+              <span id="reportsCountBadge" style="font-size: 0.78rem; color: var(--text-muted); margin-left: auto;">Showing: 0 trades</span>
+            </div>
+
+            <!-- Detailed Audit Table -->
+            <div class="table-responsive" style="max-height: 560px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Trade ID</th>
+                    <th>Symbol</th>
+                    <th>Segment</th>
+                    <th>Side</th>
+                    <th>Qty</th>
+                    <th>Entry (₹)</th>
+                    <th>Exit (₹)</th>
+                    <th>Turnover (₹)</th>
+                    <th>Gross P&L (₹)</th>
+                    <th>Taxes & Fees (₹)</th>
+                    <th>Net P&L (₹)</th>
+                    <th>Exit Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                  <tr><td colspan="13" style="text-align: center; color: var(--text-muted);">Loading audit statement...</td></tr>
                 </tbody>
               </table>
             </div>

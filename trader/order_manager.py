@@ -143,6 +143,22 @@ class OrderManager:
             if pending:
                 return False, f"Duplicate pending order: {symbol} already has in-flight order {pending['order_id']} in status {pending['status']}"
 
+            # 4. Check daily trades limit (max 30 per day)
+            cfg_file = TRADER_DIR / "config.json"
+            max_trades = 30
+            if cfg_file.exists():
+                try:
+                    with open(cfg_file, "r", encoding="utf-8") as cf:
+                        max_trades = int(json.load(cf).get("max_trades_per_day", 30))
+                except Exception:
+                    pass
+
+            today_prefix = datetime.datetime.now().strftime("%Y-%m-%d")
+            cur.execute("SELECT COUNT(*) FROM positions WHERE created_at LIKE ?", (f"{today_prefix}%",))
+            today_positions = cur.fetchone()[0]
+            if today_positions >= max_trades:
+                return False, f"Maximum daily trades quota reached ({today_positions}/{max_trades})"
+
         return True, "OK"
 
     def create_order(self, symbol, side, quantity, price, stop_loss, target_price,

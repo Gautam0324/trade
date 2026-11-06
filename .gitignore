@@ -5,6 +5,9 @@ __pycache__/
 .DS_Store
 
 # Secrets and local config (Task 1 & 10)
+.env
+.env.*
+*.env
 trader/secrets.json
 trader/config.local.json
 

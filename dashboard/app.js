@@ -63,7 +63,7 @@ function switchView(viewId) {
 
   // Highlight Nav Item
   const navItems = document.querySelectorAll('.nav-item');
-  const viewMap = ['overview', 'marketwatch', 'positions', 'trades', 'strategies', 'risk', 'control', 'logs', 'config', 'health'];
+  const viewMap = ['overview', 'marketwatch', 'positions', 'trades', 'reports', 'strategies', 'risk', 'control', 'logs', 'config', 'health'];
   const idx = viewMap.indexOf(viewId);
   if (idx !== -1 && navItems[idx]) {
     navItems[idx].classList.add('active');
@@ -75,6 +75,7 @@ function switchView(viewId) {
     marketwatch: "Live Market Watch",
     positions: "Open Positions Management",
     trades: "Trade Execution Journal",
+    reports: "Financial Audit & Tax P&L Statement",
     strategies: "Strategy Performance Attribution",
     risk: "Risk Management Center",
     control: "Bot Process Control",
@@ -102,6 +103,9 @@ async function refreshCurrentView() {
       break;
     case 'trades':
       await loadTradesTable();
+      break;
+    case 'reports':
+      await loadReportsData();
       break;
     case 'strategies':
       await loadStrategiesData();
@@ -453,13 +457,13 @@ async function loadPositionsData() {
           <td>${p.id || 'POS'}</td>
           <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(p)}</td>
           <td>${p.qty}</td>
-          <td>₹${Number(p.entry_price).toFixed(2)}</td>
-          <td>₹${Number(p.current_price).toFixed(2)}</td>
-          <td>₹${Number(p.amount).toFixed(2)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct}%</td>
-          <td>₹${Number(p.peak_price || p.entry_price).toFixed(2)}</td>
-          <td>₹${Number(p.current_stop || p.stop_loss || (p.entry_price * 0.99)).toFixed(2)}</td>
+          <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
+          <td style="font-weight: 600; color: #38bdf8;">₹${Number(p.current_price || p.entry_price || 0).toFixed(2)}</td>
+          <td>₹${Number(p.amount || p.invested || (p.qty * p.entry_price) || 0).toFixed(2)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl || 0)}</td>
+          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct || 0}%</td>
+          <td>₹${Number(p.peak_price || p.current_price || p.entry_price || 0).toFixed(2)}</td>
+          <td>₹${Number(p.current_stop || p.sl_price || p.stop_loss || (p.entry_price * 0.95)).toFixed(2)}</td>
           <td>
             <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.72rem;" onclick="promptClosePosition('${p.symbol}', ${p.qty})">Close</button>
           </td>
@@ -499,21 +503,28 @@ async function loadTradesTable() {
 
     let rows = "";
     trades.forEach(t => {
-      const pnl = Number(t.pnl || 0);
-      const isGreen = pnl > 0;
-      const isLoss = pnl < 0;
+      const entryP = Number(t.entry_price || 0);
+      const exitP = Number(t.exit_price || 0);
+      const qty = Number(t.qty || t.quantity || 0);
+      const side = (t.side || 'BUY').toUpperCase();
+      const grossPnl = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
+      const netPnl = Number(t.pnl || 0);
+      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, grossPnl - netPnl);
+      const isGreen = netPnl > 0;
+      const isLoss = netPnl < 0;
+
       rows += `
         <tr>
-          <td>${t.id || 'POS'}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${t.id || 'POS'}</td>
           <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(t)}</td>
-          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">BUY</span></td>
-          <td>${t.qty}</td>
-          <td>₹${Number(t.entry_price).toFixed(2)}</td>
-          <td>₹${Number(t.exit_price).toFixed(2)}</td>
-          <td>${t.entry_time || '--'}</td>
-          <td>${t.exit_time || '--'}</td>
-          <td class="${isGreen ? 'green' : (isLoss ? 'red' : '')}">${formatSignedINR(pnl)}</td>
-          <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
+          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">${side}</span></td>
+          <td>${qty}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${entryP.toFixed(2)} → ₹${exitP.toFixed(2)}</td>
+          <td class="${grossPnl >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-size: 0.8rem;">${formatSignedINR(grossPnl)}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8rem; color: #f59e0b;" title="Exchange charges, STT, GST, Stamp Duty, Brokerage">₹${fees.toFixed(2)}</td>
+          <td class="${isGreen ? 'green' : (isLoss ? 'red' : '')}" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.82rem;">${formatSignedINR(netPnl)}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${t.entry_time || '--'} - ${t.exit_time || '--'}</td>
+          <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
         </tr>
       `;
     });
@@ -750,9 +761,220 @@ function closeConfirmModal() {
   pendingCloseSymbol = null;
 }
 
-function exportTradeCSV() {
-  window.open('/api/trades', '_blank');
+
+// ==================== 4B. REPORTS & TAX PNL LOADER ====================
+let cachedReportsTrades = [];
+
+async function loadReportsData() {
+  const tbody = document.getElementById('reportsTableBody');
+  const countBadge = document.getElementById('reportsCountBadge');
+  const dateFilter = document.getElementById('reportDateFilter') ? document.getElementById('reportDateFilter').value : 'ALL';
+  const segFilter = document.getElementById('reportSegmentFilter') ? document.getElementById('reportSegmentFilter').value : 'ALL';
+  const outcomeFilter = document.getElementById('reportOutcomeFilter') ? document.getElementById('reportOutcomeFilter').value : 'ALL';
+
+  try {
+    const res = await fetch('/api/trades?account=' + encodeURIComponent(currentAccount));
+    const data = await res.json();
+    const allTrades = data.trades || [];
+
+    // Current IST today date
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+    // Filter trades
+    const filtered = allTrades.filter(t => {
+      const tDate = t.date || t.exit_date || '';
+      if (dateFilter === 'TODAY' && !tDate.startsWith(todayStr)) return false;
+      if (dateFilter === 'YESTERDAY' && !tDate.startsWith(yesterdayStr)) return false;
+
+      const sym = (t.symbol || '').toUpperCase();
+      const isFno = sym.includes('CE') || sym.includes('PE') || (t.id && t.id.startsWith('OPT-'));
+      if (segFilter === 'CASH' && isFno) return false;
+      if (segFilter === 'FNO' && !isFno) return false;
+
+      const pnl = Number(t.pnl || 0);
+      if (outcomeFilter === 'WIN' && pnl <= 0) return false;
+      if (outcomeFilter === 'LOSS' && pnl >= 0) return false;
+
+      return true;
+    });
+
+    cachedReportsTrades = filtered;
+
+    // Calculate Summary Metrics
+    let totalTurnover = 0;
+    let totalGrossPnl = 0;
+    let totalFees = 0;
+    let totalNetPnl = 0;
+
+    filtered.forEach(t => {
+      const entryP = Number(t.entry_price || 0);
+      const exitP = Number(t.exit_price || 0);
+      const qty = Number(t.qty || t.quantity || 0);
+      const side = (t.side || 'BUY').toUpperCase();
+
+      const turnover = (entryP * qty) + (exitP * qty);
+      const gross = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
+      const net = Number(t.pnl || 0);
+      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net);
+
+      totalTurnover += turnover;
+      totalGrossPnl += gross;
+      totalFees += fees;
+      totalNetPnl += net;
+    });
+
+    // Update KPI Elements
+    const repTurnoverEl = document.getElementById('repTotalTurnover');
+    if (repTurnoverEl) repTurnoverEl.textContent = formatINR(totalTurnover);
+
+    const repGrossEl = document.getElementById('repGrossPnl');
+    if (repGrossEl) {
+      repGrossEl.className = 'kpi-value ' + (totalGrossPnl >= 0 ? 'green' : 'red');
+      repGrossEl.textContent = formatSignedINR(totalGrossPnl);
+    }
+
+    const repFeesEl = document.getElementById('repTotalFees');
+    if (repFeesEl) repFeesEl.textContent = '₹' + totalFees.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const repNetEl = document.getElementById('repNetPnl');
+    if (repNetEl) {
+      repNetEl.className = 'kpi-value ' + (totalNetPnl >= 0 ? 'green' : 'red');
+      repNetEl.textContent = formatSignedINR(totalNetPnl);
+    }
+
+    if (countBadge) {
+      countBadge.textContent = `Showing: ${filtered.length} / ${allTrades.length} trades`;
+    }
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 2rem;">No executed trades match the selected report criteria.</td></tr>`;
+      return;
+    }
+
+    let rows = "";
+    filtered.forEach(t => {
+      const entryP = Number(t.entry_price || 0);
+      const exitP = Number(t.exit_price || 0);
+      const qty = Number(t.qty || t.quantity || 0);
+      const side = (t.side || 'BUY').toUpperCase();
+
+      const turnover = (entryP * qty) + (exitP * qty);
+      const gross = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
+      const net = Number(t.pnl || 0);
+      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net);
+
+      const sym = (t.symbol || '').toUpperCase();
+      const isFno = sym.includes('CE') || sym.includes('PE') || (t.id && t.id.startsWith('OPT-'));
+      const segBadge = isFno ? '<span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">F&O</span>'
+                             : '<span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">CASH</span>';
+
+      rows += `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${t.date || t.exit_date || '--'}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${t.id || 'POS'}</td>
+          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(t)}</td>
+          <td>${segBadge}</td>
+          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">${side}</span></td>
+          <td style="font-family: var(--font-mono);">${qty}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${entryP.toFixed(2)}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${exitP.toFixed(2)}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.78rem; color: #38bdf8;">₹${turnover.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+          <td class="${gross >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-size: 0.8rem;">${formatSignedINR(gross)}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8rem; color: #f59e0b;" title="STT, GST, Exchange charges, Stamp Duty, Brokerage">₹${fees.toFixed(2)}</td>
+          <td class="${net >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.82rem;">${formatSignedINR(net)}</td>
+          <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rows;
+  } catch (err) {
+    console.error('Error loading reports data:', err);
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--red);">Failed to load financial audit statement.</td></tr>`;
+  }
 }
+
+// ==================== CSV EXPORT ENGINE ====================
+function exportReportsCSV() {
+  const tradesToExport = cachedReportsTrades && cachedReportsTrades.length ? cachedReportsTrades : [];
+  if (!tradesToExport.length) {
+    alert("No executed trades available to export in the current view.");
+    return;
+  }
+
+  const headers = [
+    "Trade ID",
+    "Date",
+    "Entry Time",
+    "Exit Time",
+    "Segment",
+    "Symbol",
+    "Side",
+    "Quantity",
+    "Entry Price (INR)",
+    "Exit Price (INR)",
+    "Turnover (INR)",
+    "Gross PnL (INR)",
+    "Taxes and Fees (INR)",
+    "Net PnL (INR)",
+    "Exit Reason"
+  ];
+
+  const rows = [headers.join(",")];
+
+  tradesToExport.forEach(t => {
+    const entryP = Number(t.entry_price || 0);
+    const exitP = Number(t.exit_price || 0);
+    const qty = Number(t.qty || t.quantity || 0);
+    const side = (t.side || 'BUY').toUpperCase();
+    const turnover = ((entryP * qty) + (exitP * qty)).toFixed(2);
+    const gross = ((t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty)).toFixed(2);
+    const net = Number(t.pnl || 0).toFixed(2);
+    const fees = ((t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net)).toFixed(2);
+    const isFno = (t.symbol || '').includes('CE') || (t.symbol || '').includes('PE') || (t.id && t.id.startsWith('OPT-'));
+    const seg = isFno ? "F&O Options" : "Cash Equities";
+    const reason = (t.reason || t.exit_reason || "").replace(/"/g, '""');
+
+    const line = [
+      `"${t.id || 'POS'}"`,
+      `"${t.date || t.exit_date || ''}"`,
+      `"${t.entry_time || ''}"`,
+      `"${t.exit_time || ''}"`,
+      `"${seg}"`,
+      `"${t.symbol || ''}"`,
+      `"${side}"`,
+      qty,
+      entryP.toFixed(2),
+      exitP.toFixed(2),
+      turnover,
+      gross,
+      fees,
+      net,
+      `"${reason}"`
+    ];
+    rows.push(line.join(","));
+  });
+
+  const csvContent = rows.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const todayStr = new Date().toISOString().split('T')[0];
+  link.setAttribute("href", url);
+  link.setAttribute("download", `DayTraderPro_Audit_Statement_${currentAccount}_${todayStr}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function exportTradeCSV() {
+  exportReportsCSV();
+}
+
 
 // Auto-Refresh Controller (Default: PAUSED - WebSocket / Webhook Event Driven)
 let autoRefreshEnabled = false;

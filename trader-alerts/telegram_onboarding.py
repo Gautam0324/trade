@@ -19,6 +19,18 @@ SECRETS_PATH = BASE_DIR / "trader" / "secrets.json"
 ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
 
 def get_bot_token():
+    try:
+        from dotenv import load_dotenv
+        env_path = BASE_DIR / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
+    except Exception:
+        pass
+
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if token:
+        return token
+
     if SECRETS_PATH.exists():
         try:
             with open(SECRETS_PATH, "r", encoding="utf-8") as f:
@@ -93,14 +105,13 @@ class TelegramOnboardingListener:
                 time.sleep(3)
 
     def _handle_update(self, update):
-        # 1. Handle incoming text message e.g. /start
+        # 1. Handle incoming text message e.g. /start or any text
         message = update.get("message")
         if message:
             chat_id = message.get("chat", {}).get("id")
             text = (message.get("text") or "").strip()
-
-            if text.startswith("/start") or text.startswith("/help") or text.startswith("/link"):
-                self._send_onboarding_menu(chat_id)
+            # Send interactive account selection menu
+            self._send_onboarding_menu(chat_id)
             return
 
         # 2. Handle button click (callback_query)
@@ -133,7 +144,8 @@ class TelegramOnboardingListener:
                 {"text": "👤 Prateek", "callback_data": "link_prateek"}
             ],
             [
-                {"text": "👤 Gautam", "callback_data": "link_gautam"}
+                {"text": "👤 Gautam", "callback_data": "link_gautam"},
+                {"text": "⚡ F&O Options Desk", "callback_data": "link_fno"}
             ]
         ]
 
@@ -154,13 +166,14 @@ class TelegramOnboardingListener:
         accounts_data = load_accounts()
         accounts = accounts_data.setdefault("accounts", {})
 
-        target_name = account_id.capitalize()
+        target_name = "F&O Options Desk" if account_id == "fno" else account_id.capitalize()
+        default_cap = 200000.0 if account_id == "fno" else 1000000.0
         acc = accounts.setdefault(account_id, {
             "id": account_id,
             "name": target_name,
-            "capital": 1000000.0,
-            "ledger_file": f"ledger_{account_id}.json",
-            "risk_state_file": f"daily_risk_{account_id}.json"
+            "capital": default_cap,
+            "ledger_file": f"ledger_{account_id}.json" if account_id != "gautam" else "ledger.json",
+            "risk_state_file": f"daily_risk_{account_id}.json" if account_id != "gautam" else "daily_risk_state.json"
         })
 
         acc["telegram_chat_id"] = str(chat_id)
