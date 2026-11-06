@@ -36,6 +36,7 @@ sys.path.append(str(BASE_DIR / "trader-alerts"))
 import indicators
 import telegram_bot
 import download_historical_1min as dh
+from broker_adapter import BrokerAdapter, PaperModeIsolationError
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger_fno.json"
 ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
@@ -357,6 +358,15 @@ class FnoOptionsTrader:
         self.free_cash = 200000.0
         self.realized_pnl = 0.0
         self.last_exit_times = {}
+        self.config = {}
+        cfg_file = BASE_DIR / "trader" / "config.json"
+        if cfg_file.exists():
+            try:
+                with open(cfg_file, "r", encoding="utf-8") as cf:
+                    self.config = json.load(cf)
+            except Exception:
+                pass
+        self.broker_adapter = BrokerAdapter(config=self.config)
         self.load_ledger()
 
     def load_ledger(self):
@@ -407,12 +417,18 @@ class FnoOptionsTrader:
 
     def run(self):
         acquire_fno_lock()
+        mode_str = "LIVE BROKER" if self.broker_adapter.is_live() else "PAPER"
+
         print("=" * 75)
         print("[START] F&O OPTIONS TRADING DESK (NIFTY & BANKNIFTY ATM Momentum Paper Engine)")
-        print(f"[CONFIG] Capital: Rs {self.capital:,.2f} | Mode: PAPER | Auto-Squareoff: 15:20 IST")
+        print(f"[CONFIG] Capital: Rs {self.capital:,.2f} | Mode: {mode_str} | Auto-Squareoff: 15:20 IST")
         print("=" * 75)
 
         self.api = dh.get_smart_api_session()
+        self.broker_adapter.live_broker_client = self.api
+        if hasattr(self.broker_adapter, "executor") and self.broker_adapter.executor:
+            self.broker_adapter.executor.api = self.api
+
 
         startup_msg = (
             "⚡ <b>F&O Options Trading Desk is LIVE!</b>\n\n"
@@ -437,9 +453,12 @@ class FnoOptionsTrader:
                     break
 
                 # 15:20 Square-off
-                if time_str >= "15:20" and self.open_positions:
-                    for sym in list(self.open_positions.keys()):
-                        self.exit_position(sym, "EOD Mandatory Square-Off (15:20 IST reached)")
+                if time_str >= "15:20":
+                    if self.broker_adapter.is_live():
+                        self.broker_adapter.cancel_all_open_orders()
+                    if self.open_positions:
+                        for sym in list(self.open_positions.keys()):
+                            self.exit_position(sym, "EOD Mandatory Square-Off (15:20 IST reached)")
 
                 for idx_info in INDICES:
                     uname = idx_info["name"]
@@ -581,10 +600,57 @@ class FnoOptionsTrader:
         sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)     # -5% Stop-loss
         tgt_price = round(premium * (1.0 + TARGET_PCT), 2)       # +15% Target (1:3 R:R)
 
+        # Live Order Dispatch if dual-gate live trading is active
+        broker_order_id = None
+        broker_sl_order_id = None
+        if self.broker_adapter.is_live():
+            print(f"[LIVE F&O DISPATCH] Placing BUY order for {qty} of {opt_sym} on Angel One...")
+            order_res = self.broker_adapter.place_order(
+                symbol=opt_sym,
+                side="BUY",
+                qty=qty,
+                price=0.0,
+                order_type="MARKET",
+                product_type="INTRADAY",
+                exchange="NFO",
+                token=opt_token
+            )
+            if not order_res.get("success"):
+                print(f"[LIVE F&O ORDER REJECTED/FAILED] {opt_sym}: {order_res.get('reason')}")
+                return
+            broker_order_id = order_res.get("order_id")
+            print(f"[LIVE F&O ORDER SUBMITTED] Broker Order ID: {broker_order_id}")
+
+            # Reconcile actual fill price if available
+            time.sleep(1.0)
+            status_info = self.broker_adapter.get_order_status(broker_order_id)
+            if status_info.get("status") == "COMPLETE" and status_info.get("fill_price", 0) > 0:
+                premium = float(status_info["fill_price"])
+                investment = round(premium * qty, 2)
+                sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)
+                tgt_price = round(premium * (1.0 + TARGET_PCT), 2)
+                print(f"[LIVE F&O FILL RECONCILED] Fill Price: Rs {premium:.2f} | Investment: Rs {investment}")
+
+            # Immediately dispatch Terminal-Level Stop-Loss Order
+            sl_res = self.broker_adapter.place_stop_loss_order(
+                symbol=opt_sym,
+                token=opt_token,
+                side="SELL",
+                qty=qty,
+                trigger_price=sl_price,
+                product_type="INTRADAY",
+                exchange="NFO"
+            )
+            if sl_res.get("success"):
+                broker_sl_order_id = sl_res.get("order_id")
+                print(f"[LIVE F&O SL PLACED AT BROKER] SL Order ID: {broker_sl_order_id} @ Trigger Rs {sl_price:.2f}")
+
         pos_record = {
             "id": f"OPT-{int(time.time()*1000)}-{opt_sym}",
             "symbol": opt_sym,
             "token": opt_token,
+            "broker_order_id": broker_order_id,
+            "broker_sl_order_id": broker_sl_order_id,
             "underlying": contract["underlying"],
             "option_type": option_type,
             "strike": contract["strike"],
@@ -684,6 +750,32 @@ class FnoOptionsTrader:
             return
 
         entry_p = pos["entry_price"]
+        opt_token = pos.get("token", "")
+
+        # If live trading is active, cancel broker SL and place market exit
+        if self.broker_adapter.is_live():
+            sl_oid = pos.get("broker_sl_order_id")
+            if sl_oid:
+                print(f"[LIVE F&O CANCEL SL] Cancelling broker Stop-Loss order: {sl_oid}")
+                self.broker_adapter.cancel_order(sl_oid, variety="STOPLOSS")
+
+            print(f"[LIVE F&O EXIT DISPATCH] Placing SELL order for {pos.get('qty')} {opt_sym} on Angel One...")
+            exit_res = self.broker_adapter.place_order(
+                symbol=opt_sym,
+                side="SELL",
+                qty=pos.get("qty", 1),
+                price=0.0,
+                order_type="MARKET",
+                product_type="INTRADAY",
+                exchange="NFO",
+                token=opt_token
+            )
+            if exit_res.get("success") and exit_res.get("order_id"):
+                time.sleep(1.0)
+                exit_status = self.broker_adapter.get_order_status(exit_res["order_id"])
+                if exit_status.get("status") == "COMPLETE" and exit_status.get("fill_price", 0) > 0:
+                    exit_price = float(exit_status["fill_price"])
+                    print(f"[LIVE F&O EXIT FILLED] Broker Exit Price: Rs {exit_price:.2f}")
         qty = pos["qty"]
         if exit_price is None:
             exit_price = entry_p

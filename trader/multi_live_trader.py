@@ -400,6 +400,9 @@ def run_multi_symbol_trader():
 
     init_tick_db()
     api = dh.get_smart_api_session()
+    broker_adapter.live_broker_client = api
+    if hasattr(broker_adapter, "executor") and broker_adapter.executor:
+        broker_adapter.executor.api = api
 
     # Broadcast startup message to all active linked accounts
     try:
