@@ -4,26 +4,26 @@ __pycache__/
 *.log
 .DS_Store
 
-# Secrets and local config (Task 1 & 10)
+# Secrets and local credentials (NEVER commit)
 .env
 .env.*
 *.env
 trader/secrets.json
 trader/config.local.json
 
-# Ledger, orders, logs, states, reports, locks (Task 10)
-trader/ledger*.json
-trader/orders.json
-trader/audit_log.json
-trader/timemachine.json
-trader/state/
-trader/reports/
+# Process lock files
 *.lock
+trader/*.lock
+
+# Database files
 *.db
+trader/*.db
+
+# Ledger backup files (only keep active ledgers tracked)
+trader/ledger.backup*
+trader/reports/
 
 # Historical download cache
 historical_data/
 trader/historical_data/*.csv
 trader/historical_data/*.json
-
-
