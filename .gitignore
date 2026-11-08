@@ -20,7 +20,7 @@ trader/*.lock
 trader/*.db
 
 # Ledger backup files (only keep active ledgers tracked)
-trader/ledger.backup*
+trader/ledger*.backup*
 trader/reports/
 
 # Historical download cache
