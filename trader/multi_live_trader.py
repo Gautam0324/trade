@@ -587,8 +587,11 @@ def run_multi_symbol_trader():
                 break
 
             # Fetch benchmark data for relative strength calculations (cached for 60 seconds to respect API rate limits)
-            if not last_benchmark_time or (time.time() - last_benchmark_time) > 60:
-                benchmark_bars = fetch_benchmark_data(api, today_str, current_time_str, symbol=cfg.get("benchmark_symbol", "NIFTY 50"))
+            if not last_benchmark_time or (time.time() - last_benchmark_time) > 120:
+                time.sleep(0.6)
+                new_bench = fetch_benchmark_data(api, today_str, current_time_str, symbol=cfg.get("benchmark_symbol", "NIFTY 50"))
+                if new_bench:
+                    benchmark_bars = new_bench
                 last_benchmark_time = time.time()
 
             for item in WATCHLIST:

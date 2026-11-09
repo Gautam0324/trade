@@ -1,8 +1,8 @@
 {
   "initial_capital": 200000.0,
-  "free_cash": 691859.36,
-  "deployed_cash": 0.0,
-  "realized_pnl": 491859.36,
+  "free_cash": 688564.73,
+  "deployed_cash": 0,
+  "realized_pnl": 488564.73,
   "open_positions": [],
   "trade_history": [
     {
@@ -1755,6 +1755,57 @@
       "reason": "Manual User Squareoff / Friday EOD Clear Holdings",
       "date": "2026-11-06",
       "exit_date": "2026-11-06"
+    },
+    {
+      "id": "OPT-1794198390228-NIFTY09NOV2624900PE",
+      "symbol": "NIFTY09NOV2624900PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 73.55,
+      "entry_time": "09:56",
+      "exit_time": "09:58:44 IST",
+      "gross_pnl": -744.25,
+      "fees": 58.23,
+      "pnl": -802.48,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.55",
+      "date": "2026-11-09",
+      "exit_date": "2026-11-09"
+    },
+    {
+      "id": "OPT-1794200410430-NIFTY09NOV2624900PE",
+      "symbol": "NIFTY09NOV2624900PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 73.05,
+      "entry_time": "10:30",
+      "exit_time": "10:31:31 IST",
+      "gross_pnl": -776.75,
+      "fees": 58.19,
+      "pnl": -834.94,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.05",
+      "date": "2026-11-09",
+      "exit_date": "2026-11-09"
+    },
+    {
+      "id": "OPT-1794200347776-BANKNIFTY23NOV2659100PE",
+      "symbol": "BANKNIFTY23NOV2659100PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 837.0,
+      "exit_price": 785.1,
+      "entry_time": "10:29",
+      "exit_time": "10:33:39 IST",
+      "gross_pnl": -1557.0,
+      "fees": 100.21,
+      "pnl": -1657.21,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 785.10",
+      "date": "2026-11-09",
+      "exit_date": "2026-11-09"
     }
   ]
 }
