@@ -365,10 +365,13 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "API endpoint not found")
 
+class ReusableHTTPServer(http.server.HTTPServer):
+    allow_reuse_address = True
+
 def run(port=PORT):
     host = os.environ.get("DASHBOARD_HOST", "0.0.0.0")
     server_address = (host, port)
-    httpd = http.server.HTTPServer(server_address, PremiumDashboardHandler)
+    httpd = ReusableHTTPServer(server_address, PremiumDashboardHandler)
     print(f"Institutional Algo Trading Terminal running on http://{host}:{port}")
     httpd.serve_forever()
 
