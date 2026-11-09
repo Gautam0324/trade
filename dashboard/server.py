@@ -24,7 +24,7 @@ sys.path.insert(0, str(TRADER_DIR))
 
 import service
 
-PORT = 8080
+PORT = int(os.environ.get("DASHBOARD_PORT", 10080))
 
 import secrets
 
