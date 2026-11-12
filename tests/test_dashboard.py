@@ -104,6 +104,22 @@ class TestDashboardService(unittest.TestCase):
         self.assertNotIn("123456:TEST_TOKEN", json.dumps(sanitized))
         self.assertNotIn("my-secret-api-token", json.dumps(sanitized))
 
+    def test_watchlist_add_and_remove(self):
+        test_sym = "ZOMATO"
+        # Test add
+        add_res = service.add_symbol_to_watchlist(test_sym, account_id="gautam")
+        self.assertTrue(add_res["success"])
+        self.assertIn(test_sym, add_res["watchlist"])
+
+        # Test duplicate add
+        dup_res = service.add_symbol_to_watchlist(test_sym, account_id="gautam")
+        self.assertTrue(dup_res["success"])
+
+        # Test remove
+        rem_res = service.remove_symbol_from_watchlist(test_sym, account_id="gautam")
+        self.assertTrue(rem_res["success"])
+        self.assertNotIn(test_sym, rem_res["watchlist"])
+
 if __name__ == "__main__":
     unittest.main()
 

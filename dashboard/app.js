@@ -136,12 +136,38 @@ async function authFetch(url, options = {}) {
 }
 
 // ==========================================================================
-// 4. ROUTER & VIEW SWITCHER
+// 4. ROUTER, VIEW SWITCHER & MOBILE NAVIGATION
 // ==========================================================================
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById("appSidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  if (sidebar && backdrop) {
+    sidebar.classList.toggle("mobile-open");
+    backdrop.classList.toggle("active");
+  }
+}
+
 function switchView(viewId) {
   activeView = viewId;
   document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+
+  // Close mobile sidebar if open
+  const sidebar = document.getElementById("appSidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  if (sidebar && backdrop) {
+    sidebar.classList.remove("mobile-open");
+    backdrop.classList.remove("active");
+  }
+
+  // Update mobile bottom nav highlights
+  document.querySelectorAll(".mobile-nav-btn").forEach(btn => {
+    if (btn.getAttribute("data-view") === viewId) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
 
   const targetSection = document.getElementById(`view-${viewId}`);
   if (targetSection) targetSection.classList.add("active");
@@ -646,19 +672,43 @@ async function loadFnoDeskData() {
 }
 
 // ==========================================================================
-// 9. VIEW 4: CASH DESK
+// 9. VIEW 4: CASH DESK & CUSTOM WATCHLIST MANAGEMENT
 // ==========================================================================
 async function loadCashDeskData() {
   const res = await fetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`);
   const data = await res.json();
   const symbols = data.symbols || [];
   const tbody = document.getElementById("watchlistTableBody");
+
+  const countLabel = document.getElementById("watchlistCountLabel");
+  if (countLabel) {
+    countLabel.textContent = `${symbols.length} Active (${currentAccount.toUpperCase()})`;
+  }
+
+  // Render Interactive Watchlist Chips
+  const chipsContainer = document.getElementById("watchlistChipsContainer");
+  if (chipsContainer) {
+    if (symbols.length === 0) {
+      chipsContainer.innerHTML = `<span style="font-size: 11px; color: var(--text-muted);">No symbols in wishlist. Type a symbol above to track!</span>`;
+    } else {
+      chipsContainer.innerHTML = symbols.map(s => `
+        <span class="watchlist-chip">
+          <span>${s.symbol}</span>
+          <button class="chip-remove-btn" onclick="removeSymbolFromWatchlist('${s.symbol}')" title="Remove ${s.symbol} from watchlist">✕</button>
+        </span>
+      `).join("");
+    }
+  }
+
+  const timeEl = document.getElementById("cashWatchlistTimestamp");
+  if (timeEl) {
+    timeEl.textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB')}`;
+  }
+
   if (!tbody) return;
 
-  document.getElementById("cashWatchlistTimestamp").textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB')}`;
-
   if (symbols.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No quotes available.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No symbols in watchlist. Use the bar above to add your favourite stocks.</td></tr>`;
     return;
   }
 
@@ -677,12 +727,61 @@ async function loadCashDeskData() {
         <td>₹${Number(s.ema33_low || 0).toFixed(2)}</td>
         <td><span class="status-badge ${s.signal === 'BUY' ? 'open' : 'closed'}">${s.signal || 'HOLD / MONITOR'}</span></td>
         <td>
-          <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 10px;" onclick="inspectSymbol('${s.symbol}')">Inspect</button>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 10px;" onclick="inspectSymbol('${s.symbol}')">Inspect</button>
+            <button class="btn btn-danger" style="padding: 2px 6px; font-size: 10px;" onclick="removeSymbolFromWatchlist('${s.symbol}')" title="Remove ${s.symbol}">✕</button>
+          </div>
         </td>
       </tr>
     `;
   });
   tbody.innerHTML = html;
+}
+
+async function addSymbolToWatchlist() {
+  const input = document.getElementById("addSymbolInput");
+  const sym = input ? input.value.trim().toUpperCase() : "";
+  if (!sym) return;
+
+  try {
+    const res = await authFetch("/api/watchlist/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: sym, account: currentAccount })
+    });
+    const data = await res.json();
+    if (data.status === "SUCCESS") {
+      if (input) input.value = "";
+      await loadCashDeskData();
+      // If we are also showing quick watchlist, update it
+      if (cachedDashboardData) refreshCurrentView(true);
+    } else {
+      alert(data.message || "Failed to add symbol to watchlist.");
+    }
+  } catch (err) {
+    alert("Network error adding symbol: " + err);
+  }
+}
+
+async function removeSymbolFromWatchlist(sym) {
+  if (!confirm(`Remove ${sym} from ${currentAccount.toUpperCase()} watchlist?`)) return;
+
+  try {
+    const res = await authFetch("/api/watchlist/remove", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: sym, account: currentAccount })
+    });
+    const data = await res.json();
+    if (data.status === "SUCCESS") {
+      await loadCashDeskData();
+      if (cachedDashboardData) refreshCurrentView(true);
+    } else {
+      alert(data.message || "Failed to remove symbol from watchlist.");
+    }
+  } catch (err) {
+    alert("Network error removing symbol: " + err);
+  }
 }
 
 // ==========================================================================

@@ -93,12 +93,20 @@
       </div>
     </aside>
 
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
+
     <!-- 2. MAIN APPLICATION CONTENT WRAPPER -->
     <div class="main-wrapper">
 
       <!-- Top Header Strip -->
       <header class="topbar">
         <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()" aria-label="Toggle Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
           <h2 class="page-title" id="pageTitle">Portfolio Overview</h2>
           <span class="status-badge closed" id="marketBadge"><span class="status-dot"></span> Market Closed</span>
           <span class="status-badge paper" id="modeBadge">PAPER VERIFIED</span>
@@ -459,6 +467,24 @@
 
         <!-- ==================== VIEW 4: CASH DESK ==================== -->
         <section id="view-cash-desk" class="view-section">
+          <!-- Custom Watchlist Manager -->
+          <div class="watchlist-manager-box">
+            <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                Custom Watchlist & Wishlist Scanner
+              </span>
+              <span style="font-size: 11px; color: var(--text-muted);" id="watchlistCountLabel">Loading Watchlist...</span>
+            </div>
+            <div class="watchlist-input-row">
+              <input type="text" id="addSymbolInput" placeholder="Add NSE Symbol (e.g. TATAMOTORS, SBIN, RELIANCE)..." onkeydown="if(event.key==='Enter') addSymbolToWatchlist()" />
+              <button class="btn btn-primary" onclick="addSymbolToWatchlist()">+ Add Symbol</button>
+            </div>
+            <div class="watchlist-chips-wrapper" id="watchlistChipsContainer">
+              <!-- Rendered dynamically by app.js -->
+            </div>
+          </div>
+
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">Cash Equity Universe & Technical Scanner</div>
@@ -1010,6 +1036,34 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" onclick="switchView('overview')" data-view="overview" aria-label="Overview">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('live-trading')" data-view="live-trading" aria-label="Live Trading">
+      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <span>Live</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('fno-desk')" data-view="fno-desk" aria-label="F&O Desk">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>F&O</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('cash-desk')" data-view="cash-desk" aria-label="Cash Desk">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+      <span>Cash</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('risk-centre')" data-view="risk-centre" aria-label="Risk Centre">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Risk</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="toggleMobileSidebar()" id="mobileMenuMoreBtn" aria-label="Open Full Menu">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span>Menu</span>
+    </button>
+  </nav>
 
   <script src="app.js"></script>
 </body>

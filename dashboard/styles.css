@@ -1094,17 +1094,332 @@ tbody tr:hover {
 .terminal-log-row .log-level-ERROR { color: var(--loss-red); font-weight: 700; flex-shrink: 0; }
 .terminal-log-row .log-msg { color: var(--text-primary); word-break: break-all; }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .sidebar { width: 70px; }
-  .sidebar .brand-title, .sidebar .brand-subtitle, .sidebar .nav-section-title, .sidebar-footer { display: none; }
-  .sidebar .nav-item { justify-content: center; padding: 12px; }
-  .sidebar .nav-item span { display: none; }
-  .segment-grid { grid-template-columns: 1fr; }
+/* ==========================================================================
+   10. WATCHLIST MANAGER (Custom Stock Watchlist)
+   ========================================================================== */
+.watchlist-manager-box {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+.watchlist-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.watchlist-input-row input {
+  flex: 1;
+  min-width: 220px;
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.watchlist-input-row input:focus {
+  border-color: var(--info-blue);
+  box-shadow: 0 0 10px rgba(99, 165, 255, 0.2);
+}
+
+.watchlist-chips-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.watchlist-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 165, 255, 0.12);
+  border: 1px solid rgba(99, 165, 255, 0.3);
+  color: var(--info-blue);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+
+.watchlist-chip:hover {
+  background: rgba(99, 165, 255, 0.22);
+}
+
+.chip-remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.15s ease;
+}
+
+.chip-remove-btn:hover {
+  color: var(--loss-red);
+}
+
+/* ==========================================================================
+   11. MOBILE RESPONSIVENESS & BOTTOM NAV
+   ========================================================================== */
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 36px;
+  height: 36px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 6px;
+  cursor: pointer;
+  z-index: 130;
+}
+
+.mobile-menu-btn span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.25s ease;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 18, 32, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 115;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.active {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 60px;
+  background: rgba(16, 26, 43, 0.95);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border);
+  z-index: 90;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.mobile-nav-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.mobile-nav-btn.active, .mobile-nav-btn:hover {
+  color: var(--profit-green);
+}
+
+/* Tablet & Mobile Screens (<= 900px) */
+@media (max-width: 900px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    max-width: 80vw;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 120;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar .brand-title, .sidebar .brand-subtitle, .sidebar .nav-section-title, .sidebar-footer {
+    display: block !important;
+  }
+
+  .sidebar .nav-item span {
+    display: inline !important;
+  }
+
+  .segment-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phone Screens (<= 768px) */
 @media (max-width: 768px) {
-  .topbar { padding: 0 14px; }
-  .kpi-grid { grid-template-columns: 1fr; }
-  .clock-widget { display: none; }
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  .content-body {
+    padding: 14px 12px 76px 12px !important;
+  }
+
+  .topbar {
+    padding: 0 10px !important;
+    height: 56px !important;
+  }
+
+  .topbar-left {
+    gap: 8px !important;
+  }
+
+  .page-title {
+    font-size: 15px !important;
+  }
+
+  .topbar-right {
+    gap: 6px !important;
+  }
+
+  .mode-toggle-btn span {
+    display: none;
+  }
+
+  .account-box {
+    padding: 4px 8px !important;
+  }
+
+  .account-box label {
+    display: none;
+  }
+
+  .account-select {
+    font-size: 11px !important;
+  }
+
+  .clock-widget {
+    display: none !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .kpi-card {
+    padding: 12px 14px !important;
+  }
+
+  .kpi-value {
+    font-size: 17px !important;
+  }
+
+  .kpi-label {
+    font-size: 10px !important;
+  }
+
+  .segment-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .segment-metric-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .segment-metric-box {
+    padding: 8px 10px !important;
+  }
+
+  .segment-metric-val {
+    font-size: 13px !important;
+  }
+
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 580px;
+  }
+
+  .trade-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  .watchlist-input-row input {
+    min-width: 140px !important;
+  }
+}
+
+/* Small Phone Screens (<= 480px) */
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .segment-metric-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .status-badge.paper, .status-badge.closed, .status-badge.open {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
 }

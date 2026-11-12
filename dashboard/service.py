@@ -223,9 +223,34 @@ def fetch_live_quote_data(symbol):
     # Fallback to daemon if ticks DB didn't have it
     try:
         import daemon
-        quotes = daemon.fetch_candles(symbol)
+        query_sym = symbol
+        if not ("." in symbol or "^" in symbol or symbol in ("NIFTY 50", "NIFTY", "BANKNIFTY", "NIFTY BANK")):
+            query_sym = f"{clean_sym}.NS"
+        quotes = daemon.fetch_candles(query_sym)
         if not quotes or not quotes.get("close"):
-            return None
+            # Return valid baseline tracking object so symbol is shown in watchlist
+            fallback_data = {
+                "symbol": clean_sym,
+                "price": 0.0,
+                "prev_close": 0.0,
+                "change": 0.0,
+                "change_pct": 0.0,
+                "high": 0.0,
+                "low": 0.0,
+                "ema5": 0.0,
+                "ema9": 0.0,
+                "ema33_high": 0.0,
+                "ema33_low": 0.0,
+                "supertrend": None,
+                "rsi": 50.0,
+                "adx": 20.0,
+                "vwap": 0.0,
+                "rvol": 1.0,
+                "signal": "MONITORING",
+                "last_updated": "MARKET CLOSED"
+            }
+            quote_cache[clean_sym] = {"timestamp": now_ts, "data": fallback_data}
+            return fallback_data
 
         closes = [c for c in quotes["close"] if c is not None]
         highs = [h for h in quotes.get("high", []) if h is not None]
@@ -985,3 +1010,73 @@ def get_fno_desk_data():
         "realized_pnl": float(fno_ledger.get("realized_pnl", 0.0)),
         "total_trades": len(fno_history)
     }
+
+def add_symbol_to_watchlist(symbol, account_id="gautam"):
+    """
+    Adds a custom stock symbol to the specified account's watchlist in accounts.json.
+    """
+    if not symbol or not isinstance(symbol, str):
+        return {"status": "ERROR", "message": "Valid symbol string required"}
+
+    clean_sym = symbol.upper().replace(".NS", "").replace(".BO", "").strip()
+    if not clean_sym:
+        return {"status": "ERROR", "message": "Symbol cannot be empty"}
+
+    acc_id = (account_id or "gautam").lower().strip()
+    acc_file = TRADER_DIR / "accounts.json"
+    accounts_data = read_json_file(acc_file, default={"accounts": {}})
+
+    if acc_id not in accounts_data.get("accounts", {}):
+        return {"status": "ERROR", "message": f"Account '{acc_id}' not found"}
+
+    curr_wl = accounts_data["accounts"][acc_id].get("watchlist", [])
+    if clean_sym in [s.upper() for s in curr_wl]:
+        return {"status": "SUCCESS", "success": True, "message": f"{clean_sym} is already in watchlist", "watchlist": curr_wl, "symbol": clean_sym}
+
+    curr_wl.append(clean_sym)
+    accounts_data["accounts"][acc_id]["watchlist"] = curr_wl
+    write_json_file(acc_file, accounts_data)
+
+    # Also sync config.json watchlist for primary account
+    if acc_id == "gautam":
+        cfg_file = TRADER_DIR / "config.json"
+        cfg = read_json_file(cfg_file, default={})
+        cfg_wl = cfg.get("watchlist", [])
+        if clean_sym not in [s.upper() for s in cfg_wl]:
+            cfg_wl.append(clean_sym)
+            cfg["watchlist"] = cfg_wl
+            write_json_file(cfg_file, cfg)
+
+    log_audit_event("ADD_TO_WATCHLIST", {"account": acc_id, "symbol": clean_sym})
+    return {"status": "SUCCESS", "success": True, "message": f"Added {clean_sym} to watchlist", "watchlist": curr_wl, "symbol": clean_sym}
+
+def remove_symbol_from_watchlist(symbol, account_id="gautam"):
+    """
+    Removes a stock symbol from the specified account's watchlist in accounts.json.
+    """
+    if not symbol or not isinstance(symbol, str):
+        return {"status": "ERROR", "success": False, "message": "Valid symbol string required"}
+
+    clean_sym = symbol.upper().replace(".NS", "").replace(".BO", "").strip()
+    acc_id = (account_id or "gautam").lower().strip()
+    acc_file = TRADER_DIR / "accounts.json"
+    accounts_data = read_json_file(acc_file, default={"accounts": {}})
+
+    if acc_id not in accounts_data.get("accounts", {}):
+        return {"status": "ERROR", "success": False, "message": f"Account '{acc_id}' not found"}
+
+    curr_wl = accounts_data["accounts"][acc_id].get("watchlist", [])
+    updated_wl = [s for s in curr_wl if s.upper() != clean_sym]
+    accounts_data["accounts"][acc_id]["watchlist"] = updated_wl
+    write_json_file(acc_file, accounts_data)
+
+    # Also remove from config.json if primary
+    if acc_id == "gautam":
+        cfg_file = TRADER_DIR / "config.json"
+        cfg = read_json_file(cfg_file, default={})
+        if "watchlist" in cfg:
+            cfg["watchlist"] = [s for s in cfg.get("watchlist", []) if s.upper() != clean_sym]
+            write_json_file(cfg_file, cfg)
+
+    log_audit_event("REMOVE_FROM_WATCHLIST", {"account": acc_id, "symbol": clean_sym})
+    return {"status": "SUCCESS", "success": True, "message": f"Removed {clean_sym} from watchlist", "watchlist": updated_wl, "symbol": clean_sym}

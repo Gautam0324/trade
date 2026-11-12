@@ -249,7 +249,7 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(fno_data)
 
         elif path == "/api/risk":
-            risk_data = service.get_risk_audit()
+            risk_data = service.get_risk_audit(account_id=account)
             self.send_json(risk_data)
 
         elif path == "/api/logs":
@@ -367,6 +367,18 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             service.write_json_file(TRADER_DIR / "config.json", cfg)
             service.log_audit_event("UPDATE_CONFIGURATION", updated)
             self.send_json({"status": "SUCCESS", "updated": updated, "config": service.sanitize_config(cfg)})
+
+        elif path == "/api/watchlist/add":
+            sym = data.get("symbol")
+            acc = data.get("account", "gautam")
+            res = service.add_symbol_to_watchlist(sym, acc)
+            self.send_json(res)
+
+        elif path == "/api/watchlist/remove":
+            sym = data.get("symbol")
+            acc = data.get("account", "gautam")
+            res = service.remove_symbol_from_watchlist(sym, acc)
+            self.send_json(res)
 
         elif path == "/api/accounts/reconcile":
             target_acc = data.get("account", "gautam")
