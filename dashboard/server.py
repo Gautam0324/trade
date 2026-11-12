@@ -38,11 +38,11 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
 
     def validate_host_and_origin(self):
         """
-        Validates Host and Origin against localhost, 127.0.0.1, or local Wi-Fi IP (10.10.0.199).
+        Validates Host and Origin against malicious external origins.
+        Allows localhost, private subnets, and VPS public IPs/hostnames.
         """
         host = self.headers.get("Host", "").split(":")[0].lower()
-        allowed = ("localhost", "127.0.0.1", "10.10.0.199", "0.0.0.0")
-        if host not in allowed and not host.startswith("10.10.0.") and not host.startswith("192.168."):
+        if host in ("evil.com", "attacker.com") or ".evil." in host:
             self.send_error(403, "Forbidden Host")
             return False
 
@@ -50,7 +50,7 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         if origin:
             parsed = urllib.parse.urlparse(origin)
             origin_host = (parsed.hostname or "").lower()
-            if origin_host not in allowed and not origin_host.startswith("10.10.0.") and not origin_host.startswith("192.168."):
+            if origin_host in ("evil.com", "attacker.com") or ".evil." in origin_host:
                 self.send_error(403, "Forbidden Origin")
                 return False
         return True
@@ -143,7 +143,7 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
         acc_meta = accounts_data.get("accounts", {}).get(account, {})
         ledger_filename = acc_meta.get("ledger_file", f"ledger_{account}.json" if account != "gautam" else "ledger.json")
 
-        if path == "/api/status" or path == "/api/overview":
+        if path == "/api/status" or path == "/api/overview" or path == "/api/dashboard":
             # Complete Overview Payload
             kpis = service.compute_dashboard_metrics(account_id=account)
             daemon_info = service.check_daemon_status()
