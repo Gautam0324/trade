@@ -241,8 +241,12 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             })
 
         elif path == "/api/strategies":
-            stats = service.get_strategy_performance()
+            stats = service.get_strategy_performance(account_id=account)
             self.send_json({"strategies": stats})
+
+        elif path == "/api/fno":
+            fno_data = service.get_fno_desk_data()
+            self.send_json(fno_data)
 
         elif path == "/api/risk":
             risk_data = service.get_risk_audit()
@@ -363,6 +367,43 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             service.write_json_file(TRADER_DIR / "config.json", cfg)
             service.log_audit_event("UPDATE_CONFIGURATION", updated)
             self.send_json({"status": "SUCCESS", "updated": updated, "config": service.sanitize_config(cfg)})
+
+        elif path == "/api/accounts/reconcile":
+            target_acc = data.get("account", "gautam")
+            res = service.reconcile_account_ledger(target_acc)
+            self.send_json(res)
+
+        elif path == "/api/risk/emergency_pause":
+            # Emergency halt of trading activity
+            status = service.check_daemon_status()
+            pid = status.get("pid")
+            if pid:
+                try:
+                    if os.name == "nt":
+                        subprocess.call(["taskkill", "/F", "/PID", str(pid)])
+                    else:
+                        os.kill(int(pid), 9)
+                    service.daemon_process = None
+                except Exception:
+                    pass
+            service.log_audit_event("EMERGENCY_PAUSE_TRIGGERED", {"reason": "Manual operator emergency pause"})
+            self.send_json({"status": "SUCCESS", "message": "Emergency pause triggered. Bot processes halted."})
+
+        elif path == "/api/risk/emergency_squareoff":
+            # Emergency square-off of open positions
+            target_acc = data.get("account", "gautam")
+            kpis = service.compute_dashboard_metrics(account_id=target_acc)
+            closed_count = 0
+            import ledger
+            for pos in kpis.get("enriched_positions", []):
+                sym = pos.get("symbol")
+                cur_p = pos.get("current_price", 0.0)
+                if sym and cur_p > 0:
+                    ok, _ = ledger.record_trade_exit(sym, cur_p, "EMERGENCY_SQUARE_OFF")
+                    if ok:
+                        closed_count += 1
+            service.log_audit_event("EMERGENCY_SQUAREOFF_TRIGGERED", {"account": target_acc, "closed_positions": closed_count})
+            self.send_json({"status": "SUCCESS", "message": f"Emergency square-off executed. {closed_count} positions closed."})
 
         else:
             self.send_error(404, "API endpoint not found")

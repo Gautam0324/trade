@@ -82,7 +82,12 @@ last_exit_timestamps = {}
 def fetch_candles(symbol):
     tf = app_config.get("candle_timeframe", "5m")
     rng = app_config.get("candle_range", "5d")
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng}&interval={tf}"
+    sym_query = symbol
+    if symbol in ("NIFTY 50", "NIFTY"):
+        sym_query = "^NSEI"
+    elif symbol in ("BANKNIFTY", "NIFTY BANK"):
+        sym_query = "^NSEBANK"
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym_query)}?range={rng}&interval={tf}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; DayTraderDaemon/2.0)"})
     try:
         with urllib.request.urlopen(req, timeout=8) as r:

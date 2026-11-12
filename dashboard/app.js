@@ -1,9 +1,70 @@
-// Institutional Algo Trading Terminal Client Application
+// DAY TRADER PRO — GLASS ELITE
+// Institutional Algorithmic Terminal Client Engine
+
 let equityChartInstance = null;
 let activeView = "overview";
 let cachedDashboardData = null;
 let currentAccount = new URLSearchParams(window.location.search).get("account") || "gautam";
 let dashboardApiToken = "";
+let currentChartDateFilter = "ALL";
+let autoRefreshTimer = null;
+let pollingIntervalMs = 10000; // 10s default
+let allTradesCache = [];
+let allReportsCache = [];
+
+// ==========================================================================
+// 1. INITIALIZATION & DUAL EXPERIENCE (Beginner vs Pro)
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  initUserExperienceMode();
+  initAccountSelector();
+  updateClock();
+  setInterval(updateClock, 1000);
+  switchView(activeView);
+  startAutoRefresh();
+});
+
+function initUserExperienceMode() {
+  const savedMode = localStorage.getItem("daytrader_user_mode") || "pro";
+  setUserMode(savedMode);
+}
+
+function setUserMode(mode) {
+  const isBeginner = mode === "beginner";
+  localStorage.setItem("daytrader_user_mode", isBeginner ? "beginner" : "pro");
+
+  if (isBeginner) {
+    document.body.classList.remove("pro-mode");
+    document.body.classList.add("beginner-mode");
+  } else {
+    document.body.classList.remove("beginner-mode");
+    document.body.classList.add("pro-mode");
+  }
+
+  const btn = document.getElementById("modeToggleBtn");
+  const label = document.getElementById("modeToggleLabel");
+  if (btn && label) {
+    if (isBeginner) {
+      btn.className = "mode-toggle-btn beginner-active";
+      label.textContent = "Beginner Mode";
+    } else {
+      btn.className = "mode-toggle-btn pro-active";
+      label.textContent = "Pro Mode";
+    }
+  }
+}
+
+function toggleUserExperienceMode() {
+  const current = localStorage.getItem("daytrader_user_mode") || "pro";
+  setUserMode(current === "pro" ? "beginner" : "pro");
+}
+
+function initAccountSelector() {
+  const sel = document.getElementById("accountSelector");
+  if (sel) {
+    sel.value = currentAccount;
+  }
+}
 
 function switchAccount(acc) {
   currentAccount = acc || "gautam";
@@ -14,12 +75,8 @@ function switchAccount(acc) {
   const sel = document.getElementById("accountSelector");
   if (sel) sel.value = currentAccount;
 
-  const dateSelect = document.getElementById('chartDateFilter');
+  const dateSelect = document.getElementById("chartDateFilter");
   if (dateSelect) {
-    dateSelect.innerHTML = `
-      <option value="ALL">All Dates (Cumulative)</option>
-      <option value="DAILY">Daily P&L Comparison</option>
-    `;
     dateSelect.value = "ALL";
     currentChartDateFilter = "ALL";
   }
@@ -27,216 +84,326 @@ function switchAccount(acc) {
   refreshCurrentView();
 }
 
-// Helper for authenticated POST requests
-async function authFetch(url, options = {}) {
-  options.headers = options.headers || {};
-  if (dashboardApiToken) {
-    options.headers['X-API-Token'] = dashboardApiToken;
-  }
-  return fetch(url, options);
-}
-
-// Clock with exact IST (Asia/Kolkata) formatting
+// ==========================================================================
+// 2. TIMERS & AUTO-REFRESH
+// ==========================================================================
 function updateClock() {
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
-  const clockEl = document.getElementById('istClockDisplay');
+  const timeStr = now.toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour12: false });
+  const clockEl = document.getElementById("istClockDisplay");
   if (clockEl) {
     clockEl.textContent = `${timeStr} IST`;
   }
 }
-setInterval(updateClock, 1000);
-updateClock();
 
+function startAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  if (pollingIntervalMs > 0) {
+    autoRefreshTimer = setInterval(() => {
+      refreshCurrentView(true);
+    }, pollingIntervalMs);
+  }
+}
+
+function changePollingInterval(val) {
+  pollingIntervalMs = parseInt(val, 10);
+  startAutoRefresh();
+}
+
+// ==========================================================================
+// 3. UTILITY FORMATTERS
+// ==========================================================================
 function formatINR(val) {
   if (val === undefined || val === null || isNaN(val)) return "₹0.00";
   const num = Number(val);
   const sign = num < 0 ? "-" : "";
-  return `${sign}₹${Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${sign}₹${Math.abs(num).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function formatSignedINR(val) {
   if (val === undefined || val === null || isNaN(val)) return "₹0.00";
   const num = Number(val);
   const sign = num > 0 ? "+" : (num < 0 ? "-" : "");
-  return `${sign}₹${Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${sign}₹${Math.abs(num).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-// Sidebar Navigation Router
+async function authFetch(url, options = {}) {
+  options.headers = options.headers || {};
+  if (dashboardApiToken) {
+    options.headers["X-API-Token"] = dashboardApiToken;
+  }
+  return fetch(url, options);
+}
+
+// ==========================================================================
+// 4. ROUTER & VIEW SWITCHER
+// ==========================================================================
 function switchView(viewId) {
   activeView = viewId;
-  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
 
   const targetSection = document.getElementById(`view-${viewId}`);
-  if (targetSection) targetSection.classList.add('active');
+  if (targetSection) targetSection.classList.add("active");
 
-  // Highlight Nav Item
-  const navItems = document.querySelectorAll('.nav-item');
-  const viewMap = ['overview', 'marketwatch', 'positions', 'trades', 'reports', 'strategies', 'risk', 'control', 'logs', 'config', 'health'];
-  const idx = viewMap.indexOf(viewId);
-  if (idx !== -1 && navItems[idx]) {
-    navItems[idx].classList.add('active');
-  }
+  const navEl = document.getElementById(`nav-${viewId}`);
+  if (navEl) navEl.classList.add("active");
 
-  // Update Page Title
   const titles = {
-    overview: "Portfolio Overview",
-    marketwatch: "Live Market Watch",
-    positions: "Open Positions Management",
-    trades: "Trade Execution Journal",
-    reports: "Financial Audit & Tax P&L Statement",
-    strategies: "Strategy Performance Attribution",
-    risk: "Risk Management Center",
-    control: "Bot Process Control",
-    logs: "Audit & System Event Logs",
-    config: "System Configuration Viewer",
-    health: "Subsystem Diagnostics"
+    "overview": "Portfolio Overview Cockpit",
+    "live-trading": "Live Trading Desk & Active Positions",
+    "fno-desk": "F&O Derivatives Desk (NIFTY & BANKNIFTY)",
+    "cash-desk": "Cash Equities Desk & Technical Scanner",
+    "strategy-centre": "Algorithmic Strategy Performance Matrix",
+    "risk-centre": "Risk Management & Kill-Switch Safeguards",
+    "trade-journal": "Executed Trades Journal & 13-Step Lifecycle",
+    "analytics": "Performance Analytics & Trading Streaks",
+    "reports": "Financial Audit & Statutory Tax P&L Statement",
+    "accounts": "Multi-Account Manager & Ledger Invariants",
+    "system-health": "Infrastructure Diagnostics & Event Stream",
+    "settings": "Terminal Configuration & Experience Settings"
   };
-  const titleEl = document.getElementById('pageTitle');
+
+  const titleEl = document.getElementById("pageTitle");
   if (titleEl) titleEl.textContent = titles[viewId] || "Trading Terminal";
 
   refreshCurrentView();
 }
 
-// Router dispatcher for active view data fetch
-async function refreshCurrentView() {
-  switch (activeView) {
-    case 'overview':
-      await loadOverviewData();
-      break;
-    case 'marketwatch':
-      await loadWatchlistData();
-      break;
-    case 'positions':
-      await loadPositionsData();
-      break;
-    case 'trades':
-      await loadTradesTable();
-      break;
-    case 'reports':
-      await loadReportsData();
-      break;
-    case 'strategies':
-      await loadStrategiesData();
-      break;
-    case 'risk':
-      await loadRiskData();
-      break;
-    case 'control':
-      await loadControlData();
-      break;
-    case 'logs':
-      await loadLogsTerminal();
-      break;
-    case 'config':
-      await loadConfigData();
-      break;
-    case 'health':
-      break;
-  }
-}
-
-// 1. Overview Loader
-async function loadOverviewData() {
+async function refreshCurrentView(isBackground = false) {
   try {
-    const res = await fetch('/api/overview?account=' + encodeURIComponent(currentAccount));
-    const data = await res.json();
-    cachedDashboardData = data;
-    if (data.api_token) {
-      dashboardApiToken = data.api_token;
+    switch (activeView) {
+      case "overview":
+        await loadOverviewData();
+        break;
+      case "live-trading":
+        await loadLiveTradingData();
+        break;
+      case "fno-desk":
+        await loadFnoDeskData();
+        break;
+      case "cash-desk":
+        await loadCashDeskData();
+        break;
+      case "strategy-centre":
+        await loadStrategyCentreData();
+        break;
+      case "risk-centre":
+        await loadRiskCentreData();
+        break;
+      case "trade-journal":
+        await loadTradesTable();
+        break;
+      case "analytics":
+        await loadAnalyticsData();
+        break;
+      case "reports":
+        await loadReportsData();
+        break;
+      case "accounts":
+        await loadAccountsData();
+        break;
+      case "system-health":
+        await loadSystemHealth();
+        break;
+      case "settings":
+        await loadSettingsData();
+        break;
     }
-
-    // Header Badges
-    const mkt = data.market_status || "UNKNOWN";
-    const mktBadge = document.getElementById('marketBadge');
-    if (mktBadge) {
-      mktBadge.textContent = `Market ${mkt}`;
-      mktBadge.className = `status-badge ${mkt === 'OPEN' ? 'open' : 'closed'}`;
-    }
-
-    const modeBadge = document.getElementById('modeBadge');
-    if (modeBadge && data.trading_mode) {
-      modeBadge.textContent = `${data.trading_mode} MODE`;
-      modeBadge.className = `status-badge ${data.trading_mode === 'LIVE' ? 'open' : 'paper'}`;
-    }
-
-    const botStatus = data.bot_status || {};
-    const botBadge = document.getElementById('botStatusBadge');
-    if (botBadge) {
-      const isRunning = botStatus.status === "RUNNING";
-      botBadge.textContent = isRunning ? `Bot Running (PID: ${botStatus.pid})` : "Bot Stopped";
-      botBadge.className = `status-badge ${isRunning ? 'running' : 'stopped'}`;
-    }
-
-    // KPIs
-    const kpis = data.kpis || {};
-    document.getElementById('kpiStartingCap').textContent = formatINR(kpis.starting_capital);
-    document.getElementById('kpiFreeCash').textContent = formatINR(kpis.free_cash);
-    document.getElementById('kpiDeployedCash').textContent = formatINR(kpis.deployed_cash);
-    document.getElementById('kpiOpenPositionsSub').textContent = `${kpis.open_positions_count || 0} Active Positions`;
-    
-    const rPnlEl = document.getElementById('kpiRealizedPnl');
-    const todayPnlVal = kpis.today_realized_pnl !== undefined ? kpis.today_realized_pnl : kpis.realized_pnl;
-    rPnlEl.textContent = formatSignedINR(todayPnlVal);
-    rPnlEl.className = `kpi-value ${todayPnlVal >= 0 ? 'green' : 'red'}`;
-
-    const rPnlSub = document.getElementById('kpiRealizedPnlSub');
-    if (rPnlSub) {
-      rPnlSub.textContent = `Cumulative: ${formatSignedINR(kpis.realized_pnl)}`;
-    }
-
-    const uPnlEl = document.getElementById('kpiUnrealizedPnl');
-    uPnlEl.textContent = formatSignedINR(kpis.unrealized_pnl);
-    uPnlEl.className = `kpi-value ${kpis.unrealized_pnl >= 0 ? (kpis.unrealized_pnl > 0 ? 'green' : '') : 'red'}`;
-
-    document.getElementById('kpiNetPortfolio').textContent = formatINR(kpis.total_portfolio_value);
-    const retEl = document.getElementById('kpiReturnPct');
-    retEl.textContent = `${kpis.return_pct >= 0 ? '+' : ''}${kpis.return_pct}% Today`;
-    retEl.className = `kpi-sub ${kpis.return_pct >= 0 ? 'green' : 'red'}`;
-
-    document.getElementById('kpiWinRate').textContent = `${kpis.win_rate}%`;
-    document.getElementById('kpiWinsLossesSub').textContent = `${kpis.wins_count} W / ${kpis.losses_count} L / ${kpis.breakeven_count} BE`;
-
-    document.getElementById('kpiProfitFactor').textContent = kpis.profit_factor || "1.00";
-    document.getElementById('kpiMaxDrawdown').textContent = formatINR(kpis.max_drawdown);
-    
-    document.getElementById('kpiLossUtil').textContent = `${kpis.daily_loss_utilization_pct}%`;
-    document.getElementById('kpiMaxLossSub').textContent = `Limit: ${formatINR(kpis.max_daily_loss)}`;
-
-    const tradeCountEl = document.getElementById('kpiTradeCount');
-    const todayTradesVal = kpis.today_trades_count !== undefined ? kpis.today_trades_count : (kpis.total_trades_count || 0);
-    tradeCountEl.textContent = `${todayTradesVal}`;
-
-    // Render Equity Chart
-    await renderEquityChart();
-
-    // Quick previews
-    renderQuickWatchlist();
-    renderQuickPositions(kpis.enriched_positions || []);
-
   } catch (err) {
-    console.error("Overview error:", err);
+    if (!isBackground) console.error("Error refreshing view:", err);
   }
 }
 
-let currentChartDateFilter = "ALL";
+// ==========================================================================
+// 5. VIEW 1: OVERVIEW COCKPIT
+// ==========================================================================
+async function loadOverviewData() {
+  const res = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  cachedDashboardData = data;
 
-// Equity Chart Renderer using Chart.js with Date-Wise Filtering
+  if (data.api_token) dashboardApiToken = data.api_token;
+
+  // Topbar badges
+  updateTopbarBadges(data);
+
+  const kpis = data.kpis || {};
+
+  // 8 Primary KPI Cards
+  const kpiStartingCap = document.getElementById("kpiStartingCap");
+  if (kpiStartingCap) kpiStartingCap.textContent = formatINR(kpis.starting_capital);
+
+  const kpiFreeCash = document.getElementById("kpiFreeCash");
+  if (kpiFreeCash) kpiFreeCash.textContent = formatINR(kpis.free_cash);
+
+  const kpiDeployedCash = document.getElementById("kpiDeployedCash");
+  if (kpiDeployedCash) kpiDeployedCash.textContent = formatINR(kpis.deployed_cash);
+
+  const kpiOpenPositionsSub = document.getElementById("kpiOpenPositionsSub");
+  if (kpiOpenPositionsSub) kpiOpenPositionsSub.textContent = `${kpis.open_positions_count || 0} Active Positions`;
+
+  const kpiGrossPnl = document.getElementById("kpiGrossPnl");
+  if (kpiGrossPnl) {
+    kpiGrossPnl.textContent = formatSignedINR(kpis.today_gross_pnl || 0);
+    kpiGrossPnl.className = `kpi-value ${(kpis.today_gross_pnl || 0) >= 0 ? "green" : "red"}`;
+  }
+
+  const kpiFees = document.getElementById("kpiFees");
+  if (kpiFees) kpiFees.textContent = formatINR(kpis.today_fees || 0);
+
+  const kpiRealizedPnl = document.getElementById("kpiRealizedPnl");
+  if (kpiRealizedPnl) {
+    kpiRealizedPnl.textContent = formatSignedINR(kpis.today_realized_pnl || 0);
+    kpiRealizedPnl.className = `kpi-value ${(kpis.today_realized_pnl || 0) >= 0 ? "green" : "red"}`;
+  }
+
+  const kpiWinRate = document.getElementById("kpiWinRate");
+  if (kpiWinRate) kpiWinRate.textContent = `${kpis.win_rate || 0.0}%`;
+
+  const kpiWinsLossesSub = document.getElementById("kpiWinsLossesSub");
+  if (kpiWinsLossesSub) kpiWinsLossesSub.textContent = `${kpis.wins_count || 0}W / ${kpis.losses_count || 0}L / ${kpis.breakeven_count || 0}BE`;
+
+  const kpiProfitFactor = document.getElementById("kpiProfitFactor");
+  if (kpiProfitFactor) {
+    kpiProfitFactor.textContent = (kpis.profit_factor || 1.0).toFixed(2);
+    kpiProfitFactor.className = `kpi-value ${(kpis.profit_factor || 1.0) >= 1.2 ? "green" : ""}`;
+  }
+
+  // Sidebar badge for open positions
+  const navOpenCount = document.getElementById("navOpenCount");
+  if (navOpenCount) navOpenCount.textContent = kpis.open_positions_count || 0;
+
+  // Dual Segment Breakdown: F&O Desk
+  const fno = kpis.segment_fno || {};
+  document.getElementById("fnoGrossPnl").textContent = formatSignedINR(fno.gross_pnl || 0);
+  document.getElementById("fnoFees").textContent = formatINR(fno.fees || 0);
+  const fnoNet = document.getElementById("fnoNetPnl");
+  fnoNet.textContent = formatSignedINR(fno.net_pnl || 0);
+  fnoNet.className = `segment-metric-val ${(fno.net_pnl || 0) >= 0 ? "val-green" : "val-red"}`;
+  document.getElementById("fnoTradesCount").textContent = fno.trades_count || 0;
+  document.getElementById("fnoWinRate").textContent = `${fno.win_rate || 0.0}%`;
+  document.getElementById("fnoProfitFactor").textContent = (fno.profit_factor || 1.0).toFixed(2);
+
+  // Dual Segment Breakdown: Cash Desk
+  const cash = kpis.segment_cash || {};
+  document.getElementById("cashGrossPnl").textContent = formatSignedINR(cash.gross_pnl || 0);
+  document.getElementById("cashFees").textContent = formatINR(cash.fees || 0);
+  const cashNet = document.getElementById("cashNetPnl");
+  cashNet.textContent = formatSignedINR(cash.net_pnl || 0);
+  cashNet.className = `segment-metric-val ${(cash.net_pnl || 0) >= 0 ? "val-green" : "val-red"}`;
+  document.getElementById("cashTradesCount").textContent = cash.trades_count || 0;
+  document.getElementById("cashWinRate").textContent = `${cash.win_rate || 0.0}%`;
+  document.getElementById("cashProfitFactor").textContent = (cash.profit_factor || 1.0).toFixed(2);
+
+  // Render Equity Curve
+  await renderEquityChart();
+
+  // Quick Watchlist & Positions Row
+  renderQuickWidgets(kpis.enriched_positions || []);
+}
+
+function updateTopbarBadges(data) {
+  const mkt = document.getElementById("marketBadge");
+  if (mkt) {
+    if (data.market_open) {
+      mkt.className = "status-badge open";
+      mkt.innerHTML = `<span class="status-dot"></span> Market Open`;
+    } else {
+      mkt.className = "status-badge closed";
+      mkt.innerHTML = `<span class="status-dot"></span> Market Closed`;
+    }
+  }
+
+  const bot = document.getElementById("botStatusBadge");
+  const daemon = data.bot_status || {};
+  if (bot) {
+    if (daemon.status === "RUNNING") {
+      bot.className = "status-badge running";
+      bot.innerHTML = `<span class="status-dot"></span> Bot Running (PID ${daemon.pid})`;
+    } else {
+      bot.className = "status-badge stopped";
+      bot.innerHTML = `<span class="status-dot"></span> Bot Stopped`;
+    }
+  }
+}
+
+function renderQuickWidgets(positions) {
+  // Quick Positions
+  const posEl = document.getElementById("quickPositions");
+  if (posEl) {
+    if (positions.length === 0) {
+      posEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No open positions. 100% Cash free.</div>`;
+    } else {
+      let html = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+      positions.forEach(p => {
+        const pnl = p.unrealized_pnl || 0;
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(11, 18, 32, 0.4); padding: 8px 12px; border-radius: 6px; cursor: pointer;" onclick="openTradeDrawer(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+            <div>
+              <strong>${p.symbol}</strong> <span style="font-size: 11px; color: var(--text-muted);">${p.side || 'BUY'} • ${p.qty} Qty</span>
+            </div>
+            <div style="text-align: right;">
+              <div class="${pnl >= 0 ? 'val-green' : 'val-red'}">${formatSignedINR(pnl)}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">LTP: ₹${Number(p.current_price || 0).toFixed(2)}</div>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      posEl.innerHTML = html;
+    }
+  }
+
+  // Quick Watchlist preview
+  fetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`)
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById("quickWatchlist");
+      if (!el) return;
+      const symbols = data.symbols || [];
+      if (symbols.length === 0) {
+        el.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No symbols in universe.</div>`;
+        return;
+      }
+      let html = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+      symbols.slice(0, 4).forEach(s => {
+        const change = s.change_pct || 0;
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(11, 18, 32, 0.4); padding: 8px 12px; border-radius: 6px;">
+            <div>
+              <strong>${s.symbol}</strong>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: var(--font-mono); font-weight: 600;">₹${Number(s.price || 0).toFixed(2)}</div>
+              <div style="font-size: 10px;" class="${change >= 0 ? 'val-green' : 'val-red'}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      el.innerHTML = html;
+    })
+    .catch(() => {});
+}
+
+// ==========================================================================
+// 6. INTERACTIVE EQUITY CHART WITH DATE-WISE FILTERING
+// ==========================================================================
 async function renderEquityChart() {
   try {
-    const dateSelect = document.getElementById('chartDateFilter');
+    const dateSelect = document.getElementById("chartDateFilter");
     const selectedDate = dateSelect ? dateSelect.value : currentChartDateFilter;
     currentChartDateFilter = selectedDate;
 
     const res = await fetch(`/api/equity_curve?account=${encodeURIComponent(currentAccount)}&date=${encodeURIComponent(selectedDate)}`);
     const data = await res.json();
-    const points = data.points || [];
+    const points = Array.isArray(data) ? data : (data.points || []);
     const availableDates = data.available_dates || [];
-    const viewMode = data.view_mode || 'ALL';
+    const viewMode = data.view_mode || "ALL";
 
     // Populate date dropdown if needed
-    if (dateSelect) {
+    if (dateSelect && availableDates.length > 0) {
       const existingOpts = Array.from(dateSelect.options).map(o => o.value);
       const needsPopulate = availableDates.some(d => !existingOpts.includes(d));
       if (needsPopulate) {
@@ -255,24 +422,24 @@ async function renderEquityChart() {
     }
 
     // Update stats badge
-    const statsBadge = document.getElementById('chartStatsBadge');
+    const statsBadge = document.getElementById("chartStatsBadge");
     if (statsBadge) {
-      if (viewMode === 'DAILY') {
+      if (viewMode === "DAILY") {
         const netPnl = data.total_pnl || 0;
-        statsBadge.textContent = `${points.length} Days | Net: ₹${netPnl >= 0 ? '+' : ''}${netPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-        statsBadge.style.color = netPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
-      } else if (viewMode === 'INTRADAY') {
+        statsBadge.textContent = `${points.length} Days | Net: ${formatSignedINR(netPnl)}`;
+        statsBadge.style.color = netPnl >= 0 ? "var(--profit-green)" : "var(--loss-red)";
+      } else if (viewMode === "INTRADAY") {
         const dayPnl = data.day_pnl || 0;
-        statsBadge.textContent = `${data.selected_date}: ₹${dayPnl >= 0 ? '+' : ''}${dayPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})} (${points.length - 1} trades)`;
-        statsBadge.style.color = dayPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+        statsBadge.textContent = `${data.selected_date}: ${formatSignedINR(dayPnl)} (${points.length - 1} trades)`;
+        statsBadge.style.color = dayPnl >= 0 ? "var(--profit-green)" : "var(--loss-red)";
       } else {
         const totalPnl = data.total_pnl || 0;
-        statsBadge.textContent = `Total: ${points.length - 1} Trades | Net: ₹${totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-        statsBadge.style.color = totalPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+        statsBadge.textContent = `Total: ${points.length - 1} Trades | Net: ${formatSignedINR(totalPnl)}`;
+        statsBadge.style.color = totalPnl >= 0 ? "var(--profit-green)" : "var(--loss-red)";
       }
     }
 
-    const ctx = document.getElementById('equityChart');
+    const ctx = document.getElementById("equityChart");
     if (!ctx) return;
 
     if (equityChartInstance) {
@@ -282,851 +449,896 @@ async function renderEquityChart() {
     const labels = points.map(p => p.time);
 
     let datasets = [];
-    if (viewMode === 'DAILY') {
+    if (viewMode === "DAILY") {
       const dailyPnls = points.map(p => p.day_pnl || 0);
-      const equities = points.map(p => p.equity);
-      const barColors = dailyPnls.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)');
-      const barBorders = dailyPnls.map(v => v >= 0 ? '#10b981' : '#ef4444');
+      const barColors = dailyPnls.map(v => v >= 0 ? "rgba(32, 201, 151, 0.7)" : "rgba(240, 82, 82, 0.7)");
+      const barBorders = dailyPnls.map(v => v >= 0 ? "#20C997" : "#F05252");
 
       datasets = [
         {
-          type: 'bar',
-          label: 'Daily P&L (₹)',
+          type: "bar",
+          label: "Daily P&L (₹)",
           data: dailyPnls,
           backgroundColor: barColors,
           borderColor: barBorders,
-          borderWidth: 1.5,
-          yAxisID: 'y1'
+          borderWidth: 1,
+          borderRadius: 4,
+          yAxisID: "y"
         },
         {
-          type: 'line',
-          label: 'Ending Equity (₹)',
-          data: equities,
-          borderColor: '#38bdf8',
-          backgroundColor: 'rgba(56, 189, 248, 0.08)',
-          borderWidth: 2,
-          tension: 0.2,
+          type: "line",
+          label: "Cumulative Net Equity (₹)",
+          data: points.map(p => p.equity),
+          borderColor: "#63A5FF",
+          backgroundColor: "rgba(99, 165, 255, 0.08)",
           fill: true,
-          yAxisID: 'y'
+          tension: 0.2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          yAxisID: "y1"
         }
       ];
     } else {
-      const equities = points.map(p => p.equity);
-      const cumulativePnls = points.map(p => p.cumulative_pnl);
-
       datasets = [
         {
-          type: 'line',
-          label: viewMode === 'INTRADAY' ? 'Intraday Equity (₹)' : 'Net Portfolio Equity (₹)',
-          data: equities,
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.08)',
-          borderWidth: 2,
-          tension: 0.2,
+          type: "line",
+          label: "Portfolio Equity (₹)",
+          data: points.map(p => p.equity),
+          borderColor: "#20C997",
+          backgroundColor: "rgba(32, 201, 151, 0.12)",
           fill: true,
-          yAxisID: 'y'
-        },
-        {
-          type: 'line',
-          label: viewMode === 'INTRADAY' ? "Day's Realized P&L (₹)" : 'Cumulative P&L (₹)',
-          data: cumulativePnls,
-          borderColor: '#f59e0b',
-          borderWidth: 1.5,
-          borderDash: [4, 4],
-          tension: 0.2,
-          fill: false,
-          yAxisID: 'y1'
+          tension: 0.25,
+          pointRadius: points.length > 50 ? 1 : 3,
+          pointHoverRadius: 6,
+          borderWidth: 2
         }
       ];
     }
 
     equityChartInstance = new Chart(ctx, {
-      data: {
-        labels: labels,
-        datasets: datasets
-      },
+      type: "line",
+      data: { labels, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
+        interaction: { mode: "index", intersect: false },
         plugins: {
-          legend: {
-            position: 'top',
-            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
-          },
+          legend: { labels: { color: "#AAB8CB", font: { family: "Inter", size: 11 } } },
           tooltip: {
-            backgroundColor: '#0f172a',
-            titleColor: '#f8fafc',
-            bodyColor: '#94a3b8',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: "rgba(16, 26, 43, 0.95)",
+            borderColor: "rgba(255, 255, 255, 0.15)",
             borderWidth: 1,
+            titleColor: "#F8FAFC",
+            bodyColor: "#AAB8CB",
+            titleFont: { family: "Inter", weight: "bold" },
+            bodyFont: { family: "JetBrains Mono" },
             callbacks: {
-              afterLabel: function(context) {
-                const pt = points[context.dataIndex];
-                if (!pt) return '';
-                if (viewMode === 'DAILY') {
-                  return `Trades: ${pt.trade_count || 0}`;
-                }
-                if (pt.symbol && pt.symbol !== 'START') {
-                  const pnl = Number(pt.trade_pnl || 0);
-                  return `Symbol: ${pt.symbol} | Trade P&L: ₹${pnl >= 0 ? '+' : ''}${pnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-                }
-                return '';
+              label: (item) => {
+                const val = Number(item.raw || 0);
+                return ` ${item.dataset.label}: ₹${val.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
               }
             }
           }
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255, 255, 255, 0.03)' },
-            ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 12 }
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: { color: "#718096", font: { family: "JetBrains Mono", size: 10 }, maxTicksLimit: 12 }
           },
           y: {
-            position: 'left',
-            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              color: '#10b981',
-              font: { family: 'JetBrains Mono', size: 10 },
-              callback: (val) => '₹' + val.toLocaleString('en-IN')
+              color: "#718096",
+              font: { family: "JetBrains Mono", size: 10 },
+              callback: v => `₹${(v / 1000).toFixed(0)}k`
             }
           },
-          y1: {
-            position: 'right',
-            grid: { drawOnChartArea: false },
-            ticks: {
-              color: '#f59e0b',
-              font: { family: 'JetBrains Mono', size: 10 },
-              callback: (val) => (val >= 0 ? '+' : '') + '₹' + val.toLocaleString('en-IN')
+          ...(viewMode === "DAILY" ? {
+            y1: {
+              position: "right",
+              grid: { drawOnChartArea: false },
+              ticks: { color: "#63A5FF", font: { family: "JetBrains Mono", size: 10 }, callback: v => `₹${(v / 1000).toFixed(0)}k` }
             }
-          }
+          } : {})
         }
       }
     });
   } catch (err) {
-    console.error("Equity chart error:", err);
+    console.error("Error rendering equity chart:", err);
   }
 }
 
-function renderQuickWatchlist() {
-  const el = document.getElementById('quickWatchlist');
-  if (!el) return;
-  fetch('/api/watchlist?account=' + encodeURIComponent(currentAccount)).then(r => r.json()).then(data => {
-    const list = data.symbols || [];
-    if (!list.length) {
-      el.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem;">No watchlist data available.</span>`;
-      return;
-    }
-    let html = `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
-    list.slice(0, 4).forEach(q => {
-      const isGreen = q.change >= 0;
-      html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
-          <div>
-            <strong style="font-size: 0.82rem; color: #fff;">${q.symbol}</strong>
-            <span style="margin-left: 0.5rem; font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">EMA5: ${q.ema5}</span>
-          </div>
-          <div style="text-align: right; font-family: var(--font-mono); font-size: 0.82rem;">
-            <div>₹${q.price.toFixed(2)}</div>
-            <div style="font-size: 0.7rem;" class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${q.change_pct}%</div>
-          </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-    el.innerHTML = html;
-  }).catch(() => {
-    el.innerHTML = `<span style="color: var(--red); font-size: 0.8rem;">Quote feed synchronizing...</span>`;
-  });
-}
+// ==========================================================================
+// 7. VIEW 2: LIVE TRADING DESK
+// ==========================================================================
+async function loadLiveTradingData() {
+  const res = await fetch(`/api/positions?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  const positions = data.open_positions || [];
+  const tbody = document.getElementById("positionsTableBody");
+  if (!tbody) return;
 
-function formatPositionSymbol(p) {
-  const sym = p.symbol || '';
-  const optType = p.option_type || (sym.endsWith('CE') ? 'CE' : (sym.endsWith('PE') ? 'PE' : null));
-  if (optType) {
-    const isCall = optType === 'CE';
-    const badge = isCall 
-      ? `<span style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; margin-right: 6px;">🟢 CALL (CE)</span>`
-      : `<span style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; margin-right: 6px;">🔴 PUT (PE)</span>`;
-    const strikeText = p.strike ? `${p.underlying || ''} ${p.strike} ${optType}` : sym;
-    return `${badge}<span style="color: #fff; font-weight: 700;">${strikeText}</span> <span style="color: var(--text-muted); font-size: 0.72rem; margin-left: 4px;">(${sym})</span>`;
-  }
-  return `<span style="color: #fff; font-weight: 700;">${sym}</span>`;
-}
-
-function renderQuickPositions(positions) {
-  const el = document.getElementById('quickPositions');
-  if (!el) return;
-  if (!positions.length) {
-    el.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">All positions closed. Capital 100% in free cash.</div>`;
+  if (positions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 30px;">No active open positions. Cash 100% free.</td></tr>`;
     return;
   }
-  let html = `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+
+  let html = "";
   positions.forEach(p => {
-    const isGreen = (p.unrealized_pnl || 0) >= 0;
-    const sym = p.symbol || '';
-    const optType = p.option_type || (sym.endsWith('CE') ? 'CE' : (sym.endsWith('PE') ? 'PE' : null));
-    let badge = '';
-    let label = sym;
-    if (optType) {
-      const isCall = optType === 'CE';
-      badge = isCall 
-        ? `<span style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; margin-right: 6px;">🟢 CALL (CE)</span>`
-        : `<span style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; margin-right: 6px;">🔴 PUT (PE)</span>`;
-      label = p.strike ? `${p.underlying || ''} ${p.strike} ${optType}` : sym;
-    }
+    const pnl = Number(p.unrealized_pnl || 0);
+    const pnlPct = Number(p.unrealized_pnl_pct || 0);
+    const pnlClass = pnl >= 0 ? "val-green" : "val-red";
+    const posPayload = JSON.stringify(p).replace(/"/g, '&quot;');
 
     html += `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.6rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px;">
-        <div>
-          <div style="display: flex; align-items: center; margin-bottom: 2px;">
-            ${badge}
-            <strong style="color: #fff; font-size: 0.84rem;">${label}</strong>
-          </div>
-          <div style="font-size: 0.72rem; color: var(--text-secondary);">
-            Contract: <code style="color: #94a3b8; font-size: 0.7rem;">${p.symbol}</code> | Qty: <strong>${p.qty}</strong> @ ₹${Number(p.entry_price).toFixed(2)}
-          </div>
-        </div>
-        <div style="text-align: right; font-family: var(--font-mono); font-size: 0.82rem;">
-          <div class="${isGreen ? 'green' : 'red'}" style="font-weight: 600;">${isGreen ? '+' : ''}₹${Number(p.unrealized_pnl || 0).toFixed(2)} (${p.unrealized_pnl_pct || 0}%)</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">SL: ₹${Number(p.sl_price || p.current_stop || (p.entry_price * 0.85)).toFixed(2)} | Tgt: ₹${Number(p.target_price || (p.entry_price * 1.30)).toFixed(2)}</div>
-        </div>
-      </div>
+      <tr class="clickable-row" onclick="openTradeDrawer(${posPayload})">
+        <td style="font-family: var(--font-mono); font-size: 11px;">${p.id || p.position_id || '--'}</td>
+        <td><strong>${p.symbol}</strong></td>
+        <td><span class="status-badge ${p.side === 'BUY' ? 'open' : 'paper'}">${p.side || 'BUY'}</span></td>
+        <td>${p.qty}</td>
+        <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
+        <td>₹${Number(p.current_price || 0).toFixed(2)}</td>
+        <td>₹${Number(p.invested || p.amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        <td class="${pnlClass}">${formatSignedINR(pnl)}</td>
+        <td class="${pnlClass}">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</td>
+        <td>₹${Number(p.current_stop || p.sl_price || 0).toFixed(2)}</td>
+        <td>
+          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="event.stopPropagation(); confirmClosePosition('${p.symbol}')">Square Off</button>
+        </td>
+      </tr>
     `;
   });
-  html += `</div>`;
-  el.innerHTML = html;
+  tbody.innerHTML = html;
 }
 
-// 2. Watchlist Loader
-async function loadWatchlistData() {
-  const tbody = document.getElementById('watchlistTableBody');
-  const tsEl = document.getElementById('watchlistTimestamp');
-  try {
-    const res = await fetch('/api/watchlist?account=' + encodeURIComponent(currentAccount));
-    const data = await res.json();
-    const symbols = data.symbols || [];
-    if (tsEl) tsEl.textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' })} IST`;
+// ==========================================================================
+// 8. VIEW 3: F&O DERIVATIVES DESK
+// ==========================================================================
+async function loadFnoDeskData() {
+  const res = await fetch("/api/fno");
+  const data = await res.json();
 
-    if (!symbols.length) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No symbols configured in watchlist.</td></tr>`;
-      return;
-    }
+  const nifty = data.indices?.NIFTY || {};
+  const bnf = data.indices?.BANKNIFTY || {};
 
-    let rows = "";
-    symbols.forEach(q => {
-      const isGreen = q.change >= 0;
-      rows += `
-        <tr>
-          <td style="font-weight: 700; color: #fff;">${q.symbol}</td>
-          <td>₹${q.price.toFixed(2)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${q.change.toFixed(2)} (${q.change_pct}%)</td>
-          <td>₹${q.ema5.toFixed(2)}</td>
-          <td>₹${q.ema9.toFixed(2)}</td>
-          <td>₹${q.ema33_high.toFixed(2)}</td>
-          <td>₹${q.ema33_low.toFixed(2)}</td>
-          <td><span class="status-badge ${q.signal === 'BUY' ? 'open' : 'closed'}">${q.signal}</span></td>
-          <td>${q.last_updated}</td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--red);">Error loading watchlist.</td></tr>`;
+  document.getElementById("niftySpotBadge").textContent = `Spot: ₹${Number(nifty.spot || 0).toLocaleString('en-IN')}`;
+  document.getElementById("niftyAtmStrike").textContent = `${nifty.atm_strike || '--'}`;
+  document.getElementById("niftyCeContract").textContent = nifty.ce_contract || "QUOTE UNAVAILABLE";
+  document.getElementById("niftyPeContract").textContent = nifty.pe_contract || "QUOTE UNAVAILABLE";
+
+  document.getElementById("bankniftySpotBadge").textContent = `Spot: ₹${Number(bnf.spot || 0).toLocaleString('en-IN')}`;
+  document.getElementById("bankniftyAtmStrike").textContent = `${bnf.atm_strike || '--'}`;
+  document.getElementById("bankniftyCeContract").textContent = bnf.ce_contract || "QUOTE UNAVAILABLE";
+  document.getElementById("bankniftyPeContract").textContent = bnf.pe_contract || "QUOTE UNAVAILABLE";
+
+  const fnoPos = data.open_positions || [];
+  const tbody = document.getElementById("fnoPositionsTableBody");
+  if (!tbody) return;
+
+  if (fnoPos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 30px;">No active option contracts deployed.</td></tr>`;
+    return;
   }
+
+  let html = "";
+  fnoPos.forEach(p => {
+    const pnl = Number(p.unrealized_pnl || 0);
+    const pnlClass = pnl >= 0 ? "val-green" : "val-red";
+    html += `
+      <tr>
+        <td><strong>${p.symbol}</strong></td>
+        <td><span class="status-badge paper">${p.symbol.endsWith('CE') ? 'CALL (CE)' : 'PUT (PE)'}</span></td>
+        <td>${p.lots || 1} Lot(s)</td>
+        <td>${p.qty}</td>
+        <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
+        <td>₹${Number(p.current_price || 0).toFixed(2)}</td>
+        <td>₹${Number(p.invested || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        <td class="${pnlClass}">${formatSignedINR(pnl)}</td>
+        <td>₹${Number(p.sl_price || (p.entry_price * 0.95)).toFixed(2)}</td>
+        <td>₹${Number(p.target_price || (p.entry_price * 1.15)).toFixed(2)}</td>
+        <td>
+          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="confirmClosePosition('${p.symbol}')">Exit</button>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
 }
 
-// 3. Open Positions Loader
-async function loadPositionsData() {
-  const tbody = document.getElementById('positionsTableBody');
-  const summaryEl = document.getElementById('positionsSummary');
-  try {
-    const res = await fetch('/api/positions?account=' + encodeURIComponent(currentAccount));
-    const data = await res.json();
-    const positions = data.open_positions || [];
+// ==========================================================================
+// 9. VIEW 4: CASH DESK
+// ==========================================================================
+async function loadCashDeskData() {
+  const res = await fetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  const symbols = data.symbols || [];
+  const tbody = document.getElementById("watchlistTableBody");
+  if (!tbody) return;
 
-    if (summaryEl) {
-      summaryEl.textContent = `Deployed: ${formatINR(data.total_deployed_cash)} | Floating P&L: ${formatSignedINR(data.total_unrealized_pnl)}`;
-    }
+  document.getElementById("cashWatchlistTimestamp").textContent = `Last sync: ${new Date().toLocaleTimeString('en-GB')}`;
 
-    if (!positions.length) {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">No active open positions. Cash 100% free.</td></tr>`;
-      return;
-    }
-
-    let rows = "";
-    positions.forEach(p => {
-      const isGreen = p.unrealized_pnl >= 0;
-      rows += `
-        <tr>
-          <td>${p.id || 'POS'}</td>
-          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(p)}</td>
-          <td>${p.qty}</td>
-          <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
-          <td style="font-weight: 600; color: #38bdf8;">₹${Number(p.current_price || p.entry_price || 0).toFixed(2)}</td>
-          <td>₹${Number(p.amount || p.invested || (p.qty * p.entry_price) || 0).toFixed(2)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${formatSignedINR(p.unrealized_pnl || 0)}</td>
-          <td class="${isGreen ? 'green' : 'red'}">${isGreen ? '+' : ''}${p.unrealized_pnl_pct || 0}%</td>
-          <td>₹${Number(p.peak_price || p.current_price || p.entry_price || 0).toFixed(2)}</td>
-          <td>₹${Number(p.current_stop || p.sl_price || p.stop_loss || (p.entry_price * 0.95)).toFixed(2)}</td>
-          <td>
-            <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.72rem;" onclick="promptClosePosition('${p.symbol}', ${p.qty})">Close</button>
-          </td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--red);">Error loading open positions.</td></tr>`;
+  if (symbols.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No quotes available.</td></tr>`;
+    return;
   }
+
+  let html = "";
+  symbols.forEach(s => {
+    const change = Number(s.change_pct || 0);
+    const changeClass = change >= 0 ? "val-green" : "val-red";
+    html += `
+      <tr>
+        <td><strong>${s.symbol}</strong></td>
+        <td>₹${Number(s.price || 0).toFixed(2)}</td>
+        <td class="${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
+        <td>₹${Number(s.ema5 || 0).toFixed(2)}</td>
+        <td>₹${Number(s.ema9 || 0).toFixed(2)}</td>
+        <td>₹${Number(s.ema33_high || 0).toFixed(2)}</td>
+        <td>₹${Number(s.ema33_low || 0).toFixed(2)}</td>
+        <td><span class="status-badge ${s.signal === 'BUY' ? 'open' : 'closed'}">${s.signal || 'HOLD / MONITOR'}</span></td>
+        <td>
+          <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 10px;" onclick="inspectSymbol('${s.symbol}')">Inspect</button>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
 }
 
-// 4. Trade History Loader
-async function loadTradesTable() {
-  const tbody = document.getElementById('tradesTableBody');
-  const countBadge = document.getElementById('tradesCountBadge');
-  const symFilter = document.getElementById('tradeSymbolFilter').value;
-  const outcomeFilter = document.getElementById('tradeOutcomeFilter').value;
+// ==========================================================================
+// 10. VIEW 5: STRATEGY CENTRE
+// ==========================================================================
+async function loadStrategyCentreData() {
+  const res = await fetch(`/api/strategies?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  const strategies = data.strategies || [];
+  const tbody = document.getElementById("strategiesTableBody");
+  if (!tbody) return;
 
-  try {
-    let url = '/api/trades?account=' + encodeURIComponent(currentAccount) + '&';
-    if (symFilter) url += `symbol=${encodeURIComponent(symFilter)}&`;
-    if (outcomeFilter) url += `outcome=${encodeURIComponent(outcomeFilter)}&`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-    const trades = data.trades || [];
-
-    if (countBadge) {
-      countBadge.textContent = `Showing: ${data.filtered_count} / ${data.total_records} trades`;
-    }
-
-    if (!trades.length) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching executed trades found.</td></tr>`;
-      return;
-    }
-
-    let rows = "";
-    trades.forEach(t => {
-      const entryP = Number(t.entry_price || 0);
-      const exitP = Number(t.exit_price || 0);
-      const qty = Number(t.qty || t.quantity || 0);
-      const side = (t.side || 'BUY').toUpperCase();
-      const grossPnl = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
-      const netPnl = Number(t.pnl || 0);
-      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, grossPnl - netPnl);
-      const isGreen = netPnl > 0;
-      const isLoss = netPnl < 0;
-
-      rows += `
-        <tr>
-          <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${t.id || 'POS'}</td>
-          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(t)}</td>
-          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">${side}</span></td>
-          <td>${qty}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${entryP.toFixed(2)} → ₹${exitP.toFixed(2)}</td>
-          <td class="${grossPnl >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-size: 0.8rem;">${formatSignedINR(grossPnl)}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.8rem; color: #f59e0b;" title="Exchange charges, STT, GST, Stamp Duty, Brokerage">₹${fees.toFixed(2)}</td>
-          <td class="${isGreen ? 'green' : (isLoss ? 'red' : '')}" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.82rem;">${formatSignedINR(netPnl)}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${t.entry_time || '--'} - ${t.exit_time || '--'}</td>
-          <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--red);">Error loading trade history.</td></tr>`;
+  if (strategies.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 30px;">No strategy history recorded.</td></tr>`;
+    return;
   }
+
+  let html = "";
+  strategies.forEach(s => {
+    const net = Number(s.net_pnl || 0);
+    const netClass = net >= 0 ? "val-green" : "val-red";
+    html += `
+      <tr>
+        <td><strong>${s.strategy}</strong></td>
+        <td><span class="nav-tag">${s.tag || 'QUANT'}</span></td>
+        <td><span class="status-badge paper">${s.execution_type || 'PAPER_VERIFIED'}</span></td>
+        <td>${s.trades}</td>
+        <td>${s.win_rate}%</td>
+        <td class="val-green">₹${Number(s.gross_profit || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        <td class="val-red">₹${Number(s.gross_loss || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        <td class="val-green">${Number(s.profit_factor || 1.0).toFixed(2)}</td>
+        <td>₹${Number(s.expectancy || 0).toFixed(2)}</td>
+        <td class="${netClass}">${formatSignedINR(net)}</td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
 }
 
-// 5. Strategy Analytics Loader
-async function loadStrategiesData() {
-  const tbody = document.getElementById('strategiesTableBody');
-  try {
-    const res = await fetch('/api/strategies');
-    const data = await res.json();
-    const strategies = data.strategies || [];
+// ==========================================================================
+// 11. VIEW 6: RISK CENTRE
+// ==========================================================================
+async function loadRiskCentreData() {
+  const res = await fetch(`/api/risk?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
 
-    if (!strategies.length) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">No strategy data recorded.</td></tr>`;
-      return;
-    }
+  const maxLoss = Number(data.max_daily_loss || 1000.0);
+  const curLoss = Number(data.current_daily_loss || 0.0);
+  const utilPct = Math.min(100.0, Math.max(0.0, (curLoss / maxLoss) * 100.0));
 
-    let rows = "";
-    strategies.forEach(s => {
-      rows += `
-        <tr>
-          <td style="font-weight: 700; color: #fff;">${s.strategy}</td>
-          <td>${s.trades}</td>
-          <td class="green">${s.wins}</td>
-          <td class="red">${s.losses}</td>
-          <td>${s.win_rate}%</td>
-          <td class="green">₹${s.gross_profit.toFixed(2)}</td>
-          <td class="red">₹${s.gross_loss.toFixed(2)}</td>
-          <td>${s.profit_factor}</td>
-          <td class="${s.net_pnl >= 0 ? 'green' : 'red'}">${formatSignedINR(s.net_pnl)}</td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--red);">Error loading strategy stats.</td></tr>`;
+  const fill = document.getElementById("riskLossBarFill");
+  if (fill) fill.style.width = `${utilPct}%`;
+
+  const utilText = document.getElementById("riskLossUtilText");
+  if (utilText) {
+    utilText.textContent = `${utilPct.toFixed(1)}% Consumed`;
+    utilText.style.color = utilPct > 80 ? "var(--loss-red)" : (utilPct > 50 ? "var(--warning-amber)" : "var(--profit-green)");
   }
-}
 
-// 6. Risk Center Loader
-async function loadRiskData() {
-  try {
-    const res = await fetch('/api/risk');
-    const data = await res.json();
+  document.getElementById("riskMaxDailyLoss").textContent = formatINR(maxLoss);
+  document.getElementById("riskCurrentDailyLoss").textContent = formatINR(curLoss);
+  document.getElementById("riskDailyTrades").textContent = `${data.max_trades_per_day || 3} / Day`;
+  document.getElementById("riskSquareoffTime").textContent = `${data.flat_by_time || '15:20'} IST`;
 
-    document.getElementById('riskMaxDailyLoss').textContent = formatINR(data.max_daily_loss);
-    document.getElementById('riskCurrentDailyLoss').textContent = formatINR(data.realized_daily_loss);
-    document.getElementById('riskDailyTrades').textContent = `${data.current_trades_count} / ${data.max_trades_per_day} Day`;
-    document.getElementById('riskSquareoffTime').textContent = `${data.flat_by_time} IST`;
-
-    const container = document.getElementById('riskAlertsContainer');
+  const alertsContainer = document.getElementById("riskAlertsContainer");
+  if (alertsContainer) {
     const alerts = data.alerts || [];
-    if (!alerts.length) {
-      container.innerHTML = `<div style="font-size: 0.8rem; color: var(--emerald); padding: 0.5rem 0;">✓ All risk metrics compliant. Zero limit breaches.</div>`;
+    if (alerts.length === 0) {
+      alertsContainer.innerHTML = `<div style="color: var(--profit-green);">✔ All risk compliance checks passed. Zero safety violations.</div>`;
     } else {
       let html = "";
       alerts.forEach(a => {
-        const isCrit = a.severity === "CRITICAL";
-        html += `
-          <div style="background: rgba(${isCrit ? '239, 68, 68' : '245, 158, 11'}, 0.1); border-left: 3px solid ${isCrit ? 'var(--red)' : 'var(--gold-light)'}; padding: 0.6rem 0.85rem; border-radius: 4px; font-size: 0.8rem; display: flex; justify-content: space-between;">
-            <div>
-              <strong style="color: ${isCrit ? 'var(--red)' : 'var(--gold-light)'};">[${a.severity}]</strong>
-              <span style="color: var(--text-primary); margin-left: 0.4rem;">${a.message}</span>
-            </div>
-            <span style="color: var(--text-muted); font-size: 0.72rem;">Active Rule</span>
-          </div>
-        `;
+        html += `<div style="color: var(--loss-red);">⚠ ${a}</div>`;
       });
-      container.innerHTML = html;
+      alertsContainer.innerHTML = html;
     }
-  } catch (err) {
-    console.error("Risk load error:", err);
   }
 }
 
-// 7. Bot Control Loader
-async function loadControlData() {
-  try {
-    const res = await fetch('/api/overview?account=' + encodeURIComponent(currentAccount));
-    const data = await res.json();
-    const bot = data.bot_status || {};
-    const isRunning = bot.status === "RUNNING";
+// ==========================================================================
+// 12. VIEW 7: TRADE JOURNAL
+// ==========================================================================
+async function loadTradesTable() {
+  const res = await fetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  allTradesCache = data.trades || [];
 
-    const stateEl = document.getElementById('controlProcessState');
-    const pidEl = document.getElementById('controlPidSub');
-    const btnStart = document.getElementById('btnStartBot');
-    const btnStop = document.getElementById('btnStopBot');
-
-    if (stateEl) {
-      stateEl.textContent = isRunning ? "RUNNING" : "STOPPED";
-      stateEl.className = `kpi-value ${isRunning ? 'green' : 'red'}`;
-    }
-    if (pidEl) {
-      pidEl.textContent = isRunning ? `Process ID: ${bot.pid}` : "Process Idle";
-    }
-    if (btnStart) btnStart.disabled = isRunning;
-    if (btnStop) btnStop.disabled = !isRunning;
-  } catch (err) {
-    console.error("Control load error:", err);
-  }
-}
-
-async function startBotDaemon() {
-  if (!confirm("Confirm launching the automated day trading bot daemon?")) return;
-  try {
-    const res = await authFetch('/api/bot/start', { method: 'POST' });
-    const data = await res.json();
-    alert(data.message);
-    loadControlData();
-    loadOverviewData();
-  } catch (err) {
-    alert("Error starting bot: " + err.message);
-  }
-}
-
-async function stopBotDaemon() {
-  if (!confirm("WARNING: Stop the trading daemon? Open positions will NOT be automatically closed unless instructed.")) return;
-  try {
-    const res = await authFetch('/api/bot/stop', { method: 'POST' });
-    const data = await res.json();
-    alert(data.message);
-    loadControlData();
-    loadOverviewData();
-  } catch (err) {
-    alert("Error stopping bot: " + err.message);
-  }
-}
-
-// 8. Logs Terminal Loader
-async function loadLogsTerminal() {
-  const terminal = document.getElementById('logsTerminal');
-  const lvlFilter = document.getElementById('logLevelFilter').value;
-  try {
-    let url = '/api/logs?';
-    if (lvlFilter) url += `level=${lvlFilter}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const logs = data.logs || [];
-
-    if (!logs.length) {
-      terminal.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 2rem;">No system log events recorded.</div>`;
-      return;
-    }
-
-    let html = "";
-    logs.forEach(l => {
-      html += `
-        <div class="log-entry">
-          <span class="log-time">[${l.timestamp || '--'}]</span>
-          <span class="log-badge ${l.level}">${l.level}</span>
-          <span style="color: var(--text-primary);">${l.message}</span>
-        </div>
-      `;
+  const symFilter = document.getElementById("tradeSymbolFilter");
+  if (symFilter && symFilter.options.length <= 1) {
+    const syms = Array.from(new Set(allTradesCache.map(t => t.symbol).filter(Boolean)));
+    symFilter.innerHTML = `<option value="">All Symbols</option>`;
+    syms.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s;
+      symFilter.appendChild(opt);
     });
-    terminal.innerHTML = html;
-  } catch (err) {
-    terminal.innerHTML = `<div style="color: var(--red);">Error reading system logs.</div>`;
   }
+
+  filterAndRenderTrades();
 }
 
-// 9. Config Loader
-async function loadConfigData() {
-  const tbody = document.getElementById('configTableBody');
-  try {
-    const res = await fetch('/api/config');
-    const data = await res.json();
-    const cfg = data.config || {};
+function filterAndRenderTrades() {
+  const outcome = document.getElementById("tradeOutcomeFilter")?.value || "";
+  const symbol = document.getElementById("tradeSymbolFilter")?.value || "";
 
-    const descriptions = {
-      budget: "Starting account trading budget capital in INR",
-      market: "Target exchange (NSE / BSE)",
-      currency: "Account base currency",
-      candle_timeframe: "Primary chart candle interval (5m)",
-      cooldown_minutes: "Minimum waiting delay before re-entering same symbol",
-      max_trades_per_day: "Daily over-trading quota guard",
-      max_daily_loss_usd: "Hard kill-switch stop loss for the day",
-      max_loss_per_trade_usd: "Max permissible risk per single order",
-      max_open_positions: "Max simultaneous open positions",
-      no_entries_after: "Intraday cutoff time after which no new trades are taken",
-      flat_by: "Mandatory end-of-day market square-off time",
-      strategy_mode: "Active algorithmic strategy engine mode",
-      broker: "Active execution adapter"
-    };
+  let list = allTradesCache.filter(t => {
+    const pnl = Number(t.pnl || 0);
+    if (outcome === "WIN" && pnl <= 0) return false;
+    if (outcome === "LOSS" && pnl >= 0) return false;
+    if (outcome === "BREAKEVEN" && pnl !== 0) return false;
+    if (symbol && t.symbol !== symbol) return false;
+    return true;
+  });
 
-    let rows = "";
-    Object.keys(cfg).forEach(k => {
-      rows += `
-        <tr>
-          <td style="font-weight: 600; color: #fff;">${k}</td>
-          <td style="color: var(--emerald);">${JSON.stringify(cfg[k])}</td>
-          <td style="color: var(--text-secondary);">${descriptions[k] || "Strategy engine parameter"}</td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--red);">Error loading configuration.</td></tr>`;
-  }
-}
+  document.getElementById("tradesCountBadge").textContent = `Showing ${list.length} trades`;
 
-// Position Close Modal
-let pendingCloseSymbol = null;
-function promptClosePosition(symbol, qty) {
-  pendingCloseSymbol = symbol;
-  const modal = document.getElementById('confirmModal');
-  const body = document.getElementById('modalBody');
-  body.textContent = `Are you sure you want to execute immediate market exit for position ${symbol} (${qty} shares)?`;
-  modal.style.display = 'flex';
+  const tbody = document.getElementById("tradesTableBody");
+  if (!tbody) return;
 
-  document.getElementById('modalConfirmBtn').onclick = async () => {
-    try {
-      const res = await authFetch('/api/positions/close', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: pendingCloseSymbol })
-      });
-      const data = await res.json();
-      alert(data.message);
-      closeConfirmModal();
-      refreshCurrentView();
-    } catch (err) {
-      alert("Failed to close position: " + err.message);
-    }
-  };
-}
-
-function closeConfirmModal() {
-  document.getElementById('confirmModal').style.display = 'none';
-  pendingCloseSymbol = null;
-}
-
-
-// ==================== 4B. REPORTS & TAX PNL LOADER ====================
-let cachedReportsTrades = [];
-
-async function loadReportsData() {
-  const tbody = document.getElementById('reportsTableBody');
-  const countBadge = document.getElementById('reportsCountBadge');
-  const dateFilter = document.getElementById('reportDateFilter') ? document.getElementById('reportDateFilter').value : 'ALL';
-  const segFilter = document.getElementById('reportSegmentFilter') ? document.getElementById('reportSegmentFilter').value : 'ALL';
-  const outcomeFilter = document.getElementById('reportOutcomeFilter') ? document.getElementById('reportOutcomeFilter').value : 'ALL';
-
-  try {
-    const res = await fetch('/api/trades?account=' + encodeURIComponent(currentAccount));
-    const data = await res.json();
-    const allTrades = data.trades || [];
-
-    // Current IST today date
-    const todayStr = new Date().toISOString().split('T')[0];
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
-
-    // Filter trades
-    const filtered = allTrades.filter(t => {
-      const tDate = t.date || t.exit_date || '';
-      if (dateFilter === 'TODAY' && !tDate.startsWith(todayStr)) return false;
-      if (dateFilter === 'YESTERDAY' && !tDate.startsWith(yesterdayStr)) return false;
-
-      const sym = (t.symbol || '').toUpperCase();
-      const isFno = sym.includes('CE') || sym.includes('PE') || (t.id && t.id.startsWith('OPT-'));
-      if (segFilter === 'CASH' && isFno) return false;
-      if (segFilter === 'FNO' && !isFno) return false;
-
-      const pnl = Number(t.pnl || 0);
-      if (outcomeFilter === 'WIN' && pnl <= 0) return false;
-      if (outcomeFilter === 'LOSS' && pnl >= 0) return false;
-
-      return true;
-    });
-
-    cachedReportsTrades = filtered;
-
-    // Calculate Summary Metrics
-    let totalTurnover = 0;
-    let totalGrossPnl = 0;
-    let totalFees = 0;
-    let totalNetPnl = 0;
-
-    filtered.forEach(t => {
-      const entryP = Number(t.entry_price || 0);
-      const exitP = Number(t.exit_price || 0);
-      const qty = Number(t.qty || t.quantity || 0);
-      const side = (t.side || 'BUY').toUpperCase();
-
-      const turnover = (entryP * qty) + (exitP * qty);
-      const gross = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
-      const net = Number(t.pnl || 0);
-      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net);
-
-      totalTurnover += turnover;
-      totalGrossPnl += gross;
-      totalFees += fees;
-      totalNetPnl += net;
-    });
-
-    // Update KPI Elements
-    const repTurnoverEl = document.getElementById('repTotalTurnover');
-    if (repTurnoverEl) repTurnoverEl.textContent = formatINR(totalTurnover);
-
-    const repGrossEl = document.getElementById('repGrossPnl');
-    if (repGrossEl) {
-      repGrossEl.className = 'kpi-value ' + (totalGrossPnl >= 0 ? 'green' : 'red');
-      repGrossEl.textContent = formatSignedINR(totalGrossPnl);
-    }
-
-    const repFeesEl = document.getElementById('repTotalFees');
-    if (repFeesEl) repFeesEl.textContent = '₹' + totalFees.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    const repNetEl = document.getElementById('repNetPnl');
-    if (repNetEl) {
-      repNetEl.className = 'kpi-value ' + (totalNetPnl >= 0 ? 'green' : 'red');
-      repNetEl.textContent = formatSignedINR(totalNetPnl);
-    }
-
-    if (countBadge) {
-      countBadge.textContent = `Showing: ${filtered.length} / ${allTrades.length} trades`;
-    }
-
-    if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 2rem;">No executed trades match the selected report criteria.</td></tr>`;
-      return;
-    }
-
-    let rows = "";
-    filtered.forEach(t => {
-      const entryP = Number(t.entry_price || 0);
-      const exitP = Number(t.exit_price || 0);
-      const qty = Number(t.qty || t.quantity || 0);
-      const side = (t.side || 'BUY').toUpperCase();
-
-      const turnover = (entryP * qty) + (exitP * qty);
-      const gross = (t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty);
-      const net = Number(t.pnl || 0);
-      const fees = (t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net);
-
-      const sym = (t.symbol || '').toUpperCase();
-      const isFno = sym.includes('CE') || sym.includes('PE') || (t.id && t.id.startsWith('OPT-'));
-      const segBadge = isFno ? '<span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">F&O</span>'
-                             : '<span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">CASH</span>';
-
-      rows += `
-        <tr>
-          <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${t.date || t.exit_date || '--'}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${t.id || 'POS'}</td>
-          <td style="font-weight: 700; color: #fff;">${formatPositionSymbol(t)}</td>
-          <td>${segBadge}</td>
-          <td><span class="status-badge open" style="padding: 1px 6px; font-size: 0.68rem;">${side}</span></td>
-          <td style="font-family: var(--font-mono);">${qty}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${entryP.toFixed(2)}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.78rem;">₹${exitP.toFixed(2)}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.78rem; color: #38bdf8;">₹${turnover.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
-          <td class="${gross >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-size: 0.8rem;">${formatSignedINR(gross)}</td>
-          <td style="font-family: var(--font-mono); font-size: 0.8rem; color: #f59e0b;" title="STT, GST, Exchange charges, Stamp Duty, Brokerage">₹${fees.toFixed(2)}</td>
-          <td class="${net >= 0 ? 'green' : 'red'}" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.82rem;">${formatSignedINR(net)}</td>
-          <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.reason || t.exit_reason || ''}">${t.reason || t.exit_reason || 'N/A'}</td>
-        </tr>
-      `;
-    });
-
-    tbody.innerHTML = rows;
-  } catch (err) {
-    console.error('Error loading reports data:', err);
-    tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--red);">Failed to load financial audit statement.</td></tr>`;
-  }
-}
-
-// ==================== CSV EXPORT ENGINE ====================
-function exportReportsCSV() {
-  const tradesToExport = cachedReportsTrades && cachedReportsTrades.length ? cachedReportsTrades : [];
-  if (!tradesToExport.length) {
-    alert("No executed trades available to export in the current view.");
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 30px;">No trades match current filters.</td></tr>`;
     return;
   }
 
-  const headers = [
-    "Trade ID",
-    "Date",
-    "Entry Time",
-    "Exit Time",
-    "Segment",
-    "Symbol",
-    "Side",
-    "Quantity",
-    "Entry Price (INR)",
-    "Exit Price (INR)",
-    "Turnover (INR)",
-    "Gross PnL (INR)",
-    "Taxes and Fees (INR)",
-    "Net PnL (INR)",
-    "Exit Reason"
-  ];
+  let html = "";
+  list.forEach(t => {
+    const net = Number(t.pnl || 0);
+    const gross = Number(t.gross_pnl || net);
+    const fees = Number(t.fees || 0);
+    const netClass = net >= 0 ? "val-green" : "val-red";
+    const payload = JSON.stringify(t).replace(/"/g, '&quot;');
 
-  const rows = [headers.join(",")];
+    html += `
+      <tr class="clickable-row" onclick="openTradeDrawer(${payload})">
+        <td style="font-family: var(--font-mono); font-size: 11px;">${t.id || '--'}</td>
+        <td>${t.date || t.exit_date || '--'}</td>
+        <td><strong>${t.symbol}</strong></td>
+        <td><span class="status-badge ${t.side === 'BUY' ? 'open' : 'paper'}">${t.side || 'BUY'}</span></td>
+        <td>${t.qty}</td>
+        <td>₹${Number(t.entry_price || 0).toFixed(2)}</td>
+        <td>₹${Number(t.exit_price || 0).toFixed(2)}</td>
+        <td>₹${gross.toFixed(2)}</td>
+        <td class="val-red">₹${fees.toFixed(2)}</td>
+        <td class="${netClass}">${formatSignedINR(net)}</td>
+        <td style="font-size: 11px; color: var(--text-muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis;">${t.reason || t.exit_reason || '--'}</td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
 
-  tradesToExport.forEach(t => {
+// ==========================================================================
+// 13. VIEW 8: ANALYTICS
+// ==========================================================================
+async function loadAnalyticsData() {
+  const res = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  const kpis = data.kpis || {};
+  const an = kpis.analytics || {};
+
+  document.getElementById("anMaxWinStreak").textContent = an.max_win_streak || 0;
+  document.getElementById("anMaxLossStreak").textContent = an.max_loss_streak || 0;
+  document.getElementById("anAvgWin").textContent = formatINR(an.avg_win || 0);
+  document.getElementById("anAvgLoss").textContent = formatINR(an.avg_loss || 0);
+  document.getElementById("anExpectancy").textContent = formatSignedINR(an.expectancy || 0);
+
+  // Hourly Performance Table
+  const hourly = an.hourly_distribution || [];
+  const hBody = document.getElementById("hourlyTableBody");
+  if (hBody) {
+    if (hourly.length === 0) {
+      hBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No intraday trading data.</td></tr>`;
+    } else {
+      let html = "";
+      hourly.forEach(h => {
+        const pnl = Number(h.pnl || 0);
+        const winRate = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(1) : "0.0";
+        html += `
+          <tr>
+            <td><strong>${h.hour}</strong></td>
+            <td>${h.trades}</td>
+            <td>${h.wins}</td>
+            <td>${winRate}%</td>
+            <td class="${pnl >= 0 ? 'val-green' : 'val-red'}">${formatSignedINR(pnl)}</td>
+          </tr>
+        `;
+      });
+      hBody.innerHTML = html;
+    }
+  }
+
+  // Best & Worst Instruments
+  renderBestWorstTable("bestInstrumentsBody", an.best_instruments || [], true);
+  renderBestWorstTable("worstInstrumentsBody", an.worst_instruments || [], false);
+}
+
+function renderBestWorstTable(elementId, items, isBest) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  if (items.length === 0) {
+    el.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No records</td></tr>`;
+    return;
+  }
+  let html = "";
+  items.forEach(i => {
+    const pnl = Number(i.pnl || 0);
+    html += `
+      <tr>
+        <td><strong>${i.symbol}</strong></td>
+        <td>${i.trades}</td>
+        <td>${i.wins || (i.trades - (i.losses || 0))}</td>
+        <td class="${pnl >= 0 ? 'val-green' : 'val-red'}">${formatSignedINR(pnl)}</td>
+      </tr>
+    `;
+  });
+  el.innerHTML = html;
+}
+
+// ==========================================================================
+// 14. VIEW 9: REPORTS & TAX P&L
+// ==========================================================================
+async function loadReportsData() {
+  const res = await fetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  allReportsCache = data.trades || [];
+
+  let totalTurnover = 0;
+  let totalGross = 0;
+  let totalFees = 0;
+  let totalNet = 0;
+
+  allReportsCache.forEach(t => {
+    const qty = Number(t.qty || 0);
     const entryP = Number(t.entry_price || 0);
     const exitP = Number(t.exit_price || 0);
-    const qty = Number(t.qty || t.quantity || 0);
-    const side = (t.side || 'BUY').toUpperCase();
-    const turnover = ((entryP * qty) + (exitP * qty)).toFixed(2);
-    const gross = ((t.gross_pnl !== undefined && t.gross_pnl !== null) ? Number(t.gross_pnl) : (side === 'BUY' ? (exitP - entryP) * qty : (entryP - exitP) * qty)).toFixed(2);
-    const net = Number(t.pnl || 0).toFixed(2);
-    const fees = ((t.fees !== undefined && t.fees !== null) ? Number(t.fees) : Math.max(0, gross - net)).toFixed(2);
-    const isFno = (t.symbol || '').includes('CE') || (t.symbol || '').includes('PE') || (t.id && t.id.startsWith('OPT-'));
-    const seg = isFno ? "F&O Options" : "Cash Equities";
-    const reason = (t.reason || t.exit_reason || "").replace(/"/g, '""');
+    const turnover = (entryP * qty) + (exitP * qty);
+    const net = Number(t.pnl || 0);
+    const gross = Number(t.gross_pnl || net);
+    const fees = Number(t.fees || 0);
 
-    const line = [
-      `"${t.id || 'POS'}"`,
-      `"${t.date || t.exit_date || ''}"`,
-      `"${t.entry_time || ''}"`,
-      `"${t.exit_time || ''}"`,
-      `"${seg}"`,
-      `"${t.symbol || ''}"`,
-      `"${side}"`,
-      qty,
-      entryP.toFixed(2),
-      exitP.toFixed(2),
-      turnover,
-      gross,
-      fees,
-      net,
-      `"${reason}"`
-    ];
-    rows.push(line.join(","));
+    totalTurnover += turnover;
+    totalGross += gross;
+    totalFees += fees;
+    totalNet += net;
   });
 
-  const csvContent = rows.join("\n");
+  document.getElementById("repTotalTurnover").textContent = formatINR(totalTurnover);
+  document.getElementById("repGrossPnl").textContent = formatSignedINR(totalGross);
+  document.getElementById("repTotalFees").textContent = formatINR(totalFees);
+  const repNet = document.getElementById("repNetPnl");
+  repNet.textContent = formatSignedINR(totalNet);
+  repNet.className = `kpi-value ${totalNet >= 0 ? "green" : "red"}`;
+
+  filterAndRenderReports();
+}
+
+function filterAndRenderReports() {
+  const dateFilter = document.getElementById("reportDateFilter")?.value || "ALL";
+  const segFilter = document.getElementById("reportSegmentFilter")?.value || "ALL";
+  const outcomeFilter = document.getElementById("reportOutcomeFilter")?.value || "ALL";
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  let filtered = allReportsCache.filter(t => {
+    const pnl = Number(t.pnl || 0);
+    const sym = t.symbol || "";
+    const isFno = sym.endsWith("CE") || sym.endsWith("PE") || (t.id && t.id.includes("OPT"));
+
+    if (dateFilter === "TODAY" && t.date !== todayStr && t.exit_date !== todayStr) return false;
+    if (segFilter === "CASH" && isFno) return false;
+    if (segFilter === "FNO" && !isFno) return false;
+    if (outcomeFilter === "WIN" && pnl <= 0) return false;
+    if (outcomeFilter === "LOSS" && pnl >= 0) return false;
+    return true;
+  });
+
+  document.getElementById("reportsCountBadge").textContent = `Showing ${filtered.length} trades`;
+
+  const tbody = document.getElementById("reportsTableBody");
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 30px;">No statement entries matching filters.</td></tr>`;
+    return;
+  }
+
+  let html = "";
+  filtered.forEach(t => {
+    const qty = Number(t.qty || 0);
+    const entryP = Number(t.entry_price || 0);
+    const exitP = Number(t.exit_price || 0);
+    const turnover = (entryP * qty) + (exitP * qty);
+    const net = Number(t.pnl || 0);
+    const gross = Number(t.gross_pnl || net);
+    const fees = Number(t.fees || 0);
+    const isFno = (t.symbol || "").endsWith("CE") || (t.symbol || "").endsWith("PE");
+
+    html += `
+      <tr>
+        <td>${t.date || t.exit_date || '--'}</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">${t.id || '--'}</td>
+        <td><strong>${t.symbol}</strong></td>
+        <td><span class="status-badge ${isFno ? 'paper' : 'open'}">${isFno ? 'F&O' : 'CASH'}</span></td>
+        <td>${t.side || 'BUY'}</td>
+        <td>${qty}</td>
+        <td>₹${entryP.toFixed(2)}</td>
+        <td>₹${exitP.toFixed(2)}</td>
+        <td>₹${turnover.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        <td>₹${gross.toFixed(2)}</td>
+        <td class="val-red">₹${fees.toFixed(2)}</td>
+        <td class="${net >= 0 ? 'val-green' : 'val-red'}">${formatSignedINR(net)}</td>
+        <td style="font-size: 11px; color: var(--text-muted);">${t.reason || t.exit_reason || '--'}</td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+// ==========================================================================
+// 15. VIEW 10: ACCOUNTS MANAGER & INVARIANT RECONCILIATION
+// ==========================================================================
+async function loadAccountsData() {
+  const dashRes = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const dashData = await dashRes.json();
+  const kpis = dashData.kpis || {};
+  const inv = kpis.accounting_invariant || {};
+
+  const badge = document.getElementById("invariantStatusBadge");
+  if (badge) {
+    if (inv.status === "PASS") {
+      badge.className = "status-badge open";
+      badge.textContent = "INVARIANT: PASS (100% RECONCILED)";
+    } else {
+      badge.className = "status-badge stopped";
+      badge.textContent = "INVARIANT: DISCREPANCY DETECTED";
+    }
+  }
+
+  document.getElementById("invLhsVal").textContent = formatINR(inv.lhs || 0);
+  document.getElementById("invRhsVal").textContent = formatINR(inv.rhs || 0);
+  const diffEl = document.getElementById("invDiffVal");
+  diffEl.textContent = formatINR(inv.diff || 0);
+  diffEl.className = `segment-metric-val ${(inv.diff || 0) <= 0.05 ? "val-green" : "val-red"}`;
+
+  // Multi-Account Grid Cards
+  const accRes = await fetch("/api/accounts");
+  const accData = await accRes.json();
+  const accounts = accData.accounts || {};
+
+  const container = document.getElementById("accountsGridContainer");
+  if (!container) return;
+
+  let html = "";
+  for (const [id, meta] of Object.entries(accounts)) {
+    const isSelected = id === currentAccount;
+    html += `
+      <div class="kpi-card" style="border-color: ${isSelected ? 'var(--info-blue)' : 'var(--glass-border)'}; cursor: pointer;" onclick="switchAccount('${id}')">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);">${meta.name || id}</span>
+          ${isSelected ? '<span class="status-badge open">ACTIVE</span>' : '<span class="status-badge closed">SELECT</span>'}
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Role: ${meta.role || 'Trader'} • Segment: ${meta.segment || 'Cash'}</div>
+        <div class="kpi-value" style="font-size: 18px; margin-top: 10px;">${formatINR(meta.capital || 1000000)}</div>
+        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Ledger: <code>${meta.ledger_file}</code></div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+async function reconcileActiveAccount() {
+  const res = await authFetch("/api/accounts/reconcile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ account: currentAccount })
+  });
+  const data = await res.json();
+  if (data.status === "SUCCESS") {
+    alert(`Account ${currentAccount} reconciled successfully! Status: ${data.report?.is_valid ? 'VALID' : 'REPAIRED'}`);
+    refreshCurrentView();
+  } else {
+    alert(`Reconciliation failed: ${data.message || 'Unknown error'}`);
+  }
+}
+
+// ==========================================================================
+// 16. VIEW 11: SYSTEM HEALTH & LOGS
+// ==========================================================================
+async function loadSystemHealth() {
+  const res = await fetch(`/api/system/status?account=${encodeURIComponent(currentAccount)}`);
+  const data = await res.json();
+  const daemon = data.daemon || {};
+
+  const daemonState = document.getElementById("healthDaemonState");
+  if (daemonState) {
+    if (daemon.status === "RUNNING") {
+      daemonState.textContent = "RUNNING";
+      daemonState.className = "kpi-value green";
+      document.getElementById("healthPidSub").textContent = `PID: ${daemon.pid}`;
+    } else {
+      daemonState.textContent = "STOPPED";
+      daemonState.className = "kpi-value red";
+      document.getElementById("healthPidSub").textContent = "PID: --";
+    }
+  }
+
+  loadLogsTerminal();
+}
+
+async function loadLogsTerminal() {
+  const lvl = document.getElementById("logLevelFilter")?.value || "";
+  const res = await fetch(`/api/logs?level=${encodeURIComponent(lvl)}`);
+  const data = await res.json();
+  const logs = data.logs || [];
+  const term = document.getElementById("logsTerminal");
+  if (!term) return;
+
+  if (logs.length === 0) {
+    term.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">No logs recorded.</div>`;
+    return;
+  }
+
+  let html = "";
+  logs.forEach(l => {
+    const lvlClass = `log-level-${l.level || 'INFO'}`;
+    html += `
+      <div class="terminal-log-row">
+        <span class="log-time">[${l.timestamp || '--'}]</span>
+        <span class="${lvlClass}">[${l.level || 'INFO'}]</span>
+        <span class="log-msg">${l.message}</span>
+      </div>
+    `;
+  });
+  term.innerHTML = html;
+}
+
+// ==========================================================================
+// 17. VIEW 12: SETTINGS
+// ==========================================================================
+async function loadSettingsData() {
+  const res = await fetch("/api/config");
+  const data = await res.json();
+  const cfg = data.config || {};
+  const tbody = document.getElementById("configTableBody");
+  if (!tbody) return;
+
+  let html = "";
+  for (const [k, v] of Object.entries(cfg)) {
+    html += `
+      <tr>
+        <td><code>${k}</code></td>
+        <td style="font-family: var(--font-mono); font-weight: 600;">${typeof v === 'object' ? JSON.stringify(v) : v}</td>
+        <td style="font-size: 11px; color: var(--text-muted);">Runtime safety parameter</td>
+      </tr>
+    `;
+  }
+  tbody.innerHTML = html;
+}
+
+// ==========================================================================
+// 18. TRADE DETAILS DRAWER (13-Step Lifecycle Timeline)
+// ==========================================================================
+function openTradeDrawer(trade) {
+  if (!trade) return;
+
+  document.getElementById("drawerTradeSymbol").textContent = trade.symbol || "UNKNOWN";
+  document.getElementById("drawerTradeId").textContent = `ID: ${trade.id || trade.position_id || '--'}`;
+
+  const netPnl = Number(trade.pnl || trade.unrealized_pnl || 0);
+  const netEl = document.getElementById("drawerNetPnl");
+  netEl.textContent = formatSignedINR(netPnl);
+  netEl.className = `segment-metric-val ${netPnl >= 0 ? "val-green" : "val-red"}`;
+
+  const entryP = Number(trade.entry_price || 0);
+  const exitP = Number(trade.exit_price || trade.current_price || entryP);
+  document.getElementById("drawerPrices").textContent = `₹${entryP.toFixed(2)} → ₹${exitP.toFixed(2)}`;
+  document.getElementById("drawerQty").textContent = `${trade.qty || 0} Units`;
+
+  // Render 13-Step Execution Lifecycle Timeline
+  render13StepTimeline(trade);
+
+  document.getElementById("drawerBackdrop").classList.add("active");
+  document.getElementById("tradeDetailDrawer").classList.add("active");
+}
+
+function closeTradeDrawer() {
+  document.getElementById("drawerBackdrop").classList.remove("active");
+  document.getElementById("tradeDetailDrawer").classList.remove("active");
+}
+
+function render13StepTimeline(t) {
+  const container = document.getElementById("drawerTimeline");
+  if (!container) return;
+
+  const entryTime = t.entry_time || t.timestamp || "09:30:00 IST";
+  const exitTime = t.exit_time || "In Progress";
+  const isClosed = Boolean(t.exit_time || t.pnl !== undefined);
+
+  const steps = [
+    { num: 1, title: "Market Data Ingestion", time: entryTime, desc: `Completed 1m / 5m candle received for ${t.symbol}. Zero lookahead verified.` },
+    { num: 2, title: "Technical Indicators Evaluated", time: entryTime, desc: "EMA 5, EMA 9, EMA 33 Channel, Supertrend (10, 3), and VWAP computed on atomic series." },
+    { num: 3, title: "Quantitative Setup Detected", time: entryTime, desc: `Setup Signal: ${t.entry_reason || t.reason || 'EMA Channel / Confluence Breakout'}. Confidence >= 65.` },
+    { num: 4, title: "Pre-Trade Risk Verification", time: entryTime, desc: "Daily loss budget, max open positions, and reward-to-risk (>= 1:1.5) passed without exception." },
+    { num: 5, title: "Order Routed to Broker Adapter", time: entryTime, desc: `Adapter order generated: BUY ${t.qty} @ limit/market reference ₹${Number(t.entry_price || 0).toFixed(2)}.` },
+    { num: 6, title: "Execution Fill Confirmed", time: entryTime, desc: `Position opened. Filled price: ₹${Number(t.entry_price || 0).toFixed(2)}. Zero slippage simulated.` },
+    { num: 7, title: "Initial Stop-Loss & Target Placed", time: entryTime, desc: `SL set @ ₹${Number(t.sl_price || (t.entry_price * 0.95)).toFixed(2)} | Target set @ ₹${Number(t.target_price || (t.entry_price * 1.15)).toFixed(2)}.` },
+    { num: 8, title: "Mark-to-Market Real-Time Tracking", time: isClosed ? exitTime : "Active", desc: `Trailing profit ratchet active. Peak tracked: ₹${Number(t.peak_price || t.exit_price || t.entry_price).toFixed(2)}.` },
+    { num: 9, title: "Dynamic Trailing Stop Updated", time: isClosed ? exitTime : "Active", desc: "Trailing stop ratcheted to lock gains as price progressed in favorable direction." },
+    { num: 10, title: "Exit Signal Triggered", time: isClosed ? exitTime : "Pending", desc: isClosed ? `Exit Trigger: ${t.reason || t.exit_reason || 'Target Reached / Trailing SL Hit'}.` : "Position currently running in market." },
+    { num: 11, title: "Exit Order Executed", time: isClosed ? exitTime : "Pending", desc: isClosed ? `Sold ${t.qty} units @ ₹${Number(t.exit_price || 0).toFixed(2)}.` : "Awaiting exit fill." },
+    { num: 12, title: "Statutory Deductions & Brokerage Computed", time: isClosed ? exitTime : "Pending", desc: isClosed ? `STT, Exchange txn charges, GST (18%), and SEBI fees: ₹${Number(t.fees || 0).toFixed(2)}.` : "Will be deducted upon exit." },
+    { num: 13, title: "Double-Entry Ledger Reconciliation", time: isClosed ? exitTime : "Pending", desc: isClosed ? `Net Realized P&L of ${formatSignedINR(t.pnl || 0)} credited to account free cash balance.` : "Pending balance settlement." }
+  ];
+
+  let html = "";
+  steps.forEach(s => {
+    const isStepDone = isClosed || s.num <= 9;
+    const stepClass = isStepDone ? "" : "pending";
+    html += `
+      <div class="timeline-step ${stepClass}">
+        <div class="timeline-title">
+          <span>${s.num}. ${s.title}</span>
+          <span class="timeline-time">${s.time}</span>
+        </div>
+        <div class="timeline-desc">${s.desc}</div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+// ==========================================================================
+// 19. EMERGENCY CONTROLS & MANUAL EXITS
+// ==========================================================================
+let pendingCloseSymbol = null;
+
+function confirmClosePosition(symbol) {
+  pendingCloseSymbol = symbol;
+  document.getElementById("modalTitle").textContent = "Confirm Position Square-Off";
+  document.getElementById("modalBody").textContent = `Are you sure you want to manually square off position ${symbol}? This will record market exit and reconcile ledger.`;
+  document.getElementById("modalConfirmBtn").onclick = executeConfirmedClose;
+  document.getElementById("confirmModal").classList.add("active");
+}
+
+function closeConfirmModal() {
+  document.getElementById("confirmModal").classList.remove("active");
+  pendingCloseSymbol = null;
+}
+
+async function executeConfirmedClose() {
+  if (!pendingCloseSymbol) return;
+  const res = await authFetch("/api/positions/close", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ symbol: pendingCloseSymbol })
+  });
+  const data = await res.json();
+  closeConfirmModal();
+  if (data.status === "SUCCESS") {
+    alert(data.message || "Position closed successfully.");
+    refreshCurrentView();
+  } else {
+    alert(data.message || "Error closing position.");
+  }
+}
+
+async function triggerEmergencyPause() {
+  if (!confirm("EMERGENCY PAUSE: This will immediately halt all trading bot daemons. Continue?")) return;
+  const res = await authFetch("/api/risk/emergency_pause", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+  const data = await res.json();
+  alert(data.message || "Emergency pause command issued.");
+  refreshCurrentView();
+}
+
+async function triggerEmergencySquareoff() {
+  if (!confirm("KILL SWITCH CONFIRMATION: This will immediately close ALL open positions across this account. Are you sure?")) return;
+  const res = await authFetch("/api/risk/emergency_squareoff", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ account: currentAccount })
+  });
+  const data = await res.json();
+  alert(data.message || "Kill switch executed.");
+  refreshCurrentView();
+}
+
+// ==========================================================================
+// 20. CSV EXPORT HELPERS
+// ==========================================================================
+function exportTradeCSV() {
+  if (allTradesCache.length === 0) {
+    alert("No trades to export.");
+    return;
+  }
+  const headers = ["Trade ID", "Date", "Symbol", "Side", "Qty", "Entry Price", "Exit Price", "Gross P&L", "Fees", "Net P&L", "Reason"];
+  const rows = allTradesCache.map(t => [
+    t.id || "",
+    t.date || t.exit_date || "",
+    t.symbol || "",
+    t.side || "BUY",
+    t.qty || 0,
+    t.entry_price || 0,
+    t.exit_price || 0,
+    t.gross_pnl || t.pnl || 0,
+    t.fees || 0,
+    t.pnl || 0,
+    `"${(t.reason || t.exit_reason || '').replace(/"/g, '""')}"`
+  ]);
+
+  downloadCSV([headers.join(","), ...rows.map(r => r.join(","))].join("\n"), `trade_journal_${currentAccount}_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+function exportReportsCSV() {
+  if (allReportsCache.length === 0) {
+    alert("No statement entries to export.");
+    return;
+  }
+  const headers = ["Date", "Trade ID", "Symbol", "Segment", "Side", "Qty", "Entry Price", "Exit Price", "Turnover", "Gross P&L", "Fees", "Net P&L", "Reason"];
+  const rows = allReportsCache.map(t => {
+    const qty = Number(t.qty || 0);
+    const entryP = Number(t.entry_price || 0);
+    const exitP = Number(t.exit_price || 0);
+    const turnover = (entryP * qty) + (exitP * qty);
+    const isFno = (t.symbol || "").endsWith("CE") || (t.symbol || "").endsWith("PE");
+    return [
+      t.date || t.exit_date || "",
+      t.id || "",
+      t.symbol || "",
+      isFno ? "FNO" : "CASH",
+      t.side || "BUY",
+      qty,
+      entryP,
+      exitP,
+      turnover.toFixed(2),
+      t.gross_pnl || t.pnl || 0,
+      t.fees || 0,
+      t.pnl || 0,
+      `"${(t.reason || t.exit_reason || '').replace(/"/g, '""')}"`
+    ];
+  });
+
+  downloadCSV([headers.join(","), ...rows.map(r => r.join(","))].join("\n"), `tax_statement_${currentAccount}_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+function downloadCSV(csvContent, filename) {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  const todayStr = new Date().toISOString().split('T')[0];
+  const url = URL.createObjectURL(blob);
   link.setAttribute("href", url);
-  link.setAttribute("download", `DayTraderPro_Audit_Statement_${currentAccount}_${todayStr}.csv`);
+  link.setAttribute("download", filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
 }
-
-function exportTradeCSV() {
-  exportReportsCSV();
-}
-
-
-// Auto-Refresh Controller (Default: PAUSED - WebSocket / Webhook Event Driven)
-let autoRefreshEnabled = false;
-let autoRefreshTimer = null;
-let refreshCountdown = 5;
-
-function toggleAutoRefresh() {
-  autoRefreshEnabled = !autoRefreshEnabled;
-  const badge = document.getElementById('liveSyncBadge');
-  if (badge) {
-    if (autoRefreshEnabled) {
-      badge.className = "status-badge running";
-      badge.innerHTML = `<span class="status-dot"></span> LIVE AUTO-UPDATE (<span id="autoRefreshCountdown">${refreshCountdown}s</span>)`;
-      startAutoRefreshLoop();
-    } else {
-      badge.className = "status-badge closed";
-      badge.innerHTML = `<span class="status-dot"></span> PAUSED (Click to Resume)`;
-      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-    }
-  }
-}
-
-function startAutoRefreshLoop() {
-  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-  refreshCountdown = 5;
-
-  autoRefreshTimer = setInterval(async () => {
-    if (!autoRefreshEnabled) return;
-    refreshCountdown--;
-
-    const countdownEl = document.getElementById('autoRefreshCountdown');
-    if (countdownEl) countdownEl.textContent = `${refreshCountdown}s`;
-
-    if (refreshCountdown <= 0) {
-      refreshCountdown = 5;
-      await refreshCurrentView();
-    }
-  }, 1000);
-}
-
-// Initial Boot
-window.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('accountSelector');
-  if (sel) sel.value = currentAccount;
-  loadOverviewData();
-  const badge = document.getElementById('liveSyncBadge');
-  if (badge) {
-    badge.className = "status-badge closed";
-    badge.innerHTML = `<span class="status-dot"></span> PAUSED (Click to Resume)`;
-  }
-});

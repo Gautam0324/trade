@@ -1,9 +1,38 @@
 {
   "initial_capital": 200000.0,
-  "free_cash": 776716.74,
-  "deployed_cash": 0,
-  "realized_pnl": 576716.74,
-  "open_positions": [],
+  "free_cash": 772034.0,
+  "deployed_cash": 19821.75,
+  "realized_pnl": 591855.75,
+  "open_positions": [
+    {
+      "id": "OPT-1794460530987-NIFTY23NOV2625350CE",
+      "symbol": "NIFTY23NOV2625350CE",
+      "token": "64458",
+      "broker_order_id": null,
+      "broker_sl_order_id": null,
+      "underlying": "NIFTY",
+      "option_type": "CE",
+      "strike": 25350.0,
+      "expiry": "23NOV2026",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 304.95,
+      "current_price": 296.8,
+      "peak_price": 304.95,
+      "amount": 19821.75,
+      "invested": 19821.75,
+      "sl_price": 289.7,
+      "current_stop": 289.7,
+      "target_price": 350.69,
+      "entry_spot": 25357.7,
+      "entry_time": "10:45",
+      "reason": "Bullish Supertrend + EMA Channel Alignment",
+      "status": "OPEN",
+      "unrealized_pnl": -529.75,
+      "unrealized_pnl_pct": -2.67
+    }
+  ],
   "trade_history": [
     {
       "id": "OPT-1793601820925-NIFTY03NOV2623350CE",
@@ -2144,6 +2173,23 @@
       "fees": 90.46,
       "pnl": -860.71,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 297.90",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12"
+    },
+    {
+      "id": "OPT-1794460338908-BANKNIFTY23NOV2661300CE",
+      "symbol": "BANKNIFTY23NOV2661300CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 727.5,
+      "entry_time": "10:42",
+      "exit_time": "10:46:50 IST",
+      "gross_pnl": 15225.0,
+      "fees": 85.99,
+      "pnl": 15139.01,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 727.50",
       "date": "2026-11-12",
       "exit_date": "2026-11-12"
     }

@@ -24,5 +24,24 @@
       "exit_price": 1256.4
     },
     "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 10:34:04 IST",
+    "action": "MANUAL_CLOSE_POSITION",
+    "details": {
+      "symbol": "JPL",
+      "exit_price": 1403.9
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 10:54:17 IST",
+    "action": "RECONCILE_LEDGER",
+    "details": {
+      "account": "gautam",
+      "file": "ledger.json",
+      "is_valid": true
+    },
+    "status": "SUCCESS"
   }
 ]

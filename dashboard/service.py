@@ -378,6 +378,90 @@ def compute_dashboard_metrics(account_id="gautam"):
     today_str = get_ist_now().strftime("%Y-%m-%d")
     today_trades = [t for t in trade_history if (t.get("date") == today_str or t.get("exit_date") == today_str) and t.get("status") != "void_pending_review"]
     today_realized_pnl = sum(float(t.get("pnl", 0.0)) for t in today_trades)
+    today_gross_pnl = sum(float(t.get("gross_pnl", t.get("pnl", 0.0))) for t in today_trades)
+    today_fees = sum(float(t.get("fees", 0.0)) for t in today_trades)
+    today_net_pnl = round(today_realized_pnl, 2)
+
+    total_gross_pnl = sum(float(t.get("gross_pnl", t.get("pnl", 0.0))) for t in closed_trades)
+    total_fees = sum(float(t.get("fees", 0.0)) for t in closed_trades)
+
+    # Segment Breakdown: F&O vs Cash
+    fno_trades = [t for t in closed_trades if t.get("symbol", "").endswith(("CE", "PE")) or "OPT" in t.get("id", "")]
+    cash_trades = [t for t in closed_trades if t not in fno_trades]
+
+    fno_wins = [t for t in fno_trades if float(t.get("pnl", 0)) > 0]
+    cash_wins = [t for t in cash_trades if float(t.get("pnl", 0)) > 0]
+    fno_losses = [t for t in fno_trades if float(t.get("pnl", 0)) < 0]
+    cash_losses = [t for t in cash_trades if float(t.get("pnl", 0)) < 0]
+
+    fno_gross = round(sum(float(t.get("gross_pnl", t.get("pnl", 0))) for t in fno_trades), 2)
+    fno_fees = round(sum(float(t.get("fees", 0)) for t in fno_trades), 2)
+    fno_net = round(sum(float(t.get("pnl", 0)) for t in fno_trades), 2)
+    fno_win_rate = round((len(fno_wins) / len(fno_trades)) * 100, 1) if fno_trades else 0.0
+    fno_pf = round(sum(float(t["pnl"]) for t in fno_wins) / abs(sum(float(t["pnl"]) for t in fno_losses)), 2) if fno_losses else (round(fno_gross, 2) if fno_gross > 0 else 1.0)
+
+    cash_gross = round(sum(float(t.get("gross_pnl", t.get("pnl", 0))) for t in cash_trades), 2)
+    cash_fees = round(sum(float(t.get("fees", 0)) for t in cash_trades), 2)
+    cash_net = round(sum(float(t.get("pnl", 0)) for t in cash_trades), 2)
+    cash_win_rate = round((len(cash_wins) / len(cash_trades)) * 100, 1) if cash_trades else 0.0
+    cash_pf = round(sum(float(t["pnl"]) for t in cash_wins) / abs(sum(float(t["pnl"]) for t in cash_losses)), 2) if cash_losses else (round(cash_gross, 2) if cash_gross > 0 else 1.0)
+
+    # Invariant Check: Starting Capital + Realized P&L == Free Cash + Deployed Cash
+    inv_lhs = round(starting_cap + realized_pnl, 2)
+    inv_rhs = round(free_cash + deployed_cash, 2)
+    inv_diff = round(abs(inv_lhs - inv_rhs), 2)
+    invariant_status = "PASS" if inv_diff <= 0.05 else "DISCREPANCY"
+
+    # Analytics: Streaks, Expectancy, Best & Worst Instruments
+    cur_win = 0
+    cur_loss = 0
+    max_win_streak = 0
+    max_loss_streak = 0
+    for t in closed_trades:
+        p = float(t.get("pnl", 0))
+        if p > 0:
+            cur_win += 1
+            cur_loss = 0
+            if cur_win > max_win_streak: max_win_streak = cur_win
+        elif p < 0:
+            cur_loss += 1
+            cur_win = 0
+            if cur_loss > max_loss_streak: max_loss_streak = cur_loss
+
+    avg_win = round(sum(float(t["pnl"]) for t in wins) / len(wins), 2) if wins else 0.0
+    avg_loss = round(abs(sum(float(t["pnl"]) for t in losses)) / len(losses), 2) if losses else 0.0
+    expectancy = round(((win_rate / 100.0) * avg_win) - (((100.0 - win_rate) / 100.0) * avg_loss), 2)
+
+    # Symbol-wise Performance
+    sym_map = {}
+    for t in closed_trades:
+        s = t.get("symbol", "UNKNOWN")
+        p = float(t.get("pnl", 0))
+        if s not in sym_map:
+            sym_map[s] = {"symbol": s, "pnl": 0.0, "trades": 0, "wins": 0}
+        sym_map[s]["pnl"] = round(sym_map[s]["pnl"] + p, 2)
+        sym_map[s]["trades"] += 1
+        if p > 0: sym_map[s]["wins"] += 1
+
+    sorted_syms = sorted(sym_map.values(), key=lambda x: x["pnl"], reverse=True)
+    best_instruments = sorted_syms[:5] if sorted_syms else []
+    worst_instruments = sorted(sym_map.values(), key=lambda x: x["pnl"])[:5] if sorted_syms else []
+
+    # Hourly Distribution
+    hour_buckets = {f"{h:02d}:00-{h+1:02d}:00": {"hour": f"{h:02d}:00 - {h+1:02d}:00", "trades": 0, "pnl": 0.0, "wins": 0} for h in range(9, 16)}
+    for t in closed_trades:
+        time_str = t.get("exit_time") or t.get("entry_time") or ""
+        if ":" in time_str:
+            try:
+                hh = int(time_str.split(":")[0][-2:])
+                bucket_key = f"{hh:02d}:00-{hh+1:02d}:00"
+                if bucket_key in hour_buckets:
+                    hour_buckets[bucket_key]["trades"] += 1
+                    p = float(t.get("pnl", 0))
+                    hour_buckets[bucket_key]["pnl"] = round(hour_buckets[bucket_key]["pnl"] + p, 2)
+                    if p > 0: hour_buckets[bucket_key]["wins"] += 1
+            except Exception:
+                pass
 
     # Reconcile check
     from ledger_utils import reconcile_ledger
@@ -392,6 +476,11 @@ def compute_dashboard_metrics(account_id="gautam"):
         "total_portfolio_value": total_portfolio_val,
         "realized_pnl": realized_pnl,
         "today_realized_pnl": round(today_realized_pnl, 2),
+        "today_gross_pnl": round(today_gross_pnl, 2),
+        "today_fees": round(today_fees, 2),
+        "today_net_pnl": round(today_net_pnl, 2),
+        "total_gross_pnl": round(total_gross_pnl, 2),
+        "total_fees": round(total_fees, 2),
         "unrealized_pnl": unrealized_pnl,
         "total_net_pnl": total_net_pnl,
         "return_pct": return_pct,
@@ -407,13 +496,53 @@ def compute_dashboard_metrics(account_id="gautam"):
         "max_daily_loss": max_daily_loss,
         "daily_loss_utilization_pct": daily_loss_utilization,
         "enriched_positions": enriched_positions,
+        "segment_fno": {
+            "gross_pnl": fno_gross,
+            "fees": fno_fees,
+            "net_pnl": fno_net,
+            "trades_count": len(fno_trades),
+            "wins_count": len(fno_wins),
+            "losses_count": len(fno_losses),
+            "win_rate": fno_win_rate,
+            "profit_factor": fno_pf
+        },
+        "segment_cash": {
+            "gross_pnl": cash_gross,
+            "fees": cash_fees,
+            "net_pnl": cash_net,
+            "trades_count": len(cash_trades),
+            "wins_count": len(cash_wins),
+            "losses_count": len(cash_losses),
+            "win_rate": cash_win_rate,
+            "profit_factor": cash_pf
+        },
+        "accounting_invariant": {
+            "status": invariant_status,
+            "starting_capital": starting_cap,
+            "realized_pnl": realized_pnl,
+            "free_cash": free_cash,
+            "deployed_cash": deployed_cash,
+            "lhs": inv_lhs,
+            "rhs": inv_rhs,
+            "diff": inv_diff
+        },
+        "analytics": {
+            "max_win_streak": max_win_streak,
+            "max_loss_streak": max_loss_streak,
+            "avg_win": avg_win,
+            "avg_loss": avg_loss,
+            "expectancy": expectancy,
+            "best_instruments": best_instruments,
+            "worst_instruments": worst_instruments,
+            "hourly_distribution": list(hour_buckets.values())
+        },
         "is_reconciled": is_reconciled,
         "reconcile_discrepancies": reconcile_report.get("discrepancies", []),
         "last_updated": last_updated_str,
         "data_freshness": "FRESH" if is_reconciled else "WARNING_DISCREPANCY"
     }
 
-def get_equity_curve_data(account_id="gautam", date_filter=None):
+def get_equity_curve_data(account_id="gautam", date_filter=None, as_payload=None):
     """
     Builds equity trajectory over time using trade history for the specified account.
     Supports:
@@ -433,6 +562,7 @@ def get_equity_curve_data(account_id="gautam", date_filter=None):
     # Extract all unique dates present in trade history (sorted descending for dropdown)
     all_dates = sorted(list(set(t.get("date") or t.get("exit_date") for t in trade_history if (t.get("date") or t.get("exit_date")))), reverse=True)
 
+    filter_requested = date_filter is not None
     date_filter = (date_filter or "ALL").upper().strip()
 
     # Case 1: DAILY aggregated bar/line comparison
@@ -532,19 +662,27 @@ def get_equity_curve_data(account_id="gautam", date_filter=None):
             "trade_pnl": pnl
         })
 
-    return {
-        "view_mode": "ALL",
-        "points": points,
-        "available_dates": all_dates,
-        "starting_capital": starting_cap,
-        "total_pnl": cum_pnl
-    }
+    # Return pure list for backwards compatibility unless as_payload is requested or explicit date_filter passed
+    if as_payload is True or (as_payload is None and filter_requested):
+        return {
+            "view_mode": "ALL",
+            "points": points,
+            "available_dates": all_dates,
+            "starting_capital": starting_cap,
+            "total_pnl": cum_pnl
+        }
+    return points
 
-def get_strategy_performance():
+def get_strategy_performance(account_id="gautam"):
     """
-    Separates actual trading performance by entry strategy.
+    Separates actual trading performance by entry strategy for the specified account.
     """
-    ledger = read_json_file(TRADER_DIR / "ledger.json", default={})
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+
+    ledger = read_json_file(TRADER_DIR / ledger_filename, default={})
     trade_history = ledger.get("trade_history", [])
 
     strat_map = {}
@@ -552,22 +690,30 @@ def get_strategy_performance():
         reason = t.get("entry_reason") or t.get("reason", "EMA 5 > EMA 9 Channel Breakout")
         # Extract Strategy Name
         strat = "EMA_CHANNEL"
+        tag = "MOMENTUM_PULLBACK"
         if "VWAP" in reason:
             strat = "VWAP_PULLBACK"
+            tag = "MEAN_REVERSION"
         elif "ORB" in reason or "Opening" in reason:
             strat = "ORB"
+            tag = "BREAKOUT"
         elif "TREND" in reason or "Momentum" in reason:
             strat = "TREND_MOMENTUM"
+            tag = "TREND_FOLLOWING"
         elif "CONFLUENCE" in reason:
             strat = "CONFLUENCE"
+            tag = "MULTI_TIMEFRAME"
         elif "V3" in reason or "V3_TREND_PULLBACK" in reason:
             strat = "V3_TREND_PULLBACK"
+            tag = "QUANT_REGIME"
         elif "NIFTY" in reason or "Manual" in reason:
-            strat = "MANUAL_INDEX"
+            strat = "FNO_CONFLUENCE"
+            tag = "INDEX_DERIVATIVES"
 
         if strat not in strat_map:
             strat_map[strat] = {
                 "name": strat,
+                "tag": tag,
                 "trades": 0,
                 "wins": 0,
                 "losses": 0,
@@ -591,19 +737,27 @@ def get_strategy_performance():
         cnt = data["trades"]
         win_rate = round((data["wins"] / cnt) * 100, 1) if cnt > 0 else 0.0
         pf = round(data["gross_profit"] / data["gross_loss"], 2) if data["gross_loss"] > 0 else (round(data["gross_profit"], 2) if data["gross_profit"] > 0 else 1.0)
+        avg_w = round(data["gross_profit"] / data["wins"], 2) if data["wins"] > 0 else 0.0
+        avg_l = round(data["gross_loss"] / data["losses"], 2) if data["losses"] > 0 else 0.0
+        exp = round(((win_rate / 100.0) * avg_w) - (((100.0 - win_rate) / 100.0) * avg_l), 2)
         result.append({
             "strategy": s,
+            "tag": data["tag"],
             "trades": cnt,
             "wins": data["wins"],
             "losses": data["losses"],
             "win_rate": win_rate,
             "profit_factor": pf,
+            "avg_win": avg_w,
+            "avg_loss": avg_l,
+            "expectancy": exp,
             "net_pnl": round(data["net_pnl"], 2),
             "gross_profit": round(data["gross_profit"], 2),
-            "gross_loss": round(data["gross_loss"], 2)
+            "gross_loss": round(data["gross_loss"], 2),
+            "execution_type": "PAPER_VERIFIED"
         })
 
-    return result
+    return sorted(result, key=lambda x: x["net_pnl"], reverse=True)
 
 def get_risk_audit():
     """
@@ -735,3 +889,93 @@ def sanitize_config(cfg):
     if "sec_user_agent" in safe_cfg:
         safe_cfg["sec_user_agent"] = "Configured (Protected)"
     return safe_cfg
+
+def reconcile_account_ledger(account_id="gautam"):
+    """
+    Performs one-click accounting reconciliation and auto-repair on account ledger.
+    """
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+    ledger_path = TRADER_DIR / ledger_filename
+
+    from ledger_utils import reconcile_ledger
+    ledger_data = read_json_file(ledger_path, default={})
+    is_valid, report, repaired = reconcile_ledger(ledger_data, auto_repair=True)
+    if repaired:
+        write_json_file(ledger_path, repaired)
+        log_audit_event("RECONCILE_LEDGER", {"account": acc_id, "file": ledger_filename, "is_valid": is_valid})
+    return {"status": "SUCCESS", "is_valid": is_valid, "report": report}
+
+def get_fno_desk_data():
+    """
+    Returns options desk intelligence:
+    - Spot prices for NIFTY 50 and BANKNIFTY
+    - Dynamic ATM strike calculations
+    - Active F&O open positions with lot sizes, greeks, and mark-to-market
+    - Recent F&O trade metrics
+    """
+    from options_engine import OptionsEngine
+    nifty_quote = fetch_live_quote_data("NIFTY 50")
+    banknifty_quote = fetch_live_quote_data("BANKNIFTY")
+
+    nifty_spot = nifty_quote["price"] if nifty_quote else 25250.0
+    banknifty_spot = banknifty_quote["price"] if banknifty_quote else 60800.0
+
+    opt_eng = OptionsEngine()
+    nifty_atm = opt_eng.select_strike(nifty_spot, "CE", "NIFTY")
+    banknifty_atm = opt_eng.select_strike(banknifty_spot, "CE", "BANKNIFTY")
+
+    fno_ledger = read_json_file(TRADER_DIR / "ledger_fno.json", default={})
+    fno_positions = fno_ledger.get("open_positions", [])
+    fno_history = fno_ledger.get("trade_history", [])
+
+    enriched_fno_pos = []
+    for p in fno_positions:
+        sym = p.get("symbol", "")
+        entry_p = float(p.get("entry_price", 0.0))
+        cur_p = float(p.get("current_price", entry_p))
+        qty = int(p.get("qty", 25))
+        invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
+        pnl = round((cur_p - entry_p) * qty, 2)
+        pnl_pct = round((pnl / invested) * 100, 2) if invested > 0 else 0.0
+        lot_size = OptionsEngine.get_lot_size(sym)
+        enriched_fno_pos.append({
+            **p,
+            "invested": invested,
+            "current_price": cur_p,
+            "unrealized_pnl": pnl,
+            "unrealized_pnl_pct": pnl_pct,
+            "lot_size": lot_size,
+            "lots": max(1, qty // lot_size) if lot_size > 0 else 1
+        })
+
+    return {
+        "indices": {
+            "NIFTY": {
+                "spot": nifty_spot,
+                "atm_strike": nifty_atm,
+                "step": 50,
+                "lot_size": 25,
+                "ce_contract": f"NIFTY23NOV26{nifty_atm}CE",
+                "pe_contract": f"NIFTY23NOV26{nifty_atm}PE",
+                "last_updated": nifty_quote["last_updated"] if nifty_quote else "QUOTE UNAVAILABLE"
+            },
+            "BANKNIFTY": {
+                "spot": banknifty_spot,
+                "atm_strike": banknifty_atm,
+                "step": 100,
+                "lot_size": 15,
+                "ce_contract": f"BANKNIFTY23NOV26{banknifty_atm}CE",
+                "pe_contract": f"BANKNIFTY23NOV26{banknifty_atm}PE",
+                "last_updated": banknifty_quote["last_updated"] if banknifty_quote else "QUOTE UNAVAILABLE"
+            }
+        },
+        "open_positions": enriched_fno_pos,
+        "starting_capital": float(fno_ledger.get("starting_capital", 200000.0)),
+        "free_cash": float(fno_ledger.get("free_cash", 200000.0)),
+        "deployed_cash": float(fno_ledger.get("deployed_cash", 0.0)),
+        "realized_pnl": float(fno_ledger.get("realized_pnl", 0.0)),
+        "total_trades": len(fno_history)
+    }
