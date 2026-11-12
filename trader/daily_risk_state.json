@@ -1,9 +1,9 @@
 {
-  "date": "2026-11-09",
-  "trade_count": 0,
-  "order_count": 0,
-  "realized_loss": 0.0,
-  "realized_pnl": 0.0,
+  "date": "2026-11-12",
+  "trade_count": 2,
+  "order_count": 4,
+  "realized_loss": 1206.24,
+  "realized_pnl": -1206.24,
   "kill_switch_triggered": false,
   "kill_switch_reason": null
 }

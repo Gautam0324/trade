@@ -181,8 +181,10 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(acc_data)
 
         elif path == "/api/equity_curve":
-            points = service.get_equity_curve_data(account_id=account)
-            self.send_json({"points": points, "account": account})
+            date_param = query.get("date", ["ALL"])[0]
+            res_data = service.get_equity_curve_data(account_id=account, date_filter=date_param)
+            res_data["account"] = account
+            self.send_json(res_data)
 
         elif path == "/api/watchlist":
             symbols = acc_meta.get("watchlist", [])

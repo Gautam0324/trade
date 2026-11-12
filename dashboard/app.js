@@ -14,6 +14,16 @@ function switchAccount(acc) {
   const sel = document.getElementById("accountSelector");
   if (sel) sel.value = currentAccount;
 
+  const dateSelect = document.getElementById('chartDateFilter');
+  if (dateSelect) {
+    dateSelect.innerHTML = `
+      <option value="ALL">All Dates (Cumulative)</option>
+      <option value="DAILY">Daily P&L Comparison</option>
+    `;
+    dateSelect.value = "ALL";
+    currentChartDateFilter = "ALL";
+  }
+
   refreshCurrentView();
 }
 
@@ -210,16 +220,57 @@ async function loadOverviewData() {
   }
 }
 
-// Equity Chart Renderer using Chart.js
+let currentChartDateFilter = "ALL";
+
+// Equity Chart Renderer using Chart.js with Date-Wise Filtering
 async function renderEquityChart() {
   try {
-    const res = await fetch('/api/equity_curve?account=' + encodeURIComponent(currentAccount));
+    const dateSelect = document.getElementById('chartDateFilter');
+    const selectedDate = dateSelect ? dateSelect.value : currentChartDateFilter;
+    currentChartDateFilter = selectedDate;
+
+    const res = await fetch(`/api/equity_curve?account=${encodeURIComponent(currentAccount)}&date=${encodeURIComponent(selectedDate)}`);
     const data = await res.json();
     const points = data.points || [];
+    const availableDates = data.available_dates || [];
+    const viewMode = data.view_mode || 'ALL';
 
-    const labels = points.map(p => p.time);
-    const equities = points.map(p => p.equity);
-    const cumulativePnls = points.map(p => p.cumulative_pnl);
+    // Populate date dropdown if needed
+    if (dateSelect) {
+      const existingOpts = Array.from(dateSelect.options).map(o => o.value);
+      const needsPopulate = availableDates.some(d => !existingOpts.includes(d));
+      if (needsPopulate) {
+        dateSelect.innerHTML = `
+          <option value="ALL">All Dates (Cumulative)</option>
+          <option value="DAILY">Daily P&L Comparison</option>
+        `;
+        availableDates.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = `${d} (Intraday)`;
+          dateSelect.appendChild(opt);
+        });
+        dateSelect.value = selectedDate;
+      }
+    }
+
+    // Update stats badge
+    const statsBadge = document.getElementById('chartStatsBadge');
+    if (statsBadge) {
+      if (viewMode === 'DAILY') {
+        const netPnl = data.total_pnl || 0;
+        statsBadge.textContent = `${points.length} Days | Net: ₹${netPnl >= 0 ? '+' : ''}${netPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+        statsBadge.style.color = netPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+      } else if (viewMode === 'INTRADAY') {
+        const dayPnl = data.day_pnl || 0;
+        statsBadge.textContent = `${data.selected_date}: ₹${dayPnl >= 0 ? '+' : ''}${dayPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})} (${points.length - 1} trades)`;
+        statsBadge.style.color = dayPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+      } else {
+        const totalPnl = data.total_pnl || 0;
+        statsBadge.textContent = `Total: ${points.length - 1} Trades | Net: ₹${totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+        statsBadge.style.color = totalPnl >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+      }
+    }
 
     const ctx = document.getElementById('equityChart');
     if (!ctx) return;
@@ -228,32 +279,71 @@ async function renderEquityChart() {
       equityChartInstance.destroy();
     }
 
+    const labels = points.map(p => p.time);
+
+    let datasets = [];
+    if (viewMode === 'DAILY') {
+      const dailyPnls = points.map(p => p.day_pnl || 0);
+      const equities = points.map(p => p.equity);
+      const barColors = dailyPnls.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)');
+      const barBorders = dailyPnls.map(v => v >= 0 ? '#10b981' : '#ef4444');
+
+      datasets = [
+        {
+          type: 'bar',
+          label: 'Daily P&L (₹)',
+          data: dailyPnls,
+          backgroundColor: barColors,
+          borderColor: barBorders,
+          borderWidth: 1.5,
+          yAxisID: 'y1'
+        },
+        {
+          type: 'line',
+          label: 'Ending Equity (₹)',
+          data: equities,
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56, 189, 248, 0.08)',
+          borderWidth: 2,
+          tension: 0.2,
+          fill: true,
+          yAxisID: 'y'
+        }
+      ];
+    } else {
+      const equities = points.map(p => p.equity);
+      const cumulativePnls = points.map(p => p.cumulative_pnl);
+
+      datasets = [
+        {
+          type: 'line',
+          label: viewMode === 'INTRADAY' ? 'Intraday Equity (₹)' : 'Net Portfolio Equity (₹)',
+          data: equities,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.08)',
+          borderWidth: 2,
+          tension: 0.2,
+          fill: true,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: viewMode === 'INTRADAY' ? "Day's Realized P&L (₹)" : 'Cumulative P&L (₹)',
+          data: cumulativePnls,
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          tension: 0.2,
+          fill: false,
+          yAxisID: 'y1'
+        }
+      ];
+    }
+
     equityChartInstance = new Chart(ctx, {
-      type: 'line',
       data: {
         labels: labels,
-        datasets: [
-          {
-            label: 'Net Portfolio Equity (₹)',
-            data: equities,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.08)',
-            borderWidth: 2,
-            tension: 0.2,
-            fill: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'Cumulative P&L (₹)',
-            data: cumulativePnls,
-            borderColor: '#f59e0b',
-            borderWidth: 1.5,
-            borderDash: [4, 4],
-            tension: 0.2,
-            fill: false,
-            yAxisID: 'y1'
-          }
-        ]
+        datasets: datasets
       },
       options: {
         responsive: true,
@@ -269,7 +359,21 @@ async function renderEquityChart() {
             titleColor: '#f8fafc',
             bodyColor: '#94a3b8',
             borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1
+            borderWidth: 1,
+            callbacks: {
+              afterLabel: function(context) {
+                const pt = points[context.dataIndex];
+                if (!pt) return '';
+                if (viewMode === 'DAILY') {
+                  return `Trades: ${pt.trade_count || 0}`;
+                }
+                if (pt.symbol && pt.symbol !== 'START') {
+                  const pnl = Number(pt.trade_pnl || 0);
+                  return `Symbol: ${pt.symbol} | Trade P&L: ₹${pnl >= 0 ? '+' : ''}${pnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+                }
+                return '';
+              }
+            }
           }
         },
         scales: {

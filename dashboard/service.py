@@ -413,9 +413,13 @@ def compute_dashboard_metrics(account_id="gautam"):
         "data_freshness": "FRESH" if is_reconciled else "WARNING_DISCREPANCY"
     }
 
-def get_equity_curve_data(account_id="gautam"):
+def get_equity_curve_data(account_id="gautam", date_filter=None):
     """
     Builds equity trajectory over time using trade history for the specified account.
+    Supports:
+    - date_filter="ALL": All trades across all dates (chronological)
+    - date_filter="DAILY": Day-by-day P&L and closing equity comparison
+    - date_filter="YYYY-MM-DD": Single day intraday trade-by-trade progression
     """
     acc_id = (account_id or "gautam").lower().strip()
     accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
@@ -426,33 +430,115 @@ def get_equity_curve_data(account_id="gautam"):
     starting_cap = float(acc_meta.get("capital", ledger.get("starting_capital", ledger.get("initial_capital", 1000000.0))))
     trade_history = ledger.get("trade_history", [])
 
-    points = []
-    points.append({
-        "time": "09:15:00",
+    # Extract all unique dates present in trade history (sorted descending for dropdown)
+    all_dates = sorted(list(set(t.get("date") or t.get("exit_date") for t in trade_history if (t.get("date") or t.get("exit_date")))), reverse=True)
+
+    date_filter = (date_filter or "ALL").upper().strip()
+
+    # Case 1: DAILY aggregated bar/line comparison
+    if date_filter == "DAILY":
+        asc_dates = sorted(list(set(t.get("date") or t.get("exit_date") for t in trade_history if (t.get("date") or t.get("exit_date")))))
+        points = []
+        cum_pnl = 0.0
+        for d in asc_dates:
+            day_trades = [t for t in trade_history if (t.get("date") == d or t.get("exit_date") == d)]
+            day_pnl = round(sum(float(t.get("pnl", 0.0)) for t in day_trades), 2)
+            cum_pnl = round(cum_pnl + day_pnl, 2)
+            points.append({
+                "time": d,
+                "date": d,
+                "equity": round(starting_cap + cum_pnl, 2),
+                "cumulative_pnl": cum_pnl,
+                "day_pnl": day_pnl,
+                "trade_count": len(day_trades)
+            })
+        return {
+            "view_mode": "DAILY",
+            "points": points,
+            "available_dates": all_dates,
+            "starting_capital": starting_cap,
+            "total_pnl": cum_pnl
+        }
+
+    # Case 2: Specific Date (e.g. 2026-11-09)
+    matching_date = None
+    for d in all_dates:
+        if d.upper() == date_filter:
+            matching_date = d
+            break
+
+    if matching_date:
+        # Prior PnL from trades before matching_date
+        prior_pnl = round(sum(float(t.get("pnl", 0.0)) for t in trade_history if (t.get("date") or t.get("exit_date", "")) < matching_date), 2)
+        day_start_cap = round(starting_cap + prior_pnl, 2)
+        day_trades = [t for t in trade_history if (t.get("date") == matching_date or t.get("exit_date") == matching_date)]
+
+        points = [{
+            "time": "09:15:00",
+            "date": matching_date,
+            "equity": day_start_cap,
+            "cumulative_pnl": 0.0,
+            "trade_id": "DAY_START",
+            "symbol": "START",
+            "trade_pnl": 0.0
+        }]
+        day_cum = 0.0
+        for idx, t in enumerate(day_trades):
+            pnl = float(t.get("pnl", 0.0))
+            day_cum = round(day_cum + pnl, 2)
+            cur_eq = round(day_start_cap + day_cum, 2)
+            exit_time = t.get("exit_time", f"Trade {idx+1}").replace(" IST", "")
+            points.append({
+                "time": exit_time,
+                "date": matching_date,
+                "equity": cur_eq,
+                "cumulative_pnl": day_cum,
+                "trade_id": t.get("id", f"POS-{idx+1}"),
+                "symbol": t.get("symbol", ""),
+                "trade_pnl": pnl
+            })
+        return {
+            "view_mode": "INTRADAY",
+            "selected_date": matching_date,
+            "points": points,
+            "available_dates": all_dates,
+            "starting_capital": day_start_cap,
+            "day_pnl": day_cum
+        }
+
+    # Case 3: ALL Dates (default cumulative)
+    points = [{
+        "time": "START",
+        "date": all_dates[-1] if all_dates else "START",
         "equity": starting_cap,
         "cumulative_pnl": 0.0,
         "trade_id": "START"
-    })
-
-    current_cap = starting_cap
-    cumulative_pnl = 0.0
-
+    }]
+    cum_pnl = 0.0
     for idx, t in enumerate(trade_history):
         pnl = float(t.get("pnl", 0.0))
-        cumulative_pnl = round(cumulative_pnl + pnl, 2)
-        current_cap = round(starting_cap + cumulative_pnl, 2)
-        exit_time = t.get("exit_time", f"Trade {idx+1}").replace(" IST", "")
-
+        cum_pnl = round(cum_pnl + pnl, 2)
+        cur_cap = round(starting_cap + cum_pnl, 2)
+        t_date = t.get("date") or t.get("exit_date") or ""
+        t_time = t.get("exit_time", f"T{idx+1}").replace(" IST", "")
+        label = f"{t_date} {t_time}".strip() if t_date else t_time
         points.append({
-            "time": exit_time,
-            "equity": current_cap,
-            "cumulative_pnl": cumulative_pnl,
+            "time": label,
+            "date": t_date,
+            "equity": cur_cap,
+            "cumulative_pnl": cum_pnl,
             "trade_id": t.get("id", f"POS-{idx+1}"),
             "symbol": t.get("symbol", ""),
             "trade_pnl": pnl
         })
 
-    return points
+    return {
+        "view_mode": "ALL",
+        "points": points,
+        "available_dates": all_dates,
+        "starting_capital": starting_cap,
+        "total_pnl": cum_pnl
+    }
 
 def get_strategy_performance():
     """

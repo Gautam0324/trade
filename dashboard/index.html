@@ -180,15 +180,20 @@
             </div>
           </div>
 
-          <!-- Equity Curve Interactive Chart -->
+          <!-- Equity Curve Interactive Chart with Date-Wise Filter -->
           <div class="panel">
-            <div class="panel-header">
+            <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem;">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 Portfolio Equity Curve & Cumulative P&L
               </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
-                Single Source of Truth: ledger.json
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <label for="chartDateFilter" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Date Range:</label>
+                <select id="chartDateFilter" onchange="renderEquityChart()" class="form-control" style="padding: 2px 8px; font-size: 0.75rem; width: auto; background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                  <option value="ALL">All Dates (Cumulative)</option>
+                  <option value="DAILY">Daily P&L Comparison</option>
+                </select>
+                <span id="chartStatsBadge" class="status-badge" style="font-size: 0.72rem; padding: 2px 8px; background: rgba(56, 189, 248, 0.1); color: var(--cyan); border: 1px solid rgba(56, 189, 248, 0.2);">--</span>
               </div>
             </div>
             <div style="height: 320px; width: 100%;">

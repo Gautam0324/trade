@@ -38,7 +38,7 @@ def run_all():
 
     try:
         # 1. Start Dashboard Server
-        dashboard_port = str(os.environ.get("DASHBOARD_PORT", "10080"))
+        dashboard_port = str(os.environ.get("DASHBOARD_PORT", "8080"))
         dashboard_script = BASE_DIR / "dashboard" / "server.py"
         print(f"[*] Starting Web Dashboard on http://localhost:{dashboard_port} ...")
         dash_proc = subprocess.Popen(
