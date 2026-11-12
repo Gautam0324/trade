@@ -759,23 +759,28 @@ def get_strategy_performance(account_id="gautam"):
 
     return sorted(result, key=lambda x: x["net_pnl"], reverse=True)
 
-def get_risk_audit():
+def get_risk_audit(account_id="gautam"):
     """
     Evaluates current risk metrics, limit breaches, and health warnings.
     """
-    config = read_json_file(TRADER_DIR / "config.json", default={})
-    ledger = read_json_file(TRADER_DIR / "ledger.json", default={})
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
 
-    budget = float(config.get("budget", 100000.0))
+    config = read_json_file(TRADER_DIR / "config.json", default={})
+    ledger = read_json_file(TRADER_DIR / ledger_filename, default={})
+
+    budget = float(acc_meta.get("capital", config.get("budget", 100000.0)))
     max_daily_loss = float(config.get("max_daily_loss_inr", config.get("max_daily_loss_usd", 1000.0)))
     max_trades_per_day = int(config.get("max_trades_per_day", 3))
     max_open_positions = int(config.get("max_open_positions", 3))
     max_pos_pct = float(config.get("max_position_pct", 75))
 
     today_str = get_ist_now().strftime("%Y-%m-%d")
-    import ledger as ledger_mod
-    today_trades_count = ledger_mod.get_today_entries_count(today_str)
-    today_realized_loss = abs(min(0.0, ledger_mod.get_today_realized_loss(today_str)))
+    today_trades = [t for t in ledger.get("trade_history", []) if (t.get("date") == today_str or t.get("exit_date") == today_str)]
+    today_trades_count = len(today_trades)
+    today_realized_loss = abs(min(0.0, sum(float(t.get("pnl", 0.0)) for t in today_trades)))
     open_positions = ledger.get("open_positions", [])
 
     alerts = []
@@ -809,9 +814,10 @@ def get_risk_audit():
             "message": f"Maximum concurrent positions open ({len(open_positions)}/{max_open_positions})."
         })
 
-    # 4. Stop-loss coverage validation
+    # 4. Stop-loss coverage validation (supports sl_price, current_stop, initial_stop, stop_loss)
     for p in open_positions:
-        if not p.get("initial_stop") and not p.get("stop_loss"):
+        sl = p.get("sl_price") or p.get("current_stop") or p.get("initial_stop") or p.get("stop_loss")
+        if not sl or float(sl) <= 0:
             alerts.append({
                 "severity": "CRITICAL",
                 "type": "MISSING_STOP_LOSS",

@@ -730,7 +730,7 @@ async function loadRiskCentreData() {
   const data = await res.json();
 
   const maxLoss = Number(data.max_daily_loss || 1000.0);
-  const curLoss = Number(data.current_daily_loss || 0.0);
+  const curLoss = Number(data.current_daily_loss || data.realized_daily_loss || 0.0);
   const utilPct = Math.min(100.0, Math.max(0.0, (curLoss / maxLoss) * 100.0));
 
   const fill = document.getElementById("riskLossBarFill");
@@ -741,6 +741,12 @@ async function loadRiskCentreData() {
     utilText.textContent = `${utilPct.toFixed(1)}% Consumed`;
     utilText.style.color = utilPct > 80 ? "var(--loss-red)" : (utilPct > 50 ? "var(--warning-amber)" : "var(--profit-green)");
   }
+
+  const consumedText = document.getElementById("riskConsumedText");
+  if (consumedText) consumedText.textContent = `${formatINR(curLoss)} consumed`;
+
+  const maxLimitText = document.getElementById("riskLimitMaxText");
+  if (maxLimitText) maxLimitText.textContent = `Max Budget Limit: ${formatINR(maxLoss)}`;
 
   document.getElementById("riskMaxDailyLoss").textContent = formatINR(maxLoss);
   document.getElementById("riskCurrentDailyLoss").textContent = formatINR(curLoss);
@@ -755,7 +761,11 @@ async function loadRiskCentreData() {
     } else {
       let html = "";
       alerts.forEach(a => {
-        html += `<div style="color: var(--loss-red);">⚠ ${a}</div>`;
+        const msg = typeof a === "object" ? (a.message || a.msg || JSON.stringify(a)) : a;
+        const sev = typeof a === "object" ? (a.severity || "WARNING") : "WARNING";
+        const color = sev === "CRITICAL" ? "var(--loss-red)" : (sev === "INFO" ? "var(--info-blue)" : "var(--warning-amber)");
+        const icon = sev === "CRITICAL" ? "⛔" : (sev === "INFO" ? "ℹ" : "⚠");
+        html += `<div style="color: ${color}; display: flex; align-items: center; gap: 8px; padding: 3px 0;"><span>${icon}</span> <span>${msg}</span></div>`;
       });
       alertsContainer.innerHTML = html;
     }
