@@ -62,5 +62,6 @@
   "allow_bse": false,
   "blocked_exchanges": [
     "BSE"
-  ]
+  ],
+  "watchlist": []
 }
