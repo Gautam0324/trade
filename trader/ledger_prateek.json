@@ -1,26 +1,9 @@
 {
   "initial_capital": 1000000.0,
-  "free_cash": 5957.38,
+  "free_cash": 5875.5,
   "deployed_cash": 259407.0,
-  "realized_pnl": 553864.38,
+  "realized_pnl": 553782.5,
   "open_positions": [
-    {
-      "id": "POS-PRA-1794387146741-ITC",
-      "order_id": "ORD-PRA-1794387146741-ITC",
-      "symbol": "ITC",
-      "side": "BUY",
-      "quantity": 100,
-      "qty": 100,
-      "entry_price": 284.85,
-      "sl_price": 282.33,
-      "target_price": 288.63,
-      "strategy_name": "CONFLUENCE",
-      "entry_time": "14:22",
-      "status": "OPEN",
-      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
-      "verified_market_data": false,
-      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
-    },
     {
       "id": "OPT-PRA-1794468132092-NIFTY26FEB24200CE",
       "symbol": "NIFTY26FEB24200CE",
@@ -3170,6 +3153,23 @@
       "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
       "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
       "verified_market_data": false
+    },
+    {
+      "id": "POS-PRA-1794387146741-ITC",
+      "symbol": "ITC",
+      "side": "BUY",
+      "qty": 100,
+      "quantity": 100,
+      "entry_price": 284.85,
+      "exit_price": 284.45,
+      "entry_time": "14:22",
+      "exit_time": "15:21:10 IST",
+      "gross_pnl": -40.0,
+      "fees": 41.88,
+      "pnl": -81.88,
+      "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13"
     }
   ],
   "last_updated": "2026-11-12 14:40:03 IST"
