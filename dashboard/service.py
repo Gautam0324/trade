@@ -157,7 +157,39 @@ def is_pid_running(pid):
     except Exception:
         return False
 
-def fetch_live_quote_data(symbol):
+_fno_token_map = None
+_service_smartapi = None
+
+def get_fno_token_by_symbol(symbol: str) -> str:
+    """Fast cache for F&O contract symbols to instrument tokens."""
+    global _fno_token_map
+    if _fno_token_map is None:
+        _fno_token_map = {}
+        fno_path = BASE_DIR / "historical_data" / "fno_contracts.json"
+        if fno_path.exists():
+            try:
+                with open(fno_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for c in data:
+                        if "symbol" in c and "token" in c:
+                            _fno_token_map[c["symbol"]] = str(c["token"])
+            except Exception:
+                pass
+    return _fno_token_map.get(symbol)
+
+def get_service_smartapi():
+    """Lazily initializes SmartAPI session for live terminal quotes."""
+    global _service_smartapi
+    if _service_smartapi is not None:
+        return _service_smartapi
+    try:
+        import download_historical_1min as dh
+        _service_smartapi = dh.get_smart_api_session()
+        return _service_smartapi
+    except Exception:
+        return None
+
+def fetch_live_quote_data(symbol, token=None, exchange=None):
     now_ts = time.time()
     clean_sym = symbol.replace(".NS", "").replace(".BO", "")
 
@@ -166,7 +198,146 @@ def fetch_live_quote_data(symbol):
         if (now_ts - cached["timestamp"]) < QUOTE_CACHE_TTL:
             return cached["data"]
 
-    # First check live ticks SQLite DB updated by multi_live_trader
+    # 1. Direct index spot ticks via SmartAPI (NSE)
+    if clean_sym in ("NIFTY 50", "NIFTY", "^NSEI", "BANKNIFTY", "NIFTY BANK", "^NSEBANK"):
+        is_bnf = "BANK" in clean_sym
+        idx_token = "99926009" if is_bnf else "99926000"
+        idx_sym = "BANKNIFTY" if is_bnf else "NIFTY"
+        try:
+            api = get_service_smartapi()
+            if api:
+                resp = api.getLtpData(exchange="NSE", tradingsymbol=idx_sym, symboltoken=idx_token)
+                if resp and resp.get("status") and resp.get("data"):
+                    cur_p = round(float(resp["data"].get("ltp", 0.0)), 2)
+                    if cur_p > 0:
+                        data = {
+                            "symbol": symbol,
+                            "price": cur_p,
+                            "prev_close": cur_p,
+                            "change": 0.0,
+                            "change_pct": 0.0,
+                            "high": cur_p,
+                            "low": cur_p,
+                            "open": cur_p,
+                            "volume": 0,
+                            "signal": "HOLD",
+                            "confluence_score": 50.0,
+                            "confluence_weights": {},
+                            "rejections": [],
+                            "ema5": cur_p,
+                            "ema9": cur_p,
+                            "ema33_high": cur_p,
+                            "ema33_low": cur_p,
+                            "supertrend": None,
+                            "rsi": 50.0,
+                            "adx": 20.0,
+                            "vwap": cur_p,
+                            "rvol": 1.0,
+                            "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+                        }
+                        quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+                        return data
+        except Exception:
+            pass
+
+    # 2. F&O Options Contract (CE/PE or exchange NFO)
+    is_option = clean_sym.endswith("CE") or clean_sym.endswith("PE") or exchange == "NFO"
+    if is_option:
+        opt_token = token or get_fno_token_by_symbol(clean_sym)
+        # Check active fno_trader position in ledger_fno.json
+        try:
+            fno_led = read_json_file(TRADER_DIR / "ledger_fno.json", default={})
+            for p in fno_led.get("open_positions", []):
+                if p.get("symbol") == clean_sym and float(p.get("current_price", 0)) > 0:
+                    cur_p = round(float(p["current_price"]), 2)
+                    ep = float(p.get("entry_price", cur_p))
+                    data = {
+                        "symbol": clean_sym,
+                        "price": cur_p,
+                        "prev_close": ep,
+                        "change": round(cur_p - ep, 2),
+                        "change_pct": round(((cur_p - ep) / ep) * 100, 2) if ep > 0 else 0.0,
+                        "high": round(float(p.get("peak_price", cur_p)), 2),
+                        "low": min(cur_p, ep),
+                        "open": ep,
+                        "volume": 0,
+                        "signal": "HOLD",
+                        "confluence_score": 50.0,
+                        "confluence_weights": {},
+                        "rejections": [],
+                        "ema5": cur_p,
+                        "ema9": cur_p,
+                        "ema33_high": cur_p,
+                        "ema33_low": cur_p,
+                        "supertrend": None,
+                        "rsi": 50.0,
+                        "adx": 20.0,
+                        "vwap": cur_p,
+                        "rvol": 1.0,
+                        "last_updated": p.get("quote_timestamp", get_ist_now().strftime("%H:%M:%S IST"))
+                    }
+                    quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+                    return data
+        except Exception:
+            pass
+
+        # Query SmartAPI for live option tick if token is available
+        if opt_token:
+            try:
+                api = get_service_smartapi()
+                if api:
+                    resp = api.getLtpData(exchange="NFO", tradingsymbol=clean_sym, symboltoken=str(opt_token))
+                    if resp and resp.get("status") and resp.get("data"):
+                        cur_p = round(float(resp["data"].get("ltp", 0.0)), 2)
+                        if cur_p > 0:
+                            data = {
+                                "symbol": clean_sym,
+                                "price": cur_p,
+                                "prev_close": cur_p,
+                                "change": 0.0,
+                                "change_pct": 0.0,
+                                "high": cur_p,
+                                "low": cur_p,
+                                "open": cur_p,
+                                "volume": 0,
+                                "signal": "HOLD",
+                                "confluence_score": 50.0,
+                                "confluence_weights": {},
+                                "rejections": [],
+                                "ema5": cur_p,
+                                "ema9": cur_p,
+                                "ema33_high": cur_p,
+                                "ema33_low": cur_p,
+                                "supertrend": None,
+                                "rsi": 50.0,
+                                "adx": 20.0,
+                                "vwap": cur_p,
+                                "rvol": 1.0,
+                                "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+                            }
+                            quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+                            return data
+            except Exception:
+                pass
+
+        # For option contracts: do NOT fall through to Yahoo Finance daemon
+        fallback_data = {
+            "symbol": clean_sym,
+            "price": 0.0,
+            "prev_close": 0.0,
+            "change": 0.0,
+            "change_pct": 0.0,
+            "high": 0.0,
+            "low": 0.0,
+            "open": 0.0,
+            "volume": 0,
+            "signal": "HOLD",
+            "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+        }
+        quote_cache[clean_sym] = {"timestamp": now_ts, "data": fallback_data}
+        return fallback_data
+
+    # 3. Cash Stocks: First check live ticks SQLite DB updated by multi_live_trader
     ticks_db = TRADER_DIR / "ticks_market_data.db"
     if os.path.exists(ticks_db):
         try:
@@ -326,26 +497,19 @@ def compute_dashboard_metrics(account_id="gautam"):
         invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
         quote = None
 
-        # Check if option contract
+        # Determine if option contract
         is_option = p.get("option_type") or sym.endswith("CE") or sym.endswith("PE")
-        if is_option:
-            cur_p = float(p.get("current_price", 0.0))
-            uname = p.get("underlying")
-            if uname and p.get("entry_spot"):
-                spot_sym = "NIFTY 50" if uname == "NIFTY" else ("BANKNIFTY" if uname == "BANKNIFTY" else uname)
-                spot_q = fetch_live_quote_data(spot_sym)
-                if spot_q and spot_q.get("price"):
-                    spot_cur = float(spot_q["price"])
-                    spot_change = spot_cur - float(p["entry_spot"])
-                    delta = 0.50 if (p.get("option_type") == "CE" or sym.endswith("CE")) else -0.50
-                    calc_p = max(1.0, round(entry_p + (spot_change * delta), 2))
-                    cur_p = calc_p if cur_p <= 0 else cur_p
-                    quote = {"last_updated": spot_q.get("last_updated", get_ist_now().strftime("%H:%M:%S IST"))}
-            if cur_p <= 0:
-                cur_p = entry_p
+        pos_token = p.get("token") or (get_fno_token_by_symbol(sym) if is_option else None)
+        pos_exch = p.get("exchange", "NFO" if is_option else "NSE")
+
+        quote = fetch_live_quote_data(sym, token=pos_token, exchange=pos_exch)
+        cur_p = 0.0
+        if quote and float(quote.get("price", 0.0)) > 0:
+            cur_p = float(quote["price"])
+        elif float(p.get("current_price", 0.0)) > 0:
+            cur_p = float(p.get("current_price"))
         else:
-            quote = fetch_live_quote_data(sym)
-            cur_p = quote["price"] if quote else float(p.get("current_price", entry_p))
+            cur_p = entry_p
         
         pos_pnl = round((cur_p - entry_p) * qty, 2)
         pos_pnl_pct = round((pos_pnl / invested) * 100, 2) if invested > 0 else 0.0
@@ -905,18 +1069,19 @@ def get_system_logs(filter_level=None, limit=100):
 
 def sanitize_config(cfg):
     """
-    Sanitizes configuration dictionary by masking Telegram bot token and secrets.
+    Sanitizes configuration dictionary by masking Telegram bot token, secrets, and credentials.
     Never returns raw tokens or secret credentials.
     """
     safe_cfg = dict(cfg)
-    if "telegram_bot_token" in safe_cfg:
-        token = str(safe_cfg["telegram_bot_token"])
-        if len(token) > 8:
-            safe_cfg["telegram_bot_token"] = token[:4] + "••••••••" + token[-4:]
-        else:
-            safe_cfg["telegram_bot_token"] = "••••••••"
-    if "api_token" in safe_cfg:
-        safe_cfg["api_token"] = "••••••••"
+    sensitive_keywords = {"token", "secret", "password", "key", "pin", "totp", "credential", "auth"}
+    for k, v in list(safe_cfg.items()):
+        lower_k = k.lower()
+        if any(sk in lower_k for sk in sensitive_keywords):
+            val_str = str(v)
+            if len(val_str) > 8:
+                safe_cfg[k] = val_str[:3] + "••••••••" + val_str[-3:]
+            else:
+                safe_cfg[k] = "••••••••"
     if "sec_user_agent" in safe_cfg:
         safe_cfg["sec_user_agent"] = "Configured (Protected)"
     return safe_cfg
@@ -942,21 +1107,32 @@ def reconcile_account_ledger(account_id="gautam"):
 def get_fno_desk_data():
     """
     Returns options desk intelligence:
-    - Spot prices for NIFTY 50 and BANKNIFTY
-    - Dynamic ATM strike calculations
-    - Active F&O open positions with lot sizes, greeks, and mark-to-market
+    - Spot prices for NIFTY 50 and BANKNIFTY from live broker quotes
+    - Dynamic weekly ATM strike contract resolution
+    - Real-time option premiums for active CE and PE contracts
+    - Active F&O open positions with mark-to-market
     - Recent F&O trade metrics
     """
     from options_engine import OptionsEngine
+    import fno_trader
+
     nifty_quote = fetch_live_quote_data("NIFTY 50")
     banknifty_quote = fetch_live_quote_data("BANKNIFTY")
 
-    nifty_spot = nifty_quote["price"] if nifty_quote else 25250.0
-    banknifty_spot = banknifty_quote["price"] if banknifty_quote else 60800.0
+    nifty_spot = float(nifty_quote["price"]) if (nifty_quote and nifty_quote.get("price", 0) > 0) else 24200.0
+    banknifty_spot = float(banknifty_quote["price"]) if (banknifty_quote and banknifty_quote.get("price", 0) > 0) else 51500.0
 
-    opt_eng = OptionsEngine()
-    nifty_atm = opt_eng.select_strike(nifty_spot, "CE", "NIFTY")
-    banknifty_atm = opt_eng.select_strike(banknifty_spot, "CE", "BANKNIFTY")
+    # Dynamic weekly ATM strike resolution
+    nifty_ce = fno_trader.resolve_atm_contract("NIFTY", nifty_spot, "CE")
+    nifty_pe = fno_trader.resolve_atm_contract("NIFTY", nifty_spot, "PE")
+    bnf_ce = fno_trader.resolve_atm_contract("BANKNIFTY", banknifty_spot, "CE")
+    bnf_pe = fno_trader.resolve_atm_contract("BANKNIFTY", banknifty_spot, "PE")
+
+    # Fetch live option quotes for resolved ATM contracts
+    nifty_ce_q = fetch_live_quote_data(nifty_ce["symbol"], token=nifty_ce.get("token"), exchange="NFO") if nifty_ce else None
+    nifty_pe_q = fetch_live_quote_data(nifty_pe["symbol"], token=nifty_pe.get("token"), exchange="NFO") if nifty_pe else None
+    bnf_ce_q = fetch_live_quote_data(bnf_ce["symbol"], token=bnf_ce.get("token"), exchange="NFO") if bnf_ce else None
+    bnf_pe_q = fetch_live_quote_data(bnf_pe["symbol"], token=bnf_pe.get("token"), exchange="NFO") if bnf_pe else None
 
     fno_ledger = read_json_file(TRADER_DIR / "ledger_fno.json", default={})
     fno_positions = fno_ledger.get("open_positions", [])
@@ -966,7 +1142,9 @@ def get_fno_desk_data():
     for p in fno_positions:
         sym = p.get("symbol", "")
         entry_p = float(p.get("entry_price", 0.0))
-        cur_p = float(p.get("current_price", entry_p))
+        pos_token = p.get("token") or get_fno_token_by_symbol(sym)
+        quote = fetch_live_quote_data(sym, token=pos_token, exchange="NFO")
+        cur_p = float(quote["price"]) if (quote and quote.get("price", 0) > 0) else float(p.get("current_price", entry_p))
         qty = int(p.get("qty", 25))
         invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
         pnl = round((cur_p - entry_p) * qty, 2)
@@ -982,25 +1160,32 @@ def get_fno_desk_data():
             "lots": max(1, qty // lot_size) if lot_size > 0 else 1
         })
 
+    nifty_atm_strike = nifty_ce.get("atm_strike", round(nifty_spot / 50) * 50) if nifty_ce else round(nifty_spot / 50) * 50
+    bnf_atm_strike = bnf_ce.get("atm_strike", round(banknifty_spot / 100) * 100) if bnf_ce else round(banknifty_spot / 100) * 100
+
     return {
         "indices": {
             "NIFTY": {
                 "spot": nifty_spot,
-                "atm_strike": nifty_atm,
+                "atm_strike": nifty_atm_strike,
                 "step": 50,
-                "lot_size": 25,
-                "ce_contract": f"NIFTY23NOV26{nifty_atm}CE",
-                "pe_contract": f"NIFTY23NOV26{nifty_atm}PE",
-                "last_updated": nifty_quote["last_updated"] if nifty_quote else "QUOTE UNAVAILABLE"
+                "lot_size": nifty_ce.get("lotsize", 65) if nifty_ce else 65,
+                "ce_contract": nifty_ce.get("symbol") if nifty_ce else "--",
+                "ce_price": nifty_ce_q.get("price", 0.0) if nifty_ce_q else 0.0,
+                "pe_contract": nifty_pe.get("symbol") if nifty_pe else "--",
+                "pe_price": nifty_pe_q.get("price", 0.0) if nifty_pe_q else 0.0,
+                "last_updated": nifty_quote["last_updated"] if nifty_quote else get_ist_now().strftime("%H:%M:%S IST")
             },
             "BANKNIFTY": {
                 "spot": banknifty_spot,
-                "atm_strike": banknifty_atm,
+                "atm_strike": bnf_atm_strike,
                 "step": 100,
-                "lot_size": 15,
-                "ce_contract": f"BANKNIFTY23NOV26{banknifty_atm}CE",
-                "pe_contract": f"BANKNIFTY23NOV26{banknifty_atm}PE",
-                "last_updated": banknifty_quote["last_updated"] if banknifty_quote else "QUOTE UNAVAILABLE"
+                "lot_size": bnf_ce.get("lotsize", 30) if bnf_ce else 30,
+                "ce_contract": bnf_ce.get("symbol") if bnf_ce else "--",
+                "ce_price": bnf_ce_q.get("price", 0.0) if bnf_ce_q else 0.0,
+                "pe_contract": bnf_pe.get("symbol") if bnf_pe else "--",
+                "pe_price": bnf_pe_q.get("price", 0.0) if bnf_pe_q else 0.0,
+                "last_updated": banknifty_quote["last_updated"] if banknifty_quote else get_ist_now().strftime("%H:%M:%S IST")
             }
         },
         "open_positions": enriched_fno_pos,

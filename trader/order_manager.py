@@ -27,15 +27,23 @@ TRADER_DIR = BASE_DIR / "trader"
 DB_PATH = TRADER_DIR / "orders_lifecycle.db"
 LEDGER_PATH = TRADER_DIR / "ledger.json"
 
+sys.path.insert(0, str(TRADER_DIR))
+try:
+    from ledger_transaction import locked_ledger_transaction, generate_order_id, generate_fill_id
+except ImportError:
+    from trader.ledger_transaction import locked_ledger_transaction, generate_order_id, generate_fill_id
+
 class OrderState:
     CREATED = "CREATED"
     VALIDATED = "VALIDATED"
     REJECTED = "REJECTED"
     SUBMITTED = "SUBMITTED"
+    PARTIALLY_FILLED = "PARTIALLY_FILLED"
     FILLED = "FILLED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
     CLOSED = "CLOSED"
+    REQUIRES_OPERATOR_REVIEW = "REQUIRES_OPERATOR_REVIEW"
 
 class OrderManager:
     def __init__(self, db_path=None, ledger_path=None):
@@ -64,6 +72,7 @@ class OrderManager:
                     symbol TEXT NOT NULL,
                     side TEXT NOT NULL,
                     quantity INTEGER NOT NULL,
+                    filled_quantity INTEGER DEFAULT 0,
                     price REAL NOT NULL,
                     stop_loss REAL,
                     target_price REAL,
@@ -74,6 +83,12 @@ class OrderManager:
                     updated_at TEXT NOT NULL
                 )
             """)
+            # Ensure filled_quantity column exists if table was created earlier
+            try:
+                cur.execute("ALTER TABLE orders ADD COLUMN filled_quantity INTEGER DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass
+
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS positions (
                     position_id TEXT PRIMARY KEY,
@@ -102,9 +117,7 @@ class OrderManager:
             conn.commit()
 
     def generate_order_id(self, symbol):
-        now_str = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        uid = uuid.uuid4().hex[:6].upper()
-        return f"ORD-{now_str}-{uid}-{symbol}"
+        return generate_order_id(symbol, prefix="ORD")
 
     def generate_position_id(self, symbol):
         now_str = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -116,7 +129,7 @@ class OrderManager:
         Atomically checks if an order can be admitted for this symbol.
         Rejects if:
         1. An active open position already exists in DB.
-        2. A pending active order already exists (CREATED, VALIDATED, SUBMITTED).
+        2. A pending active or uncertain order already exists (CREATED, VALIDATED, SUBMITTED, REQUIRES_OPERATOR_REVIEW, PARTIALLY_FILLED).
         3. The exact signal_id was already processed.
         """
         with self._connection() as conn:
@@ -134,10 +147,10 @@ class OrderManager:
             if open_pos:
                 return False, f"Duplicate position: {symbol} already has active open position {open_pos['position_id']}"
 
-            # 3. Check active pending order
+            # 3. Check active pending or uncertain order
             cur.execute("""
                 SELECT order_id, status FROM orders 
-                WHERE symbol = ? AND status IN ('CREATED', 'VALIDATED', 'SUBMITTED')
+                WHERE symbol = ? AND status IN ('CREATED', 'VALIDATED', 'SUBMITTED', 'REQUIRES_OPERATOR_REVIEW', 'PARTIALLY_FILLED')
             """, (symbol,))
             pending = cur.fetchone()
             if pending:
@@ -172,15 +185,14 @@ class OrderManager:
         # Enforce atomic reservation
         can_admit, reason = self.can_admit_order(symbol, signal_id)
         if not can_admit:
-            # If rejected due to duplicate signal_id, return immediately without duplicate insert
             if signal_id and "Duplicate signal" in reason:
                 return {"success": False, "order_id": order_id, "status": OrderState.REJECTED, "reason": reason}
 
             with self._connection() as conn:
                 cur = conn.cursor()
                 cur.execute("""
-                    INSERT INTO orders (order_id, signal_id, symbol, side, quantity, price, stop_loss, target_price, status, rejection_reason, strategy_name, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO orders (order_id, signal_id, symbol, side, quantity, filled_quantity, price, stop_loss, target_price, status, rejection_reason, strategy_name, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (order_id, None, symbol, side.upper(), quantity, price, stop_loss, target_price, OrderState.REJECTED, reason, strategy_name, now_ist, now_ist))
                 conn.commit()
             return {"success": False, "order_id": order_id, "status": OrderState.REJECTED, "reason": reason}
@@ -188,8 +200,8 @@ class OrderManager:
         with self._connection() as conn:
             cur = conn.cursor()
             cur.execute("""
-                INSERT INTO orders (order_id, signal_id, symbol, side, quantity, price, stop_loss, target_price, status, rejection_reason, strategy_name, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO orders (order_id, signal_id, symbol, side, quantity, filled_quantity, price, stop_loss, target_price, status, rejection_reason, strategy_name, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (order_id, signal_id, symbol, side.upper(), quantity, price, stop_loss, target_price, OrderState.CREATED, None, strategy_name, now_ist, now_ist))
             conn.commit()
 
@@ -221,8 +233,8 @@ class OrderManager:
             position_id = self.generate_position_id(order["symbol"])
 
             cur.execute("""
-                UPDATE orders SET status = ?, updated_at = ? WHERE order_id = ?
-            """, (OrderState.FILLED, now_ist, order_id))
+                UPDATE orders SET status = ?, filled_quantity = ?, updated_at = ? WHERE order_id = ?
+            """, (OrderState.FILLED, actual_qty, now_ist, order_id))
 
             cur.execute("""
                 INSERT INTO positions (
@@ -246,6 +258,158 @@ class OrderManager:
             "fill_price": fill_price,
             "status": "OPEN"
         }
+
+    def record_partial_fill(self, order_id, filled_qty, fill_price):
+        """
+        Records a partial fill:
+        - Updates filled_quantity on order.
+        - If filled_quantity < order['quantity'], sets status to PARTIALLY_FILLED.
+        - If filled_quantity >= order['quantity'], sets status to FILLED.
+        - Creates or updates position for the filled quantity.
+        """
+        now_ist = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
+        time_short = datetime.datetime.now().strftime("%H:%M")
+        with self._connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM orders WHERE order_id = ?", (order_id,))
+            order = cur.fetchone()
+            if not order:
+                raise ValueError(f"Order {order_id} not found")
+
+            current_filled = order["filled_quantity"] or 0
+            new_total_filled = current_filled + filled_qty
+            total_qty = order["quantity"]
+
+            if new_total_filled >= total_qty:
+                new_status = OrderState.FILLED
+            else:
+                new_status = OrderState.PARTIALLY_FILLED
+
+            cur.execute("""
+                UPDATE orders SET status = ?, filled_quantity = ?, updated_at = ?
+                WHERE order_id = ?
+            """, (new_status, new_total_filled, now_ist, order_id))
+
+            # Record or update position
+            cur.execute("SELECT * FROM positions WHERE order_id = ? AND status = 'OPEN'", (order_id,))
+            pos = cur.fetchone()
+            if pos:
+                old_qty = pos["quantity"]
+                old_entry = pos["entry_price"]
+                new_qty = old_qty + filled_qty
+                avg_price = round(((old_qty * old_entry) + (filled_qty * fill_price)) / new_qty, 2)
+                cur.execute("""
+                    UPDATE positions SET quantity = ?, entry_price = ?, updated_at = ?
+                    WHERE position_id = ?
+                """, (new_qty, avg_price, now_ist, pos["position_id"]))
+                position_id = pos["position_id"]
+            else:
+                position_id = self.generate_position_id(order["symbol"])
+                cur.execute("""
+                    INSERT INTO positions (
+                        position_id, order_id, symbol, side, quantity, entry_price, sl_price, target_price,
+                        entry_time, status, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)
+                """, (
+                    position_id, order_id, order["symbol"], order["side"], filled_qty,
+                    fill_price, order["stop_loss"], order["target_price"], time_short, now_ist, now_ist
+                ))
+
+            conn.commit()
+
+        return {
+            "order_id": order_id,
+            "position_id": position_id,
+            "status": new_status,
+            "filled_quantity": new_total_filled,
+            "remaining_quantity": max(0, total_qty - new_total_filled)
+        }
+
+    def recover_pending_orders(self, broker_adapter=None):
+        """
+        Recovers orders left in unconfirmed states (CREATED, VALIDATED, SUBMITTED) after process restart.
+        Invariants:
+        1. Never assume a pending order was filled.
+        2. If broker confirms fill (via live adapter/mock), transition to FILLED and open position.
+        3. If broker confirms cancelled/rejected, transition to CANCELLED/REJECTED.
+        4. If broker state is uncertain or broker_adapter is None/paper-simulated without confirmed fill:
+           Transition to REQUIRES_OPERATOR_REVIEW to prevent duplicate order placement while awaiting operator resolution.
+        """
+        now_ist = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
+        recovered = []
+        with self._connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT * FROM orders 
+                WHERE status IN ('CREATED', 'VALIDATED', 'SUBMITTED')
+            """)
+            pending_orders = [dict(row) for row in cur.fetchall()]
+
+            for order in pending_orders:
+                oid = order["order_id"]
+                resolved = False
+                if broker_adapter is not None and hasattr(broker_adapter, "get_order_status"):
+                    try:
+                        b_status = broker_adapter.get_order_status(oid)
+                        st = b_status.get("status") if isinstance(b_status, dict) else None
+                        if st == "COMPLETE":
+                            fill_p = float(b_status.get("fill_price", order["price"]))
+                            fill_q = int(b_status.get("fill_qty", order["quantity"]))
+                            cur.execute("UPDATE orders SET status = ?, filled_quantity = ?, updated_at = ? WHERE order_id = ?", (OrderState.FILLED, fill_q, now_ist, oid))
+                            pos_id = self.generate_position_id(order["symbol"])
+                            time_short = datetime.datetime.now().strftime("%H:%M")
+                            cur.execute("""
+                                INSERT INTO positions (position_id, order_id, symbol, side, quantity, entry_price, sl_price, target_price, entry_time, status, created_at, updated_at)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)
+                            """, (pos_id, oid, order["symbol"], order["side"], fill_q, fill_p, order["stop_loss"], order["target_price"], time_short, now_ist, now_ist))
+                            resolved = True
+                            recovered.append({"order_id": oid, "symbol": order["symbol"], "action": "FILLED_FROM_BROKER", "status": OrderState.FILLED})
+                        elif st in ("REJECTED", "CANCELLED"):
+                            cur.execute("UPDATE orders SET status = ?, rejection_reason = ?, updated_at = ? WHERE order_id = ?", (OrderState.CANCELLED, f"Broker status: {st}", now_ist, oid))
+                            resolved = True
+                            recovered.append({"order_id": oid, "symbol": order["symbol"], "action": "CANCELLED_FROM_BROKER", "status": OrderState.CANCELLED})
+                    except Exception:
+                        pass
+
+                if not resolved:
+                    reason = "Process restarted while order was in-flight. Execution state uncertain; requires operator review."
+                    cur.execute("""
+                        UPDATE orders 
+                        SET status = ?, rejection_reason = ?, updated_at = ?
+                        WHERE order_id = ?
+                    """, (OrderState.REQUIRES_OPERATOR_REVIEW, reason, now_ist, oid))
+                    recovered.append({"order_id": oid, "symbol": order["symbol"], "action": "FLAGGED_FOR_REVIEW", "status": OrderState.REQUIRES_OPERATOR_REVIEW})
+
+            conn.commit()
+        return recovered
+
+    def reconcile_orphaned_orders(self):
+        """
+        Reconciles orders and positions to detect orphans:
+        1. Orders marked FILLED without a corresponding position.
+        """
+        now_ist = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
+        anomalies = []
+        with self._connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT o.order_id, o.symbol, o.quantity, o.price, o.side, o.stop_loss, o.target_price
+                FROM orders o
+                LEFT JOIN positions p ON o.order_id = p.order_id
+                WHERE o.status = 'FILLED' AND p.position_id IS NULL
+            """)
+            missing_pos = [dict(row) for row in cur.fetchall()]
+            for o in missing_pos:
+                pos_id = self.generate_position_id(o["symbol"])
+                time_short = datetime.datetime.now().strftime("%H:%M")
+                cur.execute("""
+                    INSERT INTO positions (position_id, order_id, symbol, side, quantity, entry_price, sl_price, target_price, entry_time, status, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)
+                """, (pos_id, o["order_id"], o["symbol"], o["side"], o["quantity"], o["price"], o["stop_loss"], o["target_price"], time_short, now_ist, now_ist))
+                anomalies.append({"type": "ORPHANED_ORDER_RECONCILED", "order_id": o["order_id"], "position_id": pos_id})
+
+            conn.commit()
+        return anomalies
 
     def record_position_exit(self, symbol, exit_price, exit_reason, fees=0.0):
         # Validate exit price: do not close position if price is missing or non-positive
@@ -322,14 +486,11 @@ class OrderManager:
     def _sync_entry_to_ledger(self, pos_id, symbol, side, qty, entry_price, sl_price, target_price, entry_time):
         if not os.path.exists(self.ledger_path):
             return
-        try:
-            with open(self.ledger_path, "r", encoding="utf-8") as f:
-                ledger = json.load(f)
 
+        def _update_entry(ledger):
             open_pos = ledger.get("open_positions", [])
             if any(p.get("symbol") == symbol for p in open_pos):
                 return
-
             open_pos.append({
                 "id": pos_id,
                 "symbol": symbol,
@@ -348,18 +509,16 @@ class OrderManager:
             ledger["free_cash"] = round(starting_cap - deployed + float(ledger.get("realized_pnl", 0.0)), 2)
             ledger["last_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
 
-            with open(self.ledger_path, "w", encoding="utf-8") as f:
-                json.dump(ledger, f, indent=2)
+        try:
+            locked_ledger_transaction(self.ledger_path, _update_entry)
         except Exception as e:
             print(f"[ORDER_MANAGER LEDGER SYNC ERROR] {e}")
 
     def _sync_exit_to_ledger(self, record):
         if not os.path.exists(self.ledger_path):
             return
-        try:
-            with open(self.ledger_path, "r", encoding="utf-8") as f:
-                ledger = json.load(f)
 
+        def _update_exit(ledger):
             symbol = record["symbol"]
             open_pos = [p for p in ledger.get("open_positions", []) if p.get("symbol") != symbol]
             ledger["open_positions"] = open_pos
@@ -391,7 +550,7 @@ class OrderManager:
             ledger["free_cash"] = round(starting_cap - deployed + float(ledger.get("realized_pnl", 0.0)), 2)
             ledger["last_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
 
-            with open(self.ledger_path, "w", encoding="utf-8") as f:
-                json.dump(ledger, f, indent=2)
+        try:
+            locked_ledger_transaction(self.ledger_path, _update_exit)
         except Exception as e:
             print(f"[ORDER_MANAGER LEDGER EXIT SYNC ERROR] {e}")

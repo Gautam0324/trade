@@ -43,5 +43,2148 @@
       "is_valid": true
     },
     "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 11:28:51 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 11:29:51 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:06:16 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:06:16 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:08:47 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:08:47 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:01 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:01 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:42 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "SBIN"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:50 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:20:50 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:21:00 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:22:07 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:47 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:48 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:48 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:23:48 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:22 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:22 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:22 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:22 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:22 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:32:24 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:13 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:20 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:33:20 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:34:14 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:56 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:56 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:36:57 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:38:45 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 12:53:20 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:22 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:22 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:02:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:18:11 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:23 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 13:25:24 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:19:31 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:14 IST",
+    "action": "EMERGENCY_SQUAREOFF_TRIGGERED",
+    "details": {
+      "account": "gautam",
+      "closed_positions": 3
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:52 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:22:53 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:12 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:23:14 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:24:11 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:12 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:12 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:12 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:37:13 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:36 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:37 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-12 14:39:38 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 10:13:43 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 10:18:23 IST",
+    "action": "MANUAL_CLOSE_POSITION",
+    "details": {
+      "symbol": "RELIANCE",
+      "exit_price": 1347.7
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "ADD_TO_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "REMOVE_FROM_WATCHLIST",
+    "details": {
+      "account": "gautam",
+      "symbol": "ZOMATO"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.10"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "198.51.100.20"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_FAILED",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "FAILED"
+  },
+  {
+    "timestamp": "2026-11-13 11:24:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
   }
 ]

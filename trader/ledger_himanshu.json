@@ -1,49 +1,98 @@
 {
   "initial_capital": 1000000.0,
-  "free_cash": 93735.82,
-  "deployed_cash": 142407.75,
-  "realized_pnl": 441837.57,
+  "free_cash": 91957.46,
+  "deployed_cash": 243499.0,
+  "realized_pnl": 541150.46,
   "open_positions": [
     {
-      "id": "POS-HIM-1794372888731-TATASTEEL",
-      "order_id": "ORD-HIM-1794372888731-TATASTEEL",
-      "symbol": "TATASTEEL",
-      "side": "BUY",
-      "quantity": 100,
-      "qty": 100,
-      "entry_price": 189.06,
-      "sl_price": 187.56,
-      "target_price": 191.31,
-      "strategy_name": "CONFLUENCE",
-      "entry_time": "10:24",
-      "status": "OPEN"
-    },
-    {
-      "id": "OPT-HIM-1794460532965-NIFTY23NOV2625350CE",
-      "symbol": "NIFTY23NOV2625350CE",
-      "token": "64458",
+      "id": "OPT-HIM-1794468132071-NIFTY26FEB24200CE",
+      "symbol": "NIFTY26FEB24200CE",
+      "token": "45001",
       "broker_order_id": null,
       "broker_sl_order_id": null,
       "underlying": "NIFTY",
       "option_type": "CE",
-      "strike": 25350.0,
-      "expiry": "23NOV2026",
+      "strike": 24200.0,
+      "expiry": "26FEB2026",
       "side": "BUY",
       "qty": 65,
       "quantity": 65,
-      "entry_price": 304.95,
-      "current_price": 296.8,
-      "peak_price": 304.95,
-      "amount": 19821.75,
-      "invested": 19821.75,
-      "sl_price": 289.7,
-      "current_stop": 289.7,
-      "target_price": 350.69,
-      "entry_spot": 25357.7,
-      "entry_time": "10:45",
-      "reason": "Bullish Supertrend + EMA Channel Alignment",
+      "entry_price": 100.0,
+      "current_price": 100.0,
+      "peak_price": 100.0,
+      "amount": 6500.0,
+      "invested": 6500.0,
+      "sl_price": 95.0,
+      "current_stop": 95.0,
+      "target_price": 115.0,
+      "entry_spot": 24210.0,
+      "entry_time": "12:52",
+      "reason": "Confluence",
       "status": "OPEN",
-      "unrealized_pnl": -529.75
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_LTP_API",
+      "quote_timestamp": "2026-11-12 12:52:12 IST",
+      "base_ltp": 100.0,
+      "bid": 100.0,
+      "ask": 100.0,
+      "slippage_applied": 0.0,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY26FEB24200CE",
+        "instrument_token": "45001",
+        "underlying": "NIFTY",
+        "expiry": "26FEB2026",
+        "strike": 24200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794468594987-NIFTY26NOV24200CE",
+      "symbol": "NIFTY26NOV24200CE",
+      "token": "45001",
+      "broker_order_id": null,
+      "broker_sl_order_id": null,
+      "underlying": "NIFTY",
+      "option_type": "CE",
+      "strike": 24200.0,
+      "expiry": "26NOV2026",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 100.2,
+      "current_price": 100.2,
+      "peak_price": 100.2,
+      "amount": 6513.0,
+      "invested": 6513.0,
+      "sl_price": 95.19,
+      "current_stop": 95.19,
+      "target_price": 115.23,
+      "entry_spot": 24210.0,
+      "entry_time": "12:59",
+      "reason": "Initial",
+      "status": "OPEN",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_LTP_API",
+      "quote_timestamp": "2026-11-12 12:59:54 IST",
+      "base_ltp": 100.0,
+      "bid": 0.0,
+      "ask": 0.0,
+      "slippage_applied": 0.2,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY26NOV24200CE",
+        "instrument_token": "45001",
+        "underlying": "NIFTY",
+        "expiry": "26NOV2026",
+        "strike": 24200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     }
   ],
   "trade_history": [
@@ -62,7 +111,10 @@
       "pnl": 1415.82,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793595974941-TATASTEEL",
@@ -79,7 +131,10 @@
       "pnl": -108.7,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793595854773-SBIN",
@@ -96,7 +151,10 @@
       "pnl": -401.91,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793596452096-LT",
@@ -113,7 +171,10 @@
       "pnl": -1582.26,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793601971090-ICICIBANK",
@@ -130,7 +191,10 @@
       "pnl": -365.86,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793598736123-TATASTEEL",
@@ -147,7 +211,10 @@
       "pnl": 64.11,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793604909501-TATASTEEL",
@@ -164,7 +231,10 @@
       "pnl": 51.03,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793610304588-SBIN",
@@ -181,7 +251,10 @@
       "pnl": 52.65,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793612706263-TATASTEEL",
@@ -198,7 +271,10 @@
       "pnl": -53.97,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793681773898-SBIN",
@@ -215,7 +291,10 @@
       "pnl": -254.25,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793681520429-ICICIBANK",
@@ -232,7 +311,10 @@
       "pnl": 475.12,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793682133516-LT",
@@ -249,7 +331,10 @@
       "pnl": -1626.58,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793683641034-ICICIBANK",
@@ -266,7 +351,10 @@
       "pnl": 552.65,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793685064418-SBIN",
@@ -283,7 +371,10 @@
       "pnl": 152.61,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793692386055-SBIN",
@@ -300,7 +391,10 @@
       "pnl": -321.38,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793694498139-LT",
@@ -317,7 +411,10 @@
       "pnl": -896.46,
       "reason": "Stop Loss Hit (Gapped Below SL)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793694088562-TATASTEEL",
@@ -334,7 +431,10 @@
       "pnl": -50.93,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793685143363-ICICIBANK",
@@ -351,7 +451,10 @@
       "pnl": 794.27,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793698867569-LT",
@@ -368,7 +471,10 @@
       "pnl": -57.08,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793769687020-SBIN",
@@ -385,7 +491,10 @@
       "pnl": -344.57,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793769764497-BANKNIFTY23NOV2655700CE",
@@ -402,7 +511,10 @@
       "pnl": 14664.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 711.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793769630457-TATASTEEL",
@@ -419,7 +531,10 @@
       "pnl": -65.9,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793770178585-NIFTY09NOV2623800PE",
@@ -436,7 +551,10 @@
       "pnl": 984.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 101.08",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793770311638-BANKNIFTY23NOV2655600PE",
@@ -453,7 +571,10 @@
       "pnl": 15932.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793770510462-BANKNIFTY23NOV2655600PE",
@@ -470,7 +591,10 @@
       "pnl": 15366.64,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793770579550-BANKNIFTY23NOV2655500PE",
@@ -487,7 +611,10 @@
       "pnl": 13275.97,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 665.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793770370386-NIFTY09NOV2623800PE",
@@ -504,7 +631,10 @@
       "pnl": -914.4,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 196.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793770992945-SBIN",
@@ -521,7 +651,10 @@
       "pnl": 120.26,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793771359436-TATASTEEL",
@@ -538,7 +671,10 @@
       "pnl": 4.04,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793771115044-ICICIBANK",
@@ -555,7 +691,10 @@
       "pnl": -302.86,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793771537030-NIFTY09NOV2623850CE",
@@ -572,7 +711,10 @@
       "pnl": -857.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 162.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793771190574-BANKNIFTY23NOV2655600CE",
@@ -589,7 +731,10 @@
       "pnl": -347.53,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 794.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793772406311-NIFTY09NOV2623800PE",
@@ -606,7 +751,10 @@
       "pnl": 7199.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 196.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793772291583-BANKNIFTY23NOV2655600PE",
@@ -623,7 +771,10 @@
       "pnl": 1052.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793771718184-TATASTEEL",
@@ -640,7 +791,10 @@
       "pnl": -74.93,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793773058679-BANKNIFTY23NOV2655500PE",
@@ -657,7 +811,10 @@
       "pnl": -486.25,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 690.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793772585546-NIFTY09NOV2623800PE",
@@ -674,7 +831,10 @@
       "pnl": 644.98,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 207.25",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793775369820-BANKNIFTY23NOV2655500CE",
@@ -691,7 +851,10 @@
       "pnl": 19146.62,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 861.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775569239-NIFTY09NOV2623800CE",
@@ -708,7 +871,10 @@
       "pnl": -335.23,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775704937-NIFTY09NOV2623800CE",
@@ -725,7 +891,10 @@
       "pnl": 4739.69,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.95",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775449646-BANKNIFTY23NOV2655600CE",
@@ -742,7 +911,10 @@
       "pnl": 16657.59,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 778.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775787220-NIFTY09NOV2623800CE",
@@ -759,7 +931,10 @@
       "pnl": -428.03,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 79.32",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775939319-BANKNIFTY23NOV2655600CE",
@@ -776,7 +951,10 @@
       "pnl": 17103.87,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 793.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793775998219-NIFTY09NOV2623800CE",
@@ -793,7 +971,10 @@
       "pnl": 5674.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 173.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793776013982-BANKNIFTY23NOV2655600CE",
@@ -810,7 +991,10 @@
       "pnl": 16918.17,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 786.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793776074624-NIFTY09NOV2623800CE",
@@ -827,7 +1011,10 @@
       "pnl": 6193.37,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 181.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793776281185-NIFTY09NOV2623800CE",
@@ -844,7 +1031,10 @@
       "pnl": -783.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 170.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793777099330-NIFTY09NOV2623800CE",
@@ -861,7 +1051,10 @@
       "pnl": 5511.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 170.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793776355119-BANKNIFTY23NOV2655600CE",
@@ -878,7 +1071,10 @@
       "pnl": -1381.28,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 766.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793777245406-NIFTY09NOV2623850CE",
@@ -895,7 +1091,10 @@
       "pnl": 4687.78,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.15",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793777378053-NIFTY09NOV2623850CE",
@@ -912,7 +1111,10 @@
       "pnl": 4382.77,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 153.45",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793777632170-NIFTY09NOV2623850CE",
@@ -929,7 +1131,10 @@
       "pnl": 4979.81,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 162.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793777851263-BANKNIFTY23NOV2655600CE",
@@ -946,7 +1151,10 @@
       "pnl": 17941.04,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793775193806-SBIN",
@@ -963,7 +1171,10 @@
       "pnl": 191.02,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793775618247-TATASTEEL",
@@ -980,7 +1191,10 @@
       "pnl": 51.95,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793777774721-NIFTY09NOV2623850CE",
@@ -997,7 +1211,10 @@
       "pnl": 1512.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 186.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793778018734-ICICIBANK",
@@ -1014,7 +1231,10 @@
       "pnl": 273.26,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793779162064-TATASTEEL",
@@ -1031,7 +1251,10 @@
       "pnl": 25.87,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793777919541-BANKNIFTY23NOV2655700CE",
@@ -1048,7 +1271,10 @@
       "pnl": 3614.82,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 886.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793779908610-BANKNIFTY23NOV2655900CE",
@@ -1065,7 +1291,10 @@
       "pnl": 15941.73,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793779562177-SBIN",
@@ -1082,7 +1311,10 @@
       "pnl": -442.19,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793776443409-LT",
@@ -1099,7 +1331,10 @@
       "pnl": -1168.44,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793779443344-NIFTY09NOV2623900CE",
@@ -1116,7 +1351,10 @@
       "pnl": 1562.9,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 187.72",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793779634921-ICICIBANK",
@@ -1133,7 +1371,10 @@
       "pnl": -498.69,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793855740164-BANKNIFTY23NOV2657000PE",
@@ -1150,7 +1391,10 @@
       "pnl": -481.72,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 205.98",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793856384315-TATASTEEL",
@@ -1167,7 +1411,10 @@
       "pnl": -188.67,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793856431688-LT",
@@ -1184,7 +1431,10 @@
       "pnl": -1137.02,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793855795753-NIFTY09NOV2624350PE",
@@ -1201,7 +1451,10 @@
       "pnl": -528.14,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 133.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793857876879-BANKNIFTY23NOV2657100CE",
@@ -1218,7 +1471,10 @@
       "pnl": 15703.6,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 746.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793856967562-SBIN",
@@ -1235,7 +1491,10 @@
       "pnl": 289.8,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793858302581-NIFTY09NOV2624400CE",
@@ -1252,7 +1511,10 @@
       "pnl": 4265.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 151.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793858529945-LT",
@@ -1269,7 +1531,10 @@
       "pnl": 972.83,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793860931342-BANKNIFTY23NOV2657300CE",
@@ -1286,7 +1551,10 @@
       "pnl": 15603.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 743.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793856840662-ICICIBANK",
@@ -1303,7 +1571,10 @@
       "pnl": 382.4,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793860920376-NIFTY09NOV2624400CE",
@@ -1320,7 +1591,10 @@
       "pnl": 4593.67,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 156.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793862431844-NIFTY09NOV2624450CE",
@@ -1337,7 +1611,10 @@
       "pnl": 2860.93,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 130.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793863507535-NIFTY09NOV2624450CE",
@@ -1354,7 +1631,10 @@
       "pnl": 2812.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 129.25",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793861994049-BANKNIFTY23NOV2657400CE",
@@ -1371,7 +1651,10 @@
       "pnl": 4302.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 842.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793864482423-NIFTY09NOV2624450CE",
@@ -1388,7 +1671,10 @@
       "pnl": 1327.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 163.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793865948245-BANKNIFTY23NOV2657600CE",
@@ -1405,7 +1691,10 @@
       "pnl": 15383.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793858298041-SBIN",
@@ -1422,7 +1711,10 @@
       "pnl": 794.12,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793866617629-NIFTY09NOV2624550CE",
@@ -1439,7 +1731,10 @@
       "pnl": 5878.63,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 176.50",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793870310593-NIFTY09NOV2624550CE",
@@ -1456,7 +1751,10 @@
       "pnl": -676.9,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 150.20",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793866936081-BANKNIFTY23NOV2657800CE",
@@ -1473,7 +1771,10 @@
       "pnl": -1295.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 716.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793857269654-TATASTEEL",
@@ -1490,7 +1791,10 @@
       "pnl": -21.85,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793940098883-NIFTY07NOV24C24000",
@@ -1507,7 +1811,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793940113557-NIFTY07NOV24C24000",
@@ -1524,7 +1831,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793940171352-NIFTY07NOV24C24000",
@@ -1541,7 +1851,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793940978979-BANKNIFTY23NOV2657900CE",
@@ -1558,7 +1871,10 @@
       "pnl": 16030.08,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 757.25",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793941236519-NIFTY09NOV2624700CE",
@@ -1575,7 +1891,10 @@
       "pnl": -520.17,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 77.90",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793942029891-BANKNIFTY23NOV2657800PE",
@@ -1592,7 +1911,10 @@
       "pnl": 19173.58,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 862.20",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793943776407-BANKNIFTY23NOV2657800PE",
@@ -1609,7 +1931,10 @@
       "pnl": 17942.54,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.10",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793943832582-NIFTY09NOV2624600CE",
@@ -1626,7 +1951,10 @@
       "pnl": -698.83,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 167.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793941229617-TATASTEEL",
@@ -1643,7 +1971,10 @@
       "pnl": -163.77,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793945242714-NIFTY09NOV2624600CE",
@@ -1660,7 +1991,10 @@
       "pnl": 5330.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 168.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1793944759162-BANKNIFTY23NOV2657800CE",
@@ -1677,7 +2011,10 @@
       "pnl": 25.97,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 775.40",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793946276334-NIFTY09NOV2624600PE",
@@ -1694,7 +2031,10 @@
       "pnl": -807.64,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 154.75",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793947289166-BANKNIFTY23NOV2657900CE",
@@ -1711,7 +2051,10 @@
       "pnl": 3553.13,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 888.95",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1793948825006-NIFTY09NOV2624700CE",
@@ -1728,7 +2071,10 @@
       "pnl": 3724.06,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 143.30",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1793947282532-SBIN",
@@ -1745,7 +2091,10 @@
       "pnl": -123.6,
       "reason": "Manual User Squareoff / Friday EOD Clear Holdings",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-HIM-1793948542292-TATASTEEL",
@@ -1762,7 +2111,10 @@
       "pnl": -26.72,
       "reason": "Manual User Squareoff / Friday EOD Clear Holdings",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794198401759-NIFTY09NOV2624900PE",
@@ -1779,7 +2131,10 @@
       "pnl": -802.48,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.55",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794200411954-NIFTY09NOV2624900PE",
@@ -1796,7 +2151,10 @@
       "pnl": -834.94,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.05",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794200349322-BANKNIFTY23NOV2659100PE",
@@ -1813,7 +2171,10 @@
       "pnl": -1657.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 785.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794202082939-BANKNIFTY23NOV2659100CE",
@@ -1830,7 +2191,10 @@
       "pnl": 15486.45,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 739.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794203471473-NIFTY09NOV2624900CE",
@@ -1847,7 +2211,10 @@
       "pnl": -657.77,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 75.78",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794203554236-BANKNIFTY23NOV2659200CE",
@@ -1864,7 +2231,10 @@
       "pnl": 6023.02,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 423.15",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794201931909-SBIN",
@@ -1881,7 +2251,10 @@
       "pnl": 833.18,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794204493226-NIFTY09NOV2625050CE",
@@ -1898,7 +2271,10 @@
       "pnl": -1371.69,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 74.30",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794205893716-BANKNIFTY23NOV2659300PE",
@@ -1915,7 +2291,10 @@
       "pnl": -149.05,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 834.45",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794211916223-NIFTY09NOV2624900CE",
@@ -1932,7 +2311,10 @@
       "pnl": -370.92,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.20",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794211930294-BANKNIFTY23NOV2659200CE",
@@ -1949,7 +2331,10 @@
       "pnl": -519.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.72",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794372925650-NIFTY23NOV2625350PE",
@@ -1966,7 +2351,10 @@
       "pnl": 12754.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 282.45",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794372870654-BANKNIFTY23NOV2660800CE",
@@ -1983,7 +2371,10 @@
       "pnl": 4774.25,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 907.62",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794374696795-NIFTY23NOV2625350CE",
@@ -2000,7 +2391,10 @@
       "pnl": 16116.07,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 334.25",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794375662185-BANKNIFTY23NOV2661100CE",
@@ -2017,7 +2411,10 @@
       "pnl": -523.96,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.57",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794379793844-NIFTY23NOV2625350PE",
@@ -2034,7 +2431,10 @@
       "pnl": 13049.7,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 287.00",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794386594719-NIFTY23NOV2625300PE",
@@ -2051,7 +2451,10 @@
       "pnl": 13990.71,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 301.50",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794386603948-BANKNIFTY23NOV2660900PE",
@@ -2068,7 +2471,10 @@
       "pnl": 431.99,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 876.90",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794387671951-BANKNIFTY23NOV2660700PE",
@@ -2085,7 +2491,10 @@
       "pnl": -1933.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 693.03",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794387796554-NIFTY23NOV2625250CE",
@@ -2102,7 +2511,10 @@
       "pnl": -357.95,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.40",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794388868019-BANKNIFTY23NOV2660800PE",
@@ -2119,7 +2531,10 @@
       "pnl": 18872.57,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 852.15",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794388922299-NIFTY17NOV2625200PE",
@@ -2136,7 +2551,10 @@
       "pnl": 2154.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.92",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794389952577-BANKNIFTY23NOV2660500PE",
@@ -2153,7 +2571,10 @@
       "pnl": -8756.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 484.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794458392779-NIFTY23NOV2625350CE",
@@ -2170,7 +2591,10 @@
       "pnl": -860.71,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 297.90",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-HIM-1794460340537-BANKNIFTY23NOV2661300CE",
@@ -2187,7 +2611,552 @@
       "pnl": 15139.01,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 727.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794460532965-NIFTY23NOV2625350CE",
+      "symbol": "NIFTY23NOV2625350CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 304.95,
+      "exit_price": 292.5,
+      "entry_time": "10:45",
+      "exit_time": "11:01:20 IST",
+      "gross_pnl": -809.25,
+      "fees": 89.72,
+      "pnl": -898.97,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 292.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794461863521-NIFTY23NOV2625300PE",
+      "symbol": "NIFTY23NOV2625300PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 259.0,
+      "entry_time": "11:07",
+      "exit_time": "11:08:47 IST",
+      "gross_pnl": 11310.0,
+      "fees": 77.4,
+      "pnl": 11232.6,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 259.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794461547832-BANKNIFTY23NOV2661300CE",
+      "symbol": "BANKNIFTY23NOV2661300CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 720.6,
+      "exit_price": 680.85,
+      "entry_time": "11:02",
+      "exit_time": "11:14:11 IST",
+      "gross_pnl": -1192.5,
+      "fees": 93.08,
+      "pnl": -1285.58,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 680.85",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794462975365-NIFTY23NOV2625300PE",
+      "symbol": "NIFTY23NOV2625300PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 278.7,
+      "exit_price": 263.45,
+      "entry_time": "11:26",
+      "exit_time": "11:35:38 IST",
+      "gross_pnl": -991.25,
+      "fees": 85.65,
+      "pnl": -1076.9,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 263.45",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794463175690-BANKNIFTY23NOV2661200PE",
+      "symbol": "BANKNIFTY23NOV2661200PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 844.5,
+      "exit_price": 799.9,
+      "entry_time": "11:29",
+      "exit_time": "11:37:39 IST",
+      "gross_pnl": -1338.0,
+      "fees": 101.07,
+      "pnl": -1439.07,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 799.90",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794465006643-NIFTY23NOV2625250PE",
+      "symbol": "NIFTY23NOV2625250PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 269.6,
+      "entry_time": "12:00",
+      "exit_time": "12:05:18 IST",
+      "gross_pnl": 11999.0,
+      "fees": 78.48,
+      "pnl": 11920.52,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 269.60",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794465457102-BANKNIFTY23NOV2661200PE",
+      "symbol": "BANKNIFTY23NOV2661200PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 885.05,
+      "entry_time": "12:07",
+      "exit_time": "12:09:32 IST",
+      "gross_pnl": 19951.5,
+      "fees": 93.51,
+      "pnl": 19857.99,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 885.05",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794466601033-NIFTY23NOV2625250PE",
+      "symbol": "NIFTY23NOV2625250PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 276.5,
+      "entry_time": "12:26",
+      "exit_time": "12:29:43 IST",
+      "gross_pnl": 12447.5,
+      "fees": 79.2,
+      "pnl": 12368.3,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 276.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-HIM-1794466393581-SBIN",
+      "symbol": "SBIN",
+      "side": "BUY",
+      "qty": 100,
+      "quantity": 100,
+      "entry_price": 1079.0,
+      "exit_price": 1076.5,
+      "entry_time": "12:23",
+      "exit_time": "12:35:56 IST",
+      "gross_pnl": -250.0,
+      "fees": 129.45,
+      "pnl": -379.45,
+      "reason": "TICK_STOP_LOSS_HIT",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794466904996-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 670.0,
+      "entry_time": "12:31",
+      "exit_time": "12:36:45 IST",
+      "gross_pnl": 13500.0,
+      "fees": 83.25,
+      "pnl": 13416.75,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 670.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794467553227-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 688.4,
+      "entry_time": "12:42",
+      "exit_time": "12:43:36 IST",
+      "gross_pnl": 14052.0,
+      "fees": 84.13,
+      "pnl": 13967.87,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 688.40",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794467351471-NIFTY17NOV2625200PE",
+      "symbol": "NIFTY17NOV2625200PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 76.95,
+      "entry_time": "12:39",
+      "exit_time": "12:46:34 IST",
+      "gross_pnl": -523.25,
+      "fees": 58.58,
+      "pnl": -581.83,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 76.95",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794468589135-BANKNIFTY23NOV2661300CE",
+      "symbol": "BANKNIFTY23NOV2661300CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 702.0,
+      "exit_price": 697.5,
+      "entry_time": "12:59",
+      "exit_time": "13:17:23 IST",
+      "gross_pnl": -135.0,
+      "fees": 93.53,
+      "pnl": -228.53,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 697.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794468699909-NIFTY23NOV2625250CE",
+      "symbol": "NIFTY23NOV2625250CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 288.0,
+      "exit_price": 275.0,
+      "entry_time": "13:01",
+      "exit_time": "13:26:09 IST",
+      "gross_pnl": -845.0,
+      "fees": 87.23,
+      "pnl": -932.23,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 275.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794470726063-BANKNIFTY23NOV2661400CE",
+      "symbol": "BANKNIFTY23NOV2661400CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 698.95,
+      "entry_time": "13:35",
+      "exit_time": "13:36:25 IST",
+      "gross_pnl": 14368.5,
+      "fees": 84.63,
+      "pnl": 14283.87,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 698.95",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794473084869-BANKNIFTY23NOV2661500CE",
+      "symbol": "BANKNIFTY23NOV2661500CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 665.0,
+      "entry_time": "14:14",
+      "exit_time": "14:15:59 IST",
+      "gross_pnl": 13350.0,
+      "fees": 83.02,
+      "pnl": 13266.98,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 665.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": false,
+      "quote_source": "UNKNOWN",
+      "quote_timestamp": "",
+      "slippage_applied": 0.0,
+      "contract_details": {},
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch"
+    },
+    {
+      "id": "OPT-HIM-1794473145389-NIFTY23NOV2625250CE",
+      "symbol": "NIFTY23NOV2625250CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 288.5,
+      "exit_price": 284.6,
+      "entry_time": "14:15",
+      "exit_time": "14:32:55 IST",
+      "gross_pnl": -253.5,
+      "fees": 88.24,
+      "pnl": -341.74,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 284.60",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-12 14:15:41 IST",
+      "slippage_applied": 0.5,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY23NOV2625250CE",
+        "instrument_token": "64453",
+        "underlying": "NIFTY",
+        "expiry": "23NOV2026",
+        "strike": 25250.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794474124471-BANKNIFTY23NOV2661400PE",
+      "symbol": "BANKNIFTY23NOV2661400PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 852.6,
+      "exit_price": 804.9,
+      "entry_time": "14:32",
+      "exit_time": "14:40:02 IST",
+      "gross_pnl": -1431.0,
+      "fees": 101.45,
+      "pnl": -1532.45,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 804.90",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-12 14:32:02 IST",
+      "slippage_applied": 3.7,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BANKNIFTY23NOV2661400PE",
+        "instrument_token": "62351",
+        "underlying": "BANKNIFTY",
+        "expiry": "23NOV2026",
+        "strike": 61400.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794544763515-NIFTY17NOV2625200CE",
+      "symbol": "NIFTY17NOV2625200CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 172.1,
+      "exit_price": 162.0,
+      "entry_time": "10:09",
+      "exit_time": "10:11:25 IST",
+      "gross_pnl": -656.5,
+      "fees": 70.88,
+      "pnl": -727.38,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 162.00",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:09:21 IST",
+      "slippage_applied": 0.5,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY17NOV2625200CE",
+        "instrument_token": "45394",
+        "underlying": "NIFTY",
+        "expiry": "17NOV2026",
+        "strike": 25200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794545072578-BANKNIFTY23NOV2661000PE",
+      "symbol": "BANKNIFTY23NOV2661000PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 725.3,
+      "exit_price": 685.65,
+      "entry_time": "10:14",
+      "exit_time": "10:35:20 IST",
+      "gross_pnl": -1189.5,
+      "fees": 93.39,
+      "pnl": -1282.89,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 685.65",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:14:30 IST",
+      "slippage_applied": 0.75,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BANKNIFTY23NOV2661000PE",
+        "instrument_token": "62336",
+        "underlying": "BANKNIFTY",
+        "expiry": "23NOV2026",
+        "strike": 61000.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-HIM-1794547225932-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 641.15,
+      "exit_price": 590.0,
+      "entry_time": "10:50",
+      "exit_time": "10:57:31 IST",
+      "gross_pnl": -1534.5,
+      "fees": 87.27,
+      "pnl": -1621.77,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 590.00",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:50:24 IST",
+      "slippage_applied": 2.9,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BANKNIFTY23NOV2661200CE",
+        "instrument_token": "62339",
+        "underlying": "BANKNIFTY",
+        "expiry": "23NOV2026",
+        "strike": 61200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "POS-HIM-1794372888731-TATASTEEL",
+      "symbol": "TATASTEEL",
+      "side": "BUY",
+      "qty": 100,
+      "quantity": 100,
+      "entry_price": 189.06,
+      "exit_price": 187.56,
+      "entry_time": "10:24",
+      "exit_time": "11:08:05 IST",
+      "gross_pnl": -150.0,
+      "fees": 27.7,
+      "pnl": -177.7,
+      "reason": "Stop Loss Hit (Wick Touch)",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1794547821026-NIFTY17NOV2625200PE",
+      "symbol": "NIFTY17NOV2625200PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 153.4,
+      "exit_price": 177.65,
+      "entry_time": "11:00",
+      "exit_time": "11:56:56 IST",
+      "gross_pnl": 1576.25,
+      "fees": 71.75,
+      "pnl": 1504.5,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 177.65",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 11:00:18 IST",
+      "slippage_applied": 0.0,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY17NOV2625200PE",
+        "instrument_token": "45395",
+        "underlying": "NIFTY",
+        "expiry": "17NOV2026",
+        "strike": 25200.0,
+        "option_type": "PE"
+      }
     }
-  ]
+  ],
+  "last_updated": "2026-11-13 11:56:56 IST"
 }

@@ -1,36 +1,42 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 1413088.77,
-  "deployed_cash": 19821.75,
-  "realized_pnl": 432910.52,
+  "free_cash": 1091815.49,
+  "deployed_cash": 414725.85,
+  "realized_pnl": 506541.34,
   "open_positions": [
     {
-      "id": "OPT-GAU-1794460531780-NIFTY23NOV2625350CE",
-      "symbol": "NIFTY23NOV2625350CE",
-      "token": "64458",
-      "broker_order_id": null,
-      "broker_sl_order_id": null,
-      "underlying": "NIFTY",
-      "option_type": "CE",
-      "strike": 25350.0,
-      "expiry": "23NOV2026",
+      "id": "POS-20261113112456-2F4C5B-NIFTY26NOV24200CE",
+      "symbol": "NIFTY26NOV24200CE",
       "side": "BUY",
       "qty": 65,
-      "quantity": 65,
-      "entry_price": 304.95,
-      "current_price": 296.8,
-      "peak_price": 304.95,
-      "amount": 19821.75,
-      "invested": 19821.75,
-      "sl_price": 289.7,
-      "current_stop": 289.7,
-      "target_price": 350.69,
-      "entry_spot": 25357.7,
-      "entry_time": "10:45",
-      "reason": "Bullish Supertrend + EMA Channel Alignment",
-      "status": "OPEN",
-      "unrealized_pnl": -529.75
+      "entry_price": 150.3,
+      "sl_price": 22999.5,
+      "target_price": 27841.5,
+      "entry_time": "11:24",
+      "amount": 9769.5
+    },
+    {
+      "id": "POS-20261113112502-A0F597-BANKNIFTY26NOV51500PE",
+      "symbol": "BANKNIFTY26NOV51500PE",
+      "side": "BUY",
+      "qty": 30,
+      "entry_price": 200.4,
+      "sl_price": 48915.5,
+      "target_price": 59213.5,
+      "entry_time": "11:25",
+      "amount": 6012.0
+    },
+    {
+      "id": "POS-20261113115722-32A812-SBIN",
+      "symbol": "SBIN",
+      "side": "BUY",
+      "qty": 369,
+      "entry_price": 1081.15,
+      "sl_price": 1079.21,
+      "target_price": 1084.06,
+      "entry_time": "11:57",
+      "amount": 398944.35
     }
   ],
   "trade_history": [
@@ -49,7 +55,10 @@
       "legacy_id": "POS-1",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-2",
@@ -66,7 +75,10 @@
       "legacy_id": "POS-2",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-3",
@@ -83,7 +95,10 @@
       "legacy_id": "POS-2",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-4",
@@ -100,7 +115,10 @@
       "legacy_id": "POS-4",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-5",
@@ -117,7 +135,10 @@
       "legacy_id": "POS-5",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-6",
@@ -134,7 +155,10 @@
       "legacy_id": "POS-6",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-7",
@@ -151,7 +175,10 @@
       "legacy_id": "POS-7",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-8",
@@ -168,7 +195,10 @@
       "legacy_id": "POS-8",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-9",
@@ -185,7 +215,10 @@
       "legacy_id": "POS-5",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-10",
@@ -202,7 +235,10 @@
       "legacy_id": "POS-9",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-11",
@@ -219,7 +255,10 @@
       "legacy_id": "POS-11",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-12",
@@ -236,7 +275,10 @@
       "legacy_id": "POS-12",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-13",
@@ -253,7 +295,10 @@
       "legacy_id": "POS-13",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-14",
@@ -270,7 +315,10 @@
       "legacy_id": "POS-14",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-15",
@@ -287,7 +335,10 @@
       "legacy_id": "POS-15",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-16",
@@ -304,7 +355,10 @@
       "legacy_id": "POS-16",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-17",
@@ -321,7 +375,10 @@
       "legacy_id": "POS-17",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-18",
@@ -338,7 +395,10 @@
       "legacy_id": "POS-18",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-19",
@@ -355,7 +415,10 @@
       "legacy_id": "POS-19",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20",
@@ -372,7 +435,10 @@
       "legacy_id": "POS-20",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-21",
@@ -389,7 +455,10 @@
       "legacy_id": "POS-21",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-22",
@@ -406,7 +475,10 @@
       "legacy_id": "POS-3",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-23",
@@ -423,7 +495,10 @@
       "legacy_id": "POS-23",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-24",
@@ -440,7 +515,10 @@
       "legacy_id": "POS-24",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-25",
@@ -457,7 +535,10 @@
       "legacy_id": "POS-25",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-26",
@@ -474,7 +555,10 @@
       "legacy_id": "POS-23",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-27",
@@ -491,7 +575,10 @@
       "legacy_id": "POS-26",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-28",
@@ -508,7 +595,10 @@
       "legacy_id": "POS-28",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-29",
@@ -525,7 +615,10 @@
       "legacy_id": "POS-28",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-30",
@@ -542,7 +635,10 @@
       "legacy_id": "POS-30",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-31",
@@ -559,7 +655,10 @@
       "legacy_id": "POS-31",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-32",
@@ -576,7 +675,10 @@
       "legacy_id": "POS-32",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-33",
@@ -593,7 +695,10 @@
       "legacy_id": "POS-33",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-34",
@@ -610,7 +715,10 @@
       "legacy_id": "POS-30",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-35",
@@ -627,7 +735,10 @@
       "legacy_id": "POS-34",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-36",
@@ -644,7 +755,10 @@
       "legacy_id": "POS-36",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-37",
@@ -661,7 +775,10 @@
       "legacy_id": "POS-37",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-38",
@@ -678,7 +795,10 @@
       "legacy_id": "POS-38",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-39",
@@ -695,7 +815,10 @@
       "legacy_id": "POS-39",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-40",
@@ -712,7 +835,10 @@
       "legacy_id": "POS-40",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-41",
@@ -729,7 +855,10 @@
       "legacy_id": "POS-41",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-42",
@@ -746,7 +875,10 @@
       "legacy_id": "POS-42",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-43",
@@ -763,7 +895,10 @@
       "legacy_id": "POS-43",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-44",
@@ -780,7 +915,10 @@
       "legacy_id": "POS-44",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-45",
@@ -797,7 +935,10 @@
       "legacy_id": "POS-45",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-46",
@@ -814,7 +955,10 @@
       "legacy_id": "POS-46",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-47",
@@ -831,7 +975,10 @@
       "legacy_id": "POS-47",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-48",
@@ -848,7 +995,10 @@
       "legacy_id": "POS-48",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-49",
@@ -865,7 +1015,10 @@
       "legacy_id": "POS-49",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-50",
@@ -882,7 +1035,10 @@
       "legacy_id": "POS-37",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-51",
@@ -899,7 +1055,10 @@
       "legacy_id": "POS-51",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-52",
@@ -916,7 +1075,10 @@
       "legacy_id": "POS-52",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-54",
@@ -933,7 +1095,10 @@
       "legacy_id": "POS-50",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-55",
@@ -950,7 +1115,10 @@
       "legacy_id": "POS-53",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-56",
@@ -967,7 +1135,10 @@
       "legacy_id": "POS-56",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-57",
@@ -984,7 +1155,10 @@
       "legacy_id": "POS-57",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-58",
@@ -1001,7 +1175,10 @@
       "legacy_id": "POS-58",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-59",
@@ -1018,7 +1195,10 @@
       "legacy_id": "POS-59",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-60",
@@ -1035,7 +1215,10 @@
       "legacy_id": "POS-60",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-61",
@@ -1052,7 +1235,10 @@
       "legacy_id": "POS-61",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-62",
@@ -1069,7 +1255,10 @@
       "legacy_id": "POS-62",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-63",
@@ -1086,7 +1275,10 @@
       "legacy_id": "POS-63",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-64",
@@ -1103,7 +1295,10 @@
       "legacy_id": "POS-64",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-65",
@@ -1120,7 +1315,10 @@
       "legacy_id": "POS-65",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-66",
@@ -1137,7 +1335,10 @@
       "legacy_id": "POS-66",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-67",
@@ -1154,7 +1355,10 @@
       "legacy_id": "POS-67",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-68",
@@ -1171,7 +1375,10 @@
       "legacy_id": "POS-68",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-69",
@@ -1188,7 +1395,10 @@
       "legacy_id": "POS-69",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-70",
@@ -1205,7 +1415,10 @@
       "legacy_id": "POS-70",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-71",
@@ -1222,7 +1435,10 @@
       "legacy_id": "POS-71",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-72",
@@ -1239,7 +1455,10 @@
       "legacy_id": "POS-72",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-73",
@@ -1256,7 +1475,10 @@
       "legacy_id": "POS-73",
       "entry_date": "2026-10-26",
       "date": "2026-10-26",
-      "exit_date": "2026-10-26"
+      "exit_date": "2026-10-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "symbol": "HDFCBANK",
@@ -1269,7 +1491,10 @@
       "pnl": 1193.82,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "symbol": "TCS",
@@ -1282,7 +1507,10 @@
       "pnl": -1145.4,
       "reason": "Short Stop Loss Hit (Wick Touch)",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-75",
@@ -1301,7 +1529,10 @@
       "invested": 399183.2,
       "returned": 399183.2,
       "pnl": 0.0,
-      "reason": "Manual User Squareoff / Clear All Holdings"
+      "reason": "Manual User Squareoff / Clear All Holdings",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "symbol": "RELIANCE_BSE",
@@ -1314,7 +1545,10 @@
       "pnl": -324.9,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-78",
@@ -1328,7 +1562,10 @@
       "pnl": 68.8,
       "reason": "Manual User Request Exit",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-79",
@@ -1342,7 +1579,10 @@
       "pnl": -207.0,
       "reason": "Manual User Request Exit",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "symbol": "JPL",
@@ -1355,7 +1595,10 @@
       "pnl": 4311.12,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-28",
-      "exit_date": "2026-10-28"
+      "exit_date": "2026-10-28",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029101331-47E2BF-HDFCBANK",
@@ -1371,7 +1614,10 @@
       "pnl": -455.5,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029101624-50A870-JPL",
@@ -1387,7 +1633,10 @@
       "pnl": 7.93,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029102217-C30F9F-RELIANCE",
@@ -1403,7 +1652,10 @@
       "pnl": -341.0,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029101540-9AD47C-TCS_BSE",
@@ -1419,7 +1671,10 @@
       "pnl": -1439.31,
       "reason": "Short Stop Loss Hit (Wick Touch)",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029102637-186C18-RELIANCE",
@@ -1435,7 +1690,10 @@
       "pnl": -602.88,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029101828-1E7887-HDFCBANK",
@@ -1451,7 +1709,10 @@
       "pnl": -309.25,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029102852-9FCA28-INFY",
@@ -1467,7 +1728,10 @@
       "pnl": 730.33,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029112222-908AAA-HDFCBANK",
@@ -1483,7 +1747,10 @@
       "pnl": -113.59,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029112425-6568E6-HDFCBANK",
@@ -1499,7 +1766,10 @@
       "pnl": -404.96,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029112832-E1EB84-HDFCBANK",
@@ -1515,7 +1785,10 @@
       "pnl": -248.84,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029112230-2DBF99-TCS",
@@ -1531,7 +1804,10 @@
       "pnl": -809.42,
       "reason": "Supertrend Bearish Reversal",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261029112831-6B7C9E-INFY",
@@ -1547,7 +1823,10 @@
       "pnl": -808.61,
       "reason": "Supertrend Bearish Reversal (Held 17 bars)",
       "date": "2026-10-29",
-      "exit_date": "2026-10-29"
+      "exit_date": "2026-10-29",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030102714-ADE900-INFY",
@@ -1563,7 +1842,10 @@
       "pnl": -198.22,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030103123-A397A8-JPL",
@@ -1582,7 +1864,10 @@
       "invested": 215179.2,
       "returned": 215821.8,
       "pnl": 642.6,
-      "reason": "Manual Exit from Dashboard Terminal"
+      "reason": "Manual Exit from Dashboard Terminal",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030105553-E4279F-HDFCBANK",
@@ -1598,7 +1883,10 @@
       "pnl": 472.29,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030110424-B4CAFC-TCS",
@@ -1614,7 +1902,10 @@
       "pnl": 199.69,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030111320-EA57A8-JPL",
@@ -1630,7 +1921,10 @@
       "pnl": -200.5,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030105720-91C5CB-INFY",
@@ -1646,7 +1940,10 @@
       "pnl": 959.87,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030105737-F63DAC-RELIANCE",
@@ -1662,7 +1959,10 @@
       "pnl": -545.15,
       "reason": "Stop Loss Hit (Gapped Below SL)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030112120-EF81F1-HDFCBANK",
@@ -1678,7 +1978,10 @@
       "pnl": 2000.93,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030112614-D6FE5A-TCS",
@@ -1694,7 +1997,10 @@
       "pnl": 491.39,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030122001-A3D89D-HDFCBANK",
@@ -1710,7 +2016,10 @@
       "pnl": -739.56,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261030151603-F677FD-JPL",
@@ -1726,7 +2035,10 @@
       "pnl": -372.51,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-10-30",
-      "exit_date": "2026-10-30"
+      "exit_date": "2026-10-30",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102113124-2D6F9A-INFY",
@@ -1742,7 +2054,10 @@
       "pnl": -672.19,
       "reason": "Supertrend Bearish Reversal (Held 5 bars)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102103201-29EA84-RELIANCE",
@@ -1761,7 +2076,10 @@
       "invested": 360403.2,
       "returned": 361843.2,
       "pnl": 1440.0,
-      "reason": "Manual Exit from Dashboard Terminal"
+      "reason": "Manual Exit from Dashboard Terminal",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102122859-CE7802-JPL",
@@ -1777,7 +2095,10 @@
       "pnl": -617.45,
       "reason": "Supertrend Bearish Reversal (Held 5 bars)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102121608-FFE033-HDFCBANK",
@@ -1793,7 +2114,10 @@
       "pnl": -530.78,
       "reason": "Supertrend Bearish Reversal (Held 39 bars)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102132922-83D994-RELIANCE",
@@ -1809,7 +2133,10 @@
       "pnl": -1641.89,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102135902-621207-RELIANCE",
@@ -1825,7 +2152,10 @@
       "pnl": 1994.13,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102143501-B82EDA-HDFCBANK",
@@ -1841,7 +2171,10 @@
       "pnl": 1318.04,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102145206-CE6C0D-RELIANCE",
@@ -1857,7 +2190,10 @@
       "pnl": -1037.11,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102150004-AA1DD5-HDFCBANK",
@@ -1873,7 +2209,10 @@
       "pnl": -715.61,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261102143615-DD4E32-INFY",
@@ -1889,7 +2228,10 @@
       "pnl": 2815.75,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103102912-E9009B-HDFCBANK",
@@ -1905,7 +2247,10 @@
       "pnl": -1427.3,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103110106-85B692-HDFCBANK",
@@ -1921,7 +2266,10 @@
       "pnl": -748.21,
       "reason": "Supertrend Bearish Reversal (Held 19 bars)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103123427-211891-HDFCBANK",
@@ -1937,7 +2285,10 @@
       "pnl": -1147.12,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103130701-93A4EA-TCS",
@@ -1953,7 +2304,10 @@
       "pnl": 902.65,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103133113-EB7D37-HDFCBANK",
@@ -1969,7 +2323,10 @@
       "pnl": 177.16,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103135029-44EBB6-INFY",
@@ -1985,7 +2342,10 @@
       "pnl": -858.83,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103143719-606248-INFY",
@@ -2001,7 +2361,10 @@
       "pnl": -759.68,
       "reason": "Supertrend Bearish Reversal (Held 6 bars)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103140401-FB4584-HDFCBANK",
@@ -2017,7 +2380,10 @@
       "pnl": 797.97,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103145107-03868B-RELIANCE",
@@ -2033,7 +2399,10 @@
       "pnl": 672.04,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103151101-12CE40-INFY",
@@ -2049,7 +2418,10 @@
       "pnl": -188.19,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103144905-734FC9-JPL",
@@ -2065,7 +2437,10 @@
       "pnl": -1829.19,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261103150922-53DB87-HDFCBANK",
@@ -2081,7 +2456,10 @@
       "pnl": 3110.08,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793769763834-BANKNIFTY23NOV2655700CE",
@@ -2098,7 +2476,10 @@
       "pnl": 14664.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 711.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793770177873-NIFTY09NOV2623800PE",
@@ -2115,7 +2496,10 @@
       "pnl": 984.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 101.08",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793770310932-BANKNIFTY23NOV2655600PE",
@@ -2132,7 +2516,10 @@
       "pnl": 15932.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793770509738-BANKNIFTY23NOV2655600PE",
@@ -2149,7 +2536,10 @@
       "pnl": 15366.64,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261104110822-5DBAB9-JPL",
@@ -2165,7 +2555,10 @@
       "pnl": -408.81,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793770578687-BANKNIFTY23NOV2655500PE",
@@ -2182,7 +2575,10 @@
       "pnl": 13275.97,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 665.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793770369724-NIFTY09NOV2623800PE",
@@ -2199,7 +2595,10 @@
       "pnl": -914.4,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 196.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793771536326-NIFTY09NOV2623850CE",
@@ -2216,7 +2615,10 @@
       "pnl": -857.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 162.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793771189861-BANKNIFTY23NOV2655600CE",
@@ -2233,7 +2635,10 @@
       "pnl": -347.53,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 794.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793772405625-NIFTY09NOV2623800PE",
@@ -2250,7 +2655,10 @@
       "pnl": 7199.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 196.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793772290847-BANKNIFTY23NOV2655600PE",
@@ -2267,7 +2675,10 @@
       "pnl": 1052.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793773057982-BANKNIFTY23NOV2655500PE",
@@ -2284,7 +2695,10 @@
       "pnl": -486.25,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 690.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793772584843-NIFTY09NOV2623800PE",
@@ -2301,7 +2715,10 @@
       "pnl": 644.98,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 207.25",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793775369147-BANKNIFTY23NOV2655500CE",
@@ -2318,7 +2735,10 @@
       "pnl": 19146.62,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 861.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775568481-NIFTY09NOV2623800CE",
@@ -2335,7 +2755,10 @@
       "pnl": -335.23,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775703285-NIFTY09NOV2623800CE",
@@ -2352,7 +2775,10 @@
       "pnl": 4739.69,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.95",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775448971-BANKNIFTY23NOV2655600CE",
@@ -2369,7 +2795,10 @@
       "pnl": 16657.59,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 778.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775786475-NIFTY09NOV2623800CE",
@@ -2386,7 +2815,10 @@
       "pnl": -428.03,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 79.32",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775938592-BANKNIFTY23NOV2655600CE",
@@ -2403,7 +2835,10 @@
       "pnl": 17103.87,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 793.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793775997410-NIFTY09NOV2623800CE",
@@ -2420,7 +2855,10 @@
       "pnl": 5674.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 173.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793776013252-BANKNIFTY23NOV2655600CE",
@@ -2437,7 +2875,10 @@
       "pnl": 16918.17,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 786.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793776073794-NIFTY09NOV2623800CE",
@@ -2454,7 +2895,10 @@
       "pnl": 6193.37,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 181.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793776280494-NIFTY09NOV2623800CE",
@@ -2471,7 +2915,10 @@
       "pnl": -783.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 170.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793777098613-NIFTY09NOV2623800CE",
@@ -2488,7 +2935,10 @@
       "pnl": 5511.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 170.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793776354419-BANKNIFTY23NOV2655600CE",
@@ -2505,7 +2955,10 @@
       "pnl": -1381.28,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 766.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793777244688-NIFTY09NOV2623850CE",
@@ -2522,7 +2975,10 @@
       "pnl": 4687.78,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.15",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793777377319-NIFTY09NOV2623850CE",
@@ -2539,7 +2995,10 @@
       "pnl": 4382.77,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 153.45",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793777630619-NIFTY09NOV2623850CE",
@@ -2556,7 +3015,10 @@
       "pnl": 4979.81,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 162.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793777850568-BANKNIFTY23NOV2655600CE",
@@ -2573,7 +3035,10 @@
       "pnl": 17941.04,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261104120420-578CAC-RELIANCE",
@@ -2589,7 +3054,10 @@
       "pnl": 1240.2,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793777774004-NIFTY09NOV2623850CE",
@@ -2606,7 +3074,10 @@
       "pnl": 1512.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 186.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261104122918-B7527D-HDFCBANK",
@@ -2622,7 +3093,10 @@
       "pnl": 845.59,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793777918810-BANKNIFTY23NOV2655700CE",
@@ -2639,7 +3113,10 @@
       "pnl": 3614.82,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 886.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793779907944-BANKNIFTY23NOV2655900CE",
@@ -2656,7 +3133,10 @@
       "pnl": 15941.73,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793779442626-NIFTY09NOV2623900CE",
@@ -2673,7 +3153,10 @@
       "pnl": 1562.9,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 187.72",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793855739398-BANKNIFTY23NOV2657000PE",
@@ -2690,7 +3173,10 @@
       "pnl": -481.72,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 205.98",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261105110305-B9EBAD-RELIANCE",
@@ -2706,7 +3192,10 @@
       "pnl": 425.7,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105105823-2EE45D-INFY",
@@ -2722,7 +3211,10 @@
       "pnl": -1963.26,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793855794938-NIFTY09NOV2624350PE",
@@ -2739,7 +3231,10 @@
       "pnl": -528.14,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 133.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105111122-BBE7BE-JPL",
@@ -2755,7 +3250,10 @@
       "pnl": 151.91,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793857876071-BANKNIFTY23NOV2657100CE",
@@ -2772,7 +3270,10 @@
       "pnl": 15703.6,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 746.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793858301855-NIFTY09NOV2624400CE",
@@ -2789,7 +3290,10 @@
       "pnl": 4265.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 151.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261105112816-04A963-HDFCBANK",
@@ -2805,7 +3309,10 @@
       "pnl": 737.68,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105113116-905BEA-RELIANCE",
@@ -2821,7 +3328,10 @@
       "pnl": -761.35,
       "reason": "Supertrend Bearish Reversal (Held 12 bars)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793860930527-BANKNIFTY23NOV2657300CE",
@@ -2838,7 +3348,10 @@
       "pnl": 15603.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 743.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793860919550-NIFTY09NOV2624400CE",
@@ -2855,7 +3368,10 @@
       "pnl": 4593.67,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 156.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793862431143-NIFTY09NOV2624450CE",
@@ -2872,7 +3388,10 @@
       "pnl": 2860.93,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 130.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261105123510-30CB23-RELIANCE",
@@ -2888,7 +3407,10 @@
       "pnl": -760.97,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105121302-39E608-HDFCBANK",
@@ -2904,7 +3426,10 @@
       "pnl": 815.15,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793863506766-NIFTY09NOV2624450CE",
@@ -2921,7 +3446,10 @@
       "pnl": 2812.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 129.25",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261105125022-77140D-TCS",
@@ -2937,7 +3465,10 @@
       "pnl": 757.96,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793861993290-BANKNIFTY23NOV2657400CE",
@@ -2954,7 +3485,10 @@
       "pnl": 4302.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 842.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105130703-5DDD52-INFY",
@@ -2970,7 +3504,10 @@
       "pnl": -730.68,
       "reason": "Supertrend Bearish Reversal (Held 22 bars)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793864481729-NIFTY09NOV2624450CE",
@@ -2987,7 +3524,10 @@
       "pnl": 1327.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 163.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793865947549-BANKNIFTY23NOV2657600CE",
@@ -3004,7 +3544,10 @@
       "pnl": 15383.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261105133819-1BA203-HDFCBANK",
@@ -3020,7 +3563,10 @@
       "pnl": 711.98,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105130813-71CFDA-RELIANCE",
@@ -3036,7 +3582,10 @@
       "pnl": 874.41,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105134610-1D35E3-INFY",
@@ -3052,7 +3601,10 @@
       "pnl": 214.21,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793866616936-NIFTY09NOV2624550CE",
@@ -3069,7 +3621,10 @@
       "pnl": 5878.63,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 176.50",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793870309890-NIFTY09NOV2624550CE",
@@ -3086,7 +3641,10 @@
       "pnl": -676.9,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 150.20",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793866935405-BANKNIFTY23NOV2657800CE",
@@ -3103,7 +3661,10 @@
       "pnl": -1295.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 716.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261105145009-CA3C4A-TCS",
@@ -3119,7 +3680,10 @@
       "pnl": -2019.42,
       "reason": "Supertrend Bearish Reversal (Held 22 bars)",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793940098835-NIFTY07NOV24C24000",
@@ -3136,7 +3700,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793940113492-NIFTY07NOV24C24000",
@@ -3153,7 +3720,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793940171314-NIFTY07NOV24C24000",
@@ -3170,7 +3740,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793940978272-BANKNIFTY23NOV2657900CE",
@@ -3187,7 +3760,10 @@
       "pnl": 16030.08,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 757.25",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793941235574-NIFTY09NOV2624700CE",
@@ -3204,7 +3780,10 @@
       "pnl": -520.17,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 77.90",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261106102931-199F58-TCS",
@@ -3220,7 +3799,10 @@
       "pnl": -2094.18,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261106102941-1DC1BA-HDFCBANK",
@@ -3236,7 +3818,10 @@
       "pnl": -1650.04,
       "reason": "Supertrend Bearish Reversal (Held 11 bars)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793942029214-BANKNIFTY23NOV2657800PE",
@@ -3253,7 +3838,10 @@
       "pnl": 19173.58,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 862.20",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793943775717-BANKNIFTY23NOV2657800PE",
@@ -3270,7 +3858,10 @@
       "pnl": 17942.54,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.10",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793943831933-NIFTY09NOV2624600CE",
@@ -3287,7 +3878,10 @@
       "pnl": -698.83,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 167.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261106111926-D656EE-HDFCBANK",
@@ -3303,7 +3897,10 @@
       "pnl": -516.5,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261106104001-2388E7-RELIANCE",
@@ -3319,7 +3916,10 @@
       "pnl": -447.89,
       "reason": "Supertrend Bearish Reversal (Held 32 bars)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793945242065-NIFTY09NOV2624600CE",
@@ -3336,7 +3936,10 @@
       "pnl": 5330.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 168.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793944758469-BANKNIFTY23NOV2657800CE",
@@ -3353,7 +3956,10 @@
       "pnl": 25.97,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 775.40",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793947629916-NIFTY09NOV2624650CE",
@@ -3370,7 +3976,10 @@
       "pnl": 5103.11,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 164.55",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1793947288469-BANKNIFTY23NOV2657900CE",
@@ -3387,7 +3996,10 @@
       "pnl": 3553.13,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 888.95",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261106121121-80866C-HDFCBANK",
@@ -3403,7 +4015,10 @@
       "pnl": 1685.17,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261106122700-8560F5-INFY",
@@ -3419,7 +4034,10 @@
       "pnl": -1185.53,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793948824152-NIFTY09NOV2624700CE",
@@ -3436,7 +4054,10 @@
       "pnl": 3724.06,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 143.30",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261106114612-C5385A-JPL",
@@ -3452,7 +4073,10 @@
       "pnl": -2175.3,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793946275654-NIFTY09NOV2624600PE",
@@ -3469,7 +4093,10 @@
       "pnl": -807.64,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 154.75",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1793949080279-BANKNIFTY23NOV2658200CE",
@@ -3486,7 +4113,10 @@
       "pnl": 322.07,
       "reason": "Manual User Squareoff / Friday EOD Clear Holdings",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794198401025-NIFTY09NOV2624900PE",
@@ -3503,7 +4133,10 @@
       "pnl": -802.48,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.55",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794200411241-NIFTY09NOV2624900PE",
@@ -3520,7 +4153,10 @@
       "pnl": -834.94,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.05",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794200348530-BANKNIFTY23NOV2659100PE",
@@ -3537,7 +4173,10 @@
       "pnl": -1657.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 785.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794202082211-BANKNIFTY23NOV2659100CE",
@@ -3554,7 +4193,10 @@
       "pnl": 15486.45,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 739.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794203470760-NIFTY09NOV2624900CE",
@@ -3571,7 +4213,10 @@
       "pnl": -657.77,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 75.78",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794203553444-BANKNIFTY23NOV2659200CE",
@@ -3588,7 +4233,10 @@
       "pnl": 6023.02,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 423.15",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794204492460-NIFTY09NOV2625050CE",
@@ -3605,7 +4253,10 @@
       "pnl": -1371.69,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 74.30",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261109113821-3885E3-HDFCBANK",
@@ -3621,7 +4272,10 @@
       "pnl": -3270.13,
       "reason": "Supertrend Bearish Reversal (Held 13 bars)",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794205892943-BANKNIFTY23NOV2659300PE",
@@ -3638,7 +4292,10 @@
       "pnl": -149.05,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 834.45",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261109114820-E020C7-TCS",
@@ -3654,7 +4311,10 @@
       "pnl": -3450.27,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261109130812-BA9FA4-RELIANCE",
@@ -3670,7 +4330,10 @@
       "pnl": -3541.3,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794211915509-NIFTY09NOV2624900CE",
@@ -3687,7 +4350,10 @@
       "pnl": -370.92,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.20",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794211929474-BANKNIFTY23NOV2659200CE",
@@ -3704,7 +4370,10 @@
       "pnl": -519.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.72",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794372924919-NIFTY23NOV2625350PE",
@@ -3721,7 +4390,10 @@
       "pnl": 12754.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 282.45",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794372869918-BANKNIFTY23NOV2660800CE",
@@ -3738,7 +4410,10 @@
       "pnl": 4774.25,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 907.62",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794374696052-NIFTY23NOV2625350CE",
@@ -3755,7 +4430,10 @@
       "pnl": 16116.07,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 334.25",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794375661428-BANKNIFTY23NOV2661100CE",
@@ -3772,7 +4450,10 @@
       "pnl": -523.96,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.57",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261111102908-116F05-HDFCBANK",
@@ -3788,7 +4469,10 @@
       "pnl": -622.02,
       "reason": "Supertrend Bearish Reversal (Held 12 bars)",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794379793086-NIFTY23NOV2625350PE",
@@ -3805,7 +4489,10 @@
       "pnl": 13049.7,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 287.00",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794386594019-NIFTY23NOV2625300PE",
@@ -3822,7 +4509,10 @@
       "pnl": 13990.71,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 301.50",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794386603222-BANKNIFTY23NOV2660900PE",
@@ -3839,7 +4529,10 @@
       "pnl": 431.99,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 876.90",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794387671255-BANKNIFTY23NOV2660700PE",
@@ -3856,7 +4549,10 @@
       "pnl": -1933.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 693.03",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794387795833-NIFTY23NOV2625250CE",
@@ -3873,7 +4569,10 @@
       "pnl": -357.95,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.40",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794388867284-BANKNIFTY23NOV2660800PE",
@@ -3890,7 +4589,10 @@
       "pnl": 18872.57,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 852.15",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794388921561-NIFTY17NOV2625200PE",
@@ -3907,7 +4609,10 @@
       "pnl": 2154.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.92",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794389951847-BANKNIFTY23NOV2660500PE",
@@ -3924,7 +4629,10 @@
       "pnl": -8756.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 484.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794458391971-NIFTY23NOV2625350CE",
@@ -3941,7 +4649,10 @@
       "pnl": -860.71,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 297.90",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261112102014-568A5C-RELIANCE",
@@ -3957,7 +4668,10 @@
       "pnl": -590.34,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261112102227-0A9EA5-INFY",
@@ -3973,7 +4687,10 @@
       "pnl": -615.9,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261112102921-39DB82-TCS",
@@ -3989,7 +4706,10 @@
       "pnl": -520.69,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "POS-20261112102223-E6A878-JPL",
@@ -4008,7 +4728,10 @@
       "invested": 398888.5,
       "returned": 397303.7,
       "pnl": -1584.8,
-      "reason": "Manual Exit from Dashboard Terminal"
+      "reason": "Manual Exit from Dashboard Terminal",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
     },
     {
       "id": "OPT-GAU-1794460339637-BANKNIFTY23NOV2661300CE",
@@ -4025,10 +4748,681 @@
       "pnl": 15139.01,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 727.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112105708-337FBE-HDFCBANK",
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 493,
+      "entry_price": 810.25,
+      "exit_price": 809.8,
+      "entry_time": "10:57",
+      "exit_time": "11:01",
+      "gross_pnl": -221.85,
+      "fees": 352.04,
+      "pnl": -573.89,
+      "reason": "Supertrend Bearish Reversal (Held 4 bars)",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794460531780-NIFTY23NOV2625350CE",
+      "symbol": "NIFTY23NOV2625350CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 304.95,
+      "exit_price": 292.5,
+      "entry_time": "10:45",
+      "exit_time": "11:01:19 IST",
+      "gross_pnl": -809.25,
+      "fees": 89.72,
+      "pnl": -898.97,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 292.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794461862849-NIFTY23NOV2625300PE",
+      "symbol": "NIFTY23NOV2625300PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 259.0,
+      "entry_time": "11:07",
+      "exit_time": "11:08:47 IST",
+      "gross_pnl": 11310.0,
+      "fees": 77.4,
+      "pnl": 11232.6,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 259.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794461547063-BANKNIFTY23NOV2661300CE",
+      "symbol": "BANKNIFTY23NOV2661300CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 720.6,
+      "exit_price": 680.85,
+      "entry_time": "11:02",
+      "exit_time": "11:14:11 IST",
+      "gross_pnl": -1192.5,
+      "fees": 93.08,
+      "pnl": -1285.58,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 680.85",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794462974363-NIFTY23NOV2625300PE",
+      "symbol": "NIFTY23NOV2625300PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 278.7,
+      "exit_price": 263.45,
+      "entry_time": "11:26",
+      "exit_time": "11:35:37 IST",
+      "gross_pnl": -991.25,
+      "fees": 85.65,
+      "pnl": -1076.9,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 263.45",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794463173953-BANKNIFTY23NOV2661200PE",
+      "symbol": "BANKNIFTY23NOV2661200PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 844.5,
+      "exit_price": 799.9,
+      "entry_time": "11:29",
+      "exit_time": "11:37:39 IST",
+      "gross_pnl": -1338.0,
+      "fees": 101.07,
+      "pnl": -1439.07,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 799.90",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794465005976-NIFTY23NOV2625250PE",
+      "symbol": "NIFTY23NOV2625250PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 269.6,
+      "entry_time": "12:00",
+      "exit_time": "12:05:17 IST",
+      "gross_pnl": 11999.0,
+      "fees": 78.48,
+      "pnl": 11920.52,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 269.60",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112113313-851B4E-HDFCBANK",
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 493,
+      "entry_price": 810.95,
+      "exit_price": 810.0,
+      "entry_time": "11:33",
+      "exit_time": "12:07",
+      "gross_pnl": -468.35,
+      "fees": 352.18,
+      "pnl": -820.53,
+      "reason": "Supertrend Bearish Reversal (Held 20 bars)",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794465454888-BANKNIFTY23NOV2661200PE",
+      "symbol": "BANKNIFTY23NOV2661200PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 885.05,
+      "entry_time": "12:07",
+      "exit_time": "12:09:31 IST",
+      "gross_pnl": 19951.5,
+      "fees": 93.51,
+      "pnl": 19857.99,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 885.05",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112122023-19A0B6-RELIANCE",
+      "symbol": "RELIANCE",
+      "side": "BUY",
+      "qty": 298,
+      "entry_price": 1338.4,
+      "exit_price": 1341.6,
+      "entry_time": "12:20",
+      "exit_time": "12:20",
+      "gross_pnl": 953.6,
+      "fees": 352.16,
+      "pnl": 601.44,
+      "reason": "TICK_TARGET_HIT",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794466600383-NIFTY23NOV2625250PE",
+      "symbol": "NIFTY23NOV2625250PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 276.5,
+      "entry_time": "12:26",
+      "exit_time": "12:29:42 IST",
+      "gross_pnl": 12447.5,
+      "fees": 79.2,
+      "pnl": 12368.3,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 276.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112122312-005CEE-SBIN",
+      "symbol": "SBIN",
+      "side": "BUY",
+      "qty": 370,
+      "entry_price": 1079.0,
+      "exit_price": 1076.5,
+      "entry_time": "12:23",
+      "exit_time": "12:35",
+      "gross_pnl": -925.0,
+      "fees": 351.53,
+      "pnl": -1276.53,
+      "reason": "TICK_STOP_LOSS_HIT",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794466904313-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 670.0,
+      "entry_time": "12:31",
+      "exit_time": "12:36:45 IST",
+      "gross_pnl": 13500.0,
+      "fees": 83.25,
+      "pnl": 13416.75,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 670.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794467552472-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 220.0,
+      "exit_price": 688.4,
+      "entry_time": "12:42",
+      "exit_time": "12:43:35 IST",
+      "gross_pnl": 14052.0,
+      "fees": 84.13,
+      "pnl": 13967.87,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 688.40",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112123124-AA2D91-INFY",
+      "symbol": "INFY",
+      "side": "BUY",
+      "qty": 343,
+      "entry_price": 1144.7,
+      "exit_price": 1146.9,
+      "entry_time": "12:31",
+      "exit_time": "12:45",
+      "gross_pnl": 754.6,
+      "fees": 347.32,
+      "pnl": 407.28,
+      "reason": "TICK_TARGET_HIT",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "verified_market_data": false,
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794467350773-NIFTY17NOV2625200PE",
+      "symbol": "NIFTY17NOV2625200PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 85.0,
+      "exit_price": 76.95,
+      "entry_time": "12:39",
+      "exit_time": "12:46:33 IST",
+      "gross_pnl": -523.25,
+      "fees": 58.58,
+      "pnl": -581.83,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 76.95",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112125710-695FD5-TCS",
+      "symbol": "TCS",
+      "side": "BUY",
+      "qty": 163,
+      "entry_price": 2441.9,
+      "exit_price": 2436.3,
+      "entry_time": "12:57",
+      "exit_time": "13:08",
+      "gross_pnl": -912.8,
+      "fees": 350.62,
+      "pnl": -1263.42,
+      "reason": "TICK_STOP_LOSS_HIT",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794468588468-BANKNIFTY23NOV2661300CE",
+      "symbol": "BANKNIFTY23NOV2661300CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 702.0,
+      "exit_price": 697.5,
+      "entry_time": "12:59",
+      "exit_time": "13:17:22 IST",
+      "gross_pnl": -135.0,
+      "fees": 93.53,
+      "pnl": -228.53,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 697.50",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794468698870-NIFTY23NOV2625250CE",
+      "symbol": "NIFTY23NOV2625250CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 288.0,
+      "exit_price": 275.0,
+      "entry_time": "13:01",
+      "exit_time": "13:26:08 IST",
+      "gross_pnl": -845.0,
+      "fees": 87.23,
+      "pnl": -932.23,
+      "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 275.00",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112125918-9E7938-SBIN",
+      "symbol": "SBIN",
+      "side": "BUY",
+      "qty": 365,
+      "entry_price": 1081.25,
+      "exit_price": 1085.0,
+      "entry_time": "12:59",
+      "exit_time": "14:18",
+      "gross_pnl": 1368.75,
+      "fees": 349.16,
+      "pnl": 1019.59,
+      "reason": "Supertrend Bearish Reversal (Held 4 bars)",
+      "date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794468132043-NIFTY26FEB24200CE",
+      "legacy_id": "OPT-GAU-1794468132043-NIFTY26FEB24200CE",
+      "symbol": "NIFTY26FEB24200CE",
+      "qty": 65,
+      "entry_price": 100.0,
+      "exit_price": 100.0,
+      "date": "2026-11-12",
+      "entry_date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "entry_time": "12:52",
+      "exit_time": "14:22:14 IST",
+      "entry_reason": "Strategy Entry",
+      "exit_reason": "EMERGENCY_SQUARE_OFF",
+      "invested": 6500.0,
+      "returned": 6500.0,
+      "pnl": 0.0,
+      "reason": "EMERGENCY_SQUARE_OFF",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794468594943-NIFTY26NOV24200CE",
+      "legacy_id": "OPT-GAU-1794468594943-NIFTY26NOV24200CE",
+      "symbol": "NIFTY26NOV24200CE",
+      "qty": 65,
+      "entry_price": 100.2,
+      "exit_price": 100.2,
+      "date": "2026-11-12",
+      "entry_date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "entry_time": "12:59",
+      "exit_time": "14:22:14 IST",
+      "entry_reason": "Strategy Entry",
+      "exit_reason": "EMERGENCY_SQUARE_OFF",
+      "invested": 6513.0,
+      "returned": 6513.0,
+      "pnl": 0.0,
+      "reason": "EMERGENCY_SQUARE_OFF",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261112131846-45F805-BANKNIFTY26NOV51500PE",
+      "legacy_id": "POS-20261112131846-45F805-BANKNIFTY26NOV51500PE",
+      "symbol": "BANKNIFTY26NOV51500PE",
+      "qty": 30,
+      "entry_price": 200.4,
+      "exit_price": 200.4,
+      "date": "2026-11-12",
+      "entry_date": "2026-11-12",
+      "exit_date": "2026-11-12",
+      "entry_time": "13:18",
+      "exit_time": "14:22:14 IST",
+      "entry_reason": "Strategy Entry",
+      "exit_reason": "EMERGENCY_SQUARE_OFF",
+      "invested": 6012.0,
+      "returned": 6012.0,
+      "pnl": 0.0,
+      "reason": "EMERGENCY_SQUARE_OFF",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794544762806-NIFTY17NOV2625200CE",
+      "symbol": "NIFTY17NOV2625200CE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 172.1,
+      "exit_price": 162.0,
+      "entry_time": "10:09",
+      "exit_time": "10:11:25 IST",
+      "gross_pnl": -656.5,
+      "fees": 70.88,
+      "pnl": -727.38,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 162.00",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:09:21 IST",
+      "slippage_applied": 0.5,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY17NOV2625200CE",
+        "instrument_token": "45394",
+        "underlying": "NIFTY",
+        "expiry": "17NOV2026",
+        "strike": 25200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "POS-20261113101322-0E9011-RELIANCE",
+      "legacy_id": "POS-20261113101322-0E9011-RELIANCE",
+      "symbol": "RELIANCE",
+      "qty": 297,
+      "entry_price": 1342.4,
+      "exit_price": 1347.7,
+      "date": "2026-11-13",
+      "entry_date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "entry_time": "10:13",
+      "exit_time": "10:18:23 IST",
+      "entry_reason": "Strategy Entry",
+      "exit_reason": "Manual Exit from Dashboard Terminal",
+      "invested": 398692.8,
+      "returned": 400266.9,
+      "pnl": 1574.1,
+      "reason": "Manual Exit from Dashboard Terminal",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794545071838-BANKNIFTY23NOV2661000PE",
+      "symbol": "BANKNIFTY23NOV2661000PE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 725.3,
+      "exit_price": 685.65,
+      "entry_time": "10:14",
+      "exit_time": "10:35:19 IST",
+      "gross_pnl": -1189.5,
+      "fees": 93.39,
+      "pnl": -1282.89,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 685.65",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:14:30 IST",
+      "slippage_applied": 0.75,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BANKNIFTY23NOV2661000PE",
+        "instrument_token": "62336",
+        "underlying": "BANKNIFTY",
+        "expiry": "23NOV2026",
+        "strike": 61000.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "POS-20261113103824-1D3501-SBIN",
+      "symbol": "SBIN",
+      "side": "BUY",
+      "qty": 370,
+      "entry_price": 1078.85,
+      "exit_price": 1078.55,
+      "entry_time": "10:38",
+      "exit_time": "10:42",
+      "gross_pnl": -111.0,
+      "fees": 351.89,
+      "pnl": -462.89,
+      "reason": "Supertrend Bearish Reversal (Held 4 bars)",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261113104308-B852FE-HDFCBANK",
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 498,
+      "entry_price": 802.75,
+      "exit_price": 805.35,
+      "entry_time": "10:43",
+      "exit_time": "10:45",
+      "gross_pnl": 1294.8,
+      "fees": 353.02,
+      "pnl": 941.78,
+      "reason": "TICK_TARGET_HIT",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "POS-20261113104811-73F548-TCS",
+      "symbol": "TCS",
+      "side": "BUY",
+      "qty": 163,
+      "entry_price": 2441.9,
+      "exit_price": 2439.7,
+      "entry_time": "10:48",
+      "exit_time": "10:52",
+      "gross_pnl": -358.6,
+      "fees": 350.89,
+      "pnl": -709.49,
+      "reason": "Supertrend Bearish Reversal (Held 4 bars)",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-GAU-1794547225264-BANKNIFTY23NOV2661200CE",
+      "symbol": "BANKNIFTY23NOV2661200CE",
+      "side": "BUY",
+      "qty": 30,
+      "quantity": 30,
+      "entry_price": 641.15,
+      "exit_price": 590.0,
+      "entry_time": "10:50",
+      "exit_time": "10:57:30 IST",
+      "gross_pnl": -1534.5,
+      "fees": 87.27,
+      "pnl": -1621.77,
+      "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 590.00",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 10:50:24 IST",
+      "slippage_applied": 2.9,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BANKNIFTY23NOV2661200CE",
+        "instrument_token": "62339",
+        "underlying": "BANKNIFTY",
+        "expiry": "23NOV2026",
+        "strike": 61200.0,
+        "option_type": "CE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "OPT-GAU-1794547820322-NIFTY17NOV2625200PE",
+      "symbol": "NIFTY17NOV2625200PE",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 153.4,
+      "exit_price": 177.65,
+      "entry_time": "11:00",
+      "exit_time": "11:56:55 IST",
+      "gross_pnl": 1576.25,
+      "fees": 71.75,
+      "pnl": 1504.5,
+      "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 177.65",
+      "date": "2026-11-13",
+      "exit_date": "2026-11-13",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-13 11:00:18 IST",
+      "slippage_applied": 0.0,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY17NOV2625200PE",
+        "instrument_token": "45395",
+        "underlying": "NIFTY",
+        "expiry": "17NOV2026",
+        "strike": 25200.0,
+        "option_type": "PE"
+      }
     }
   ],
-  "last_updated": "2026-11-12 10:54:17 IST",
+  "last_updated": "2026-11-13 11:57:22 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15,
@@ -4042,7 +5436,8 @@
     "2026-11-06": 63758.93,
     "2026-11-09": 4884.25,
     "2026-11-11": 78706.33,
-    "2026-11-12": 2210.36
+    "2026-11-12": 76625.22,
+    "2026-11-13": -666.77
   },
   "trades": []
 }

@@ -5,7 +5,8 @@ let equityChartInstance = null;
 let activeView = "overview";
 let cachedDashboardData = null;
 let currentAccount = new URLSearchParams(window.location.search).get("account") || "gautam";
-let dashboardApiToken = "";
+let csrfToken = null;
+let isAuthenticated = false;
 let currentChartDateFilter = "ALL";
 let autoRefreshTimer = null;
 let pollingIntervalMs = 10000; // 10s default
@@ -15,11 +16,12 @@ let allReportsCache = [];
 // ==========================================================================
 // 1. INITIALIZATION & DUAL EXPERIENCE (Beginner vs Pro)
 // ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initUserExperienceMode();
   initAccountSelector();
   updateClock();
   setInterval(updateClock, 1000);
+  await checkSessionStatus();
   switchView(activeView);
   startAutoRefresh();
 });
@@ -129,10 +131,108 @@ function formatSignedINR(val) {
 
 async function authFetch(url, options = {}) {
   options.headers = options.headers || {};
-  if (dashboardApiToken) {
-    options.headers["X-API-Token"] = dashboardApiToken;
+  if (csrfToken) {
+    options.headers["X-CSRF-Token"] = csrfToken;
   }
-  return fetch(url, options);
+  options.credentials = "same-origin";
+  const res = await fetch(url, options);
+  if (res.status === 401 && !url.includes("/api/auth/")) {
+    isAuthenticated = false;
+    showLoginModal();
+  } else if (res.ok && !url.includes("/api/auth/")) {
+    isAuthenticated = true;
+  }
+  return res;
+}
+
+function showLoginModal(errorMsg = "") {
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.classList.add("active");
+  const errEl = document.getElementById("loginErrorMessage");
+  if (errEl) {
+    if (errorMsg) {
+      errEl.textContent = errorMsg;
+      errEl.style.display = "block";
+    } else {
+      errEl.style.display = "none";
+    }
+  }
+  const input = document.getElementById("loginTokenInput");
+  if (input) input.focus();
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.classList.remove("active");
+}
+
+async function submitLogin() {
+  const input = document.getElementById("loginTokenInput");
+  const token = input ? input.value.trim() : "";
+  if (!token) {
+    showLoginModal("Please enter your dashboard token / password.");
+    return;
+  }
+
+  const btn = document.getElementById("loginSubmitBtn");
+  if (btn) btn.textContent = "Verifying...";
+
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ token: token })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.status === "SUCCESS") {
+      csrfToken = data.csrf_token;
+      isAuthenticated = true;
+      if (input) input.value = "";
+      closeLoginModal();
+      refreshCurrentView();
+    } else {
+      showLoginModal(data.message || "Invalid credentials.");
+    }
+  } catch (err) {
+    showLoginModal("Connection error during login: " + err);
+  } finally {
+    if (btn) btn.textContent = "Unlock Terminal";
+  }
+}
+
+async function logoutSession() {
+  try {
+    await authFetch("/api/auth/logout", {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  } catch (err) {
+    console.warn("Logout error:", err);
+  } finally {
+    csrfToken = null;
+    isAuthenticated = false;
+    showLoginModal("You have been locked out. Please authenticate.");
+  }
+}
+
+async function checkSessionStatus() {
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.csrf_token) {
+        csrfToken = data.csrf_token;
+        isAuthenticated = true;
+        closeLoginModal();
+        return true;
+      }
+    }
+  } catch (e) {}
+  isAuthenticated = false;
+  showLoginModal();
+  return false;
 }
 
 // ==========================================================================
@@ -245,11 +345,10 @@ async function refreshCurrentView(isBackground = false) {
 // 5. VIEW 1: OVERVIEW COCKPIT
 // ==========================================================================
 async function loadOverviewData() {
-  const res = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   cachedDashboardData = data;
-
-  if (data.api_token) dashboardApiToken = data.api_token;
 
   // Topbar badges
   updateTopbarBadges(data);
@@ -332,7 +431,8 @@ async function loadOverviewData() {
 function updateTopbarBadges(data) {
   const mkt = document.getElementById("marketBadge");
   if (mkt) {
-    if (data.market_open) {
+    const isOpen = data.market_open === true || data.market_status === "OPEN";
+    if (isOpen) {
       mkt.className = "status-badge open";
       mkt.innerHTML = `<span class="status-dot"></span> Market Open`;
     } else {
@@ -382,7 +482,7 @@ function renderQuickWidgets(positions) {
   }
 
   // Quick Watchlist preview
-  fetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`)
+  authFetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`)
     .then(r => r.json())
     .then(data => {
       const el = document.getElementById("quickWatchlist");
@@ -422,7 +522,8 @@ async function renderEquityChart() {
     const selectedDate = dateSelect ? dateSelect.value : currentChartDateFilter;
     currentChartDateFilter = selectedDate;
 
-    const res = await fetch(`/api/equity_curve?account=${encodeURIComponent(currentAccount)}&date=${encodeURIComponent(selectedDate)}`);
+    const res = await authFetch(`/api/equity_curve?account=${encodeURIComponent(currentAccount)}&date=${encodeURIComponent(selectedDate)}`);
+    if (!res.ok) return;
     const data = await res.json();
     const points = Array.isArray(data) ? data : (data.points || []);
     const availableDates = data.available_dates || [];
@@ -578,7 +679,8 @@ async function renderEquityChart() {
 // 7. VIEW 2: LIVE TRADING DESK
 // ==========================================================================
 async function loadLiveTradingData() {
-  const res = await fetch(`/api/positions?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/positions?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const positions = data.open_positions || [];
   const tbody = document.getElementById("positionsTableBody");
@@ -621,21 +723,28 @@ async function loadLiveTradingData() {
 // 8. VIEW 3: F&O DERIVATIVES DESK
 // ==========================================================================
 async function loadFnoDeskData() {
-  const res = await fetch("/api/fno");
+  const res = await authFetch("/api/fno");
+  if (!res.ok) return;
   const data = await res.json();
 
   const nifty = data.indices?.NIFTY || {};
   const bnf = data.indices?.BANKNIFTY || {};
 
+  const niftyCeText = nifty.ce_contract ? `${nifty.ce_contract}${Number(nifty.ce_price || 0) > 0 ? ' • ₹' + Number(nifty.ce_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+  const niftyPeText = nifty.pe_contract ? `${nifty.pe_contract}${Number(nifty.pe_price || 0) > 0 ? ' • ₹' + Number(nifty.pe_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+
   document.getElementById("niftySpotBadge").textContent = `Spot: ₹${Number(nifty.spot || 0).toLocaleString('en-IN')}`;
   document.getElementById("niftyAtmStrike").textContent = `${nifty.atm_strike || '--'}`;
-  document.getElementById("niftyCeContract").textContent = nifty.ce_contract || "QUOTE UNAVAILABLE";
-  document.getElementById("niftyPeContract").textContent = nifty.pe_contract || "QUOTE UNAVAILABLE";
+  document.getElementById("niftyCeContract").textContent = niftyCeText;
+  document.getElementById("niftyPeContract").textContent = niftyPeText;
+
+  const bnfCeText = bnf.ce_contract ? `${bnf.ce_contract}${Number(bnf.ce_price || 0) > 0 ? ' • ₹' + Number(bnf.ce_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+  const bnfPeText = bnf.pe_contract ? `${bnf.pe_contract}${Number(bnf.pe_price || 0) > 0 ? ' • ₹' + Number(bnf.pe_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
 
   document.getElementById("bankniftySpotBadge").textContent = `Spot: ₹${Number(bnf.spot || 0).toLocaleString('en-IN')}`;
   document.getElementById("bankniftyAtmStrike").textContent = `${bnf.atm_strike || '--'}`;
-  document.getElementById("bankniftyCeContract").textContent = bnf.ce_contract || "QUOTE UNAVAILABLE";
-  document.getElementById("bankniftyPeContract").textContent = bnf.pe_contract || "QUOTE UNAVAILABLE";
+  document.getElementById("bankniftyCeContract").textContent = bnfCeText;
+  document.getElementById("bankniftyPeContract").textContent = bnfPeText;
 
   const fnoPos = data.open_positions || [];
   const tbody = document.getElementById("fnoPositionsTableBody");
@@ -675,7 +784,8 @@ async function loadFnoDeskData() {
 // 9. VIEW 4: CASH DESK & CUSTOM WATCHLIST MANAGEMENT
 // ==========================================================================
 async function loadCashDeskData() {
-  const res = await fetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/watchlist?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const symbols = data.symbols || [];
   const tbody = document.getElementById("watchlistTableBody");
@@ -788,7 +898,8 @@ async function removeSymbolFromWatchlist(sym) {
 // 10. VIEW 5: STRATEGY CENTRE
 // ==========================================================================
 async function loadStrategyCentreData() {
-  const res = await fetch(`/api/strategies?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/strategies?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const strategies = data.strategies || [];
   const tbody = document.getElementById("strategiesTableBody");
@@ -825,7 +936,8 @@ async function loadStrategyCentreData() {
 // 11. VIEW 6: RISK CENTRE
 // ==========================================================================
 async function loadRiskCentreData() {
-  const res = await fetch(`/api/risk?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/risk?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
 
   const maxLoss = Number(data.max_daily_loss || 1000.0);
@@ -875,7 +987,8 @@ async function loadRiskCentreData() {
 // 12. VIEW 7: TRADE JOURNAL
 // ==========================================================================
 async function loadTradesTable() {
-  const res = await fetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   allTradesCache = data.trades || [];
 
@@ -948,7 +1061,8 @@ function filterAndRenderTrades() {
 // 13. VIEW 8: ANALYTICS
 // ==========================================================================
 async function loadAnalyticsData() {
-  const res = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const kpis = data.kpis || {};
   const an = kpis.analytics || {};
@@ -1015,7 +1129,8 @@ function renderBestWorstTable(elementId, items, isBest) {
 // 14. VIEW 9: REPORTS & TAX P&L
 // ==========================================================================
 async function loadReportsData() {
-  const res = await fetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/trades?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   allReportsCache = data.trades || [];
 
@@ -1115,7 +1230,8 @@ function filterAndRenderReports() {
 // 15. VIEW 10: ACCOUNTS MANAGER & INVARIANT RECONCILIATION
 // ==========================================================================
 async function loadAccountsData() {
-  const dashRes = await fetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  const dashRes = await authFetch(`/api/dashboard?account=${encodeURIComponent(currentAccount)}`);
+  if (!dashRes.ok) return;
   const dashData = await dashRes.json();
   const kpis = dashData.kpis || {};
   const inv = kpis.accounting_invariant || {};
@@ -1138,7 +1254,8 @@ async function loadAccountsData() {
   diffEl.className = `segment-metric-val ${(inv.diff || 0) <= 0.05 ? "val-green" : "val-red"}`;
 
   // Multi-Account Grid Cards
-  const accRes = await fetch("/api/accounts");
+  const accRes = await authFetch("/api/accounts");
+  if (!accRes.ok) return;
   const accData = await accRes.json();
   const accounts = accData.accounts || {};
 
@@ -1182,7 +1299,8 @@ async function reconcileActiveAccount() {
 // 16. VIEW 11: SYSTEM HEALTH & LOGS
 // ==========================================================================
 async function loadSystemHealth() {
-  const res = await fetch(`/api/system/status?account=${encodeURIComponent(currentAccount)}`);
+  const res = await authFetch(`/api/system/status?account=${encodeURIComponent(currentAccount)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const daemon = data.daemon || {};
 
@@ -1204,7 +1322,8 @@ async function loadSystemHealth() {
 
 async function loadLogsTerminal() {
   const lvl = document.getElementById("logLevelFilter")?.value || "";
-  const res = await fetch(`/api/logs?level=${encodeURIComponent(lvl)}`);
+  const res = await authFetch(`/api/logs?level=${encodeURIComponent(lvl)}`);
+  if (!res.ok) return;
   const data = await res.json();
   const logs = data.logs || [];
   const term = document.getElementById("logsTerminal");
@@ -1233,7 +1352,8 @@ async function loadLogsTerminal() {
 // 17. VIEW 12: SETTINGS
 // ==========================================================================
 async function loadSettingsData() {
-  const res = await fetch("/api/config");
+  const res = await authFetch("/api/config");
+  if (!res.ok) return;
   const data = await res.json();
   const cfg = data.config || {};
   const tbody = document.getElementById("configTableBody");

@@ -63,5 +63,7 @@
   "blocked_exchanges": [
     "BSE"
   ],
-  "watchlist": []
+  "watchlist": [
+    "SBIN"
+  ]
 }
