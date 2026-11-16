@@ -515,13 +515,26 @@ def compute_dashboard_metrics(account_id="gautam"):
         pos_pnl_pct = round((pos_pnl / invested) * 100, 2) if invested > 0 else 0.0
         unrealized_pnl += pos_pnl
 
+        # Calculate stop and target with sanity checks for options
+        raw_sl = float(p.get("sl_price", p.get("current_stop", round(entry_p * 0.95, 2))))
+        if is_option and raw_sl > (entry_p * 2.5):
+            cur_stop = round(entry_p * 0.95, 2)
+        else:
+            cur_stop = raw_sl
+
+        raw_tgt = float(p.get("target_price", round(entry_p * 1.15, 2)))
+        if is_option and raw_tgt > (entry_p * 3.0):
+            cur_target = round(entry_p * 1.15, 2)
+        else:
+            cur_target = raw_tgt
+
         enriched_positions.append({
             **p,
             "amount": invested,
             "invested": invested,
             "current_price": cur_p,
-            "current_stop": float(p.get("sl_price", p.get("current_stop", round(entry_p * 0.95, 2)))),
-            "target_price": float(p.get("target_price", round(entry_p * 1.15, 2))),
+            "current_stop": cur_stop,
+            "target_price": cur_target,
             "peak_price": float(p.get("peak_price", max(cur_p, entry_p))),
             "unrealized_pnl": pos_pnl,
             "unrealized_pnl_pct": pos_pnl_pct,
@@ -1107,7 +1120,7 @@ def reconcile_account_ledger(account_id="gautam"):
 def get_fno_desk_data():
     """
     Returns options desk intelligence:
-    - Spot prices for NIFTY 50 and BANKNIFTY from live broker quotes
+    - Spot prices for NIFTY 50, BANKNIFTY, IDEA, HDFCBANK, BSE from live broker quotes
     - Dynamic weekly ATM strike contract resolution
     - Real-time option premiums for active CE and PE contracts
     - Active F&O open positions with mark-to-market
@@ -1116,23 +1129,42 @@ def get_fno_desk_data():
     from options_engine import OptionsEngine
     import fno_trader
 
-    nifty_quote = fetch_live_quote_data("NIFTY 50")
-    banknifty_quote = fetch_live_quote_data("BANKNIFTY")
+    underlyings = [
+        {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "default_spot": 24200.0, "step": 50.0, "default_lot": 65},
+        {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "default_spot": 51500.0, "step": 100.0, "default_lot": 30},
+        {"name": "IDEA", "symbol": "IDEA", "token": "14366", "default_spot": 8.5, "step": 1.0, "default_lot": 71475},
+        {"name": "HDFCBANK", "symbol": "HDFCBANK", "token": "1333", "default_spot": 800.0, "step": 10.0, "default_lot": 650},
+        {"name": "BSE", "symbol": "BSE", "token": "19585", "default_spot": 4600.0, "step": 50.0, "default_lot": 200},
+    ]
 
-    nifty_spot = float(nifty_quote["price"]) if (nifty_quote and nifty_quote.get("price", 0) > 0) else 24200.0
-    banknifty_spot = float(banknifty_quote["price"]) if (banknifty_quote and banknifty_quote.get("price", 0) > 0) else 51500.0
+    indices_data = {}
+    for u in underlyings:
+        uname = u["name"]
+        usym = u["symbol"]
+        utok = u.get("token")
+        u_quote = fetch_live_quote_data(usym, token=utok)
+        u_spot = float(u_quote["price"]) if (u_quote and u_quote.get("price", 0) > 0) else u["default_spot"]
 
-    # Dynamic weekly ATM strike resolution
-    nifty_ce = fno_trader.resolve_atm_contract("NIFTY", nifty_spot, "CE")
-    nifty_pe = fno_trader.resolve_atm_contract("NIFTY", nifty_spot, "PE")
-    bnf_ce = fno_trader.resolve_atm_contract("BANKNIFTY", banknifty_spot, "CE")
-    bnf_pe = fno_trader.resolve_atm_contract("BANKNIFTY", banknifty_spot, "PE")
+        ce_contract = fno_trader.resolve_atm_contract(uname, u_spot, "CE")
+        pe_contract = fno_trader.resolve_atm_contract(uname, u_spot, "PE")
 
-    # Fetch live option quotes for resolved ATM contracts
-    nifty_ce_q = fetch_live_quote_data(nifty_ce["symbol"], token=nifty_ce.get("token"), exchange="NFO") if nifty_ce else None
-    nifty_pe_q = fetch_live_quote_data(nifty_pe["symbol"], token=nifty_pe.get("token"), exchange="NFO") if nifty_pe else None
-    bnf_ce_q = fetch_live_quote_data(bnf_ce["symbol"], token=bnf_ce.get("token"), exchange="NFO") if bnf_ce else None
-    bnf_pe_q = fetch_live_quote_data(bnf_pe["symbol"], token=bnf_pe.get("token"), exchange="NFO") if bnf_pe else None
+        ce_q = fetch_live_quote_data(ce_contract["symbol"], token=ce_contract.get("token"), exchange=ce_contract.get("exchange", "NFO")) if ce_contract else None
+        pe_q = fetch_live_quote_data(pe_contract["symbol"], token=pe_contract.get("token"), exchange=pe_contract.get("exchange", "NFO")) if pe_contract else None
+
+        atm_strike = ce_contract.get("atm_strike", round(u_spot / u["step"]) * u["step"]) if ce_contract else round(u_spot / u["step"]) * u["step"]
+        lot_size = ce_contract.get("lotsize", u["default_lot"]) if ce_contract else u["default_lot"]
+
+        indices_data[uname] = {
+            "spot": u_spot,
+            "atm_strike": atm_strike,
+            "step": u["step"],
+            "lot_size": lot_size,
+            "ce_contract": ce_contract.get("symbol") if ce_contract else "--",
+            "ce_price": ce_q.get("price", 0.0) if ce_q else 0.0,
+            "pe_contract": pe_contract.get("symbol") if pe_contract else "--",
+            "pe_price": pe_q.get("price", 0.0) if pe_q else 0.0,
+            "last_updated": u_quote["last_updated"] if u_quote else get_ist_now().strftime("%H:%M:%S IST")
+        }
 
     fno_ledger = read_json_file(TRADER_DIR / "ledger_fno.json", default={})
     fno_positions = fno_ledger.get("open_positions", [])
@@ -1143,7 +1175,8 @@ def get_fno_desk_data():
         sym = p.get("symbol", "")
         entry_p = float(p.get("entry_price", 0.0))
         pos_token = p.get("token") or get_fno_token_by_symbol(sym)
-        quote = fetch_live_quote_data(sym, token=pos_token, exchange="NFO")
+        pos_exch = p.get("exchange", "NFO")
+        quote = fetch_live_quote_data(sym, token=pos_token, exchange=pos_exch)
         cur_p = float(quote["price"]) if (quote and quote.get("price", 0) > 0) else float(p.get("current_price", entry_p))
         qty = int(p.get("qty", 25))
         invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
@@ -1160,34 +1193,8 @@ def get_fno_desk_data():
             "lots": max(1, qty // lot_size) if lot_size > 0 else 1
         })
 
-    nifty_atm_strike = nifty_ce.get("atm_strike", round(nifty_spot / 50) * 50) if nifty_ce else round(nifty_spot / 50) * 50
-    bnf_atm_strike = bnf_ce.get("atm_strike", round(banknifty_spot / 100) * 100) if bnf_ce else round(banknifty_spot / 100) * 100
-
     return {
-        "indices": {
-            "NIFTY": {
-                "spot": nifty_spot,
-                "atm_strike": nifty_atm_strike,
-                "step": 50,
-                "lot_size": nifty_ce.get("lotsize", 65) if nifty_ce else 65,
-                "ce_contract": nifty_ce.get("symbol") if nifty_ce else "--",
-                "ce_price": nifty_ce_q.get("price", 0.0) if nifty_ce_q else 0.0,
-                "pe_contract": nifty_pe.get("symbol") if nifty_pe else "--",
-                "pe_price": nifty_pe_q.get("price", 0.0) if nifty_pe_q else 0.0,
-                "last_updated": nifty_quote["last_updated"] if nifty_quote else get_ist_now().strftime("%H:%M:%S IST")
-            },
-            "BANKNIFTY": {
-                "spot": banknifty_spot,
-                "atm_strike": bnf_atm_strike,
-                "step": 100,
-                "lot_size": bnf_ce.get("lotsize", 30) if bnf_ce else 30,
-                "ce_contract": bnf_ce.get("symbol") if bnf_ce else "--",
-                "ce_price": bnf_ce_q.get("price", 0.0) if bnf_ce_q else 0.0,
-                "pe_contract": bnf_pe.get("symbol") if bnf_pe else "--",
-                "pe_price": bnf_pe_q.get("price", 0.0) if bnf_pe_q else 0.0,
-                "last_updated": banknifty_quote["last_updated"] if banknifty_quote else get_ist_now().strftime("%H:%M:%S IST")
-            }
-        },
+        "indices": indices_data,
         "open_positions": enriched_fno_pos,
         "starting_capital": float(fno_ledger.get("starting_capital", 200000.0)),
         "free_cash": float(fno_ledger.get("free_cash", 200000.0)),
@@ -1195,6 +1202,97 @@ def get_fno_desk_data():
         "realized_pnl": float(fno_ledger.get("realized_pnl", 0.0)),
         "total_trades": len(fno_history)
     }
+
+def close_account_position(account_id="gautam", symbol_or_id="", exit_price=None, reason="Manual Exit from Dashboard"):
+    """
+    Safely squares off an open position for any specified account.
+    Reconciles open_positions, deployed_cash, free_cash, realized_pnl, and trade_history.
+    """
+    from ledger_transaction import locked_ledger_transaction
+    acc_id = (account_id or "gautam").lower().strip()
+    accounts_info = read_json_file(TRADER_DIR / "accounts.json", default={"accounts": {}})
+    acc_meta = accounts_info.get("accounts", {}).get(acc_id, {})
+    ledger_filename = acc_meta.get("ledger_file", f"ledger_{acc_id}.json" if acc_id != "gautam" else "ledger.json")
+    ledger_path = TRADER_DIR / ledger_filename
+
+    if not ledger_path.exists():
+        return False, f"Ledger file {ledger_filename} does not exist"
+
+    def _op(ledger_data):
+        open_pos = ledger_data.get("open_positions", [])
+        target_idx = None
+        for idx, p in enumerate(open_pos):
+            if p.get("id") == symbol_or_id or p.get("symbol") == symbol_or_id:
+                target_idx = idx
+                break
+
+        if target_idx is None:
+            return False, f"Position '{symbol_or_id}' not found in {ledger_filename}"
+
+        pos = open_pos.pop(target_idx)
+        sym = pos.get("symbol", symbol_or_id)
+        qty = int(pos.get("qty", pos.get("quantity", 1)))
+        ep = float(pos.get("entry_price", 0.0))
+        is_option = pos.get("option_type") or sym.endswith("CE") or sym.endswith("PE") or "OPT" in pos.get("id", "")
+
+        xp = 0.0
+        if exit_price and float(exit_price) > 0:
+            xp = float(exit_price)
+        else:
+            q = fetch_live_quote_data(sym, token=pos.get("token"), exchange=pos.get("exchange", "NFO" if is_option else "NSE"))
+            if q and float(q.get("price", 0.0)) > 0:
+                xp = float(q["price"])
+            elif float(pos.get("current_price", 0.0)) > 0:
+                xp = float(pos["current_price"])
+            else:
+                xp = ep
+
+        # Calculate costs and PnL
+        from fno_trader import calculate_option_costs
+        if is_option:
+            costs = calculate_option_costs(ep, xp, qty)
+            gross_pnl = costs["gross_pnl"]
+            fees = costs["total_fees"]
+            net_pnl = costs["net_pnl"]
+        else:
+            from cost_model import CostModel
+            cfg = read_json_file(TRADER_DIR / "config.json", default={})
+            cm = CostModel(cfg)
+            res = cm.calculate_roundtrip_cost("BUY", ep, xp, qty, exchange=pos.get("exchange", "NSE"))
+            gross_pnl = res["gross_pnl"]
+            fees = res["total_costs"]
+            net_pnl = res["net_pnl"]
+
+        now_str = get_ist_now().strftime("%Y-%m-%d %H:%M:%S IST")
+        today_str = get_ist_now().strftime("%Y-%m-%d")
+        trade_record = {
+            "id": pos.get("id", f"EXIT-{int(time.time()*1000)}-{sym}"),
+            "symbol": sym,
+            "side": pos.get("side", "BUY"),
+            "qty": qty,
+            "quantity": qty,
+            "entry_price": ep,
+            "exit_price": xp,
+            "entry_time": pos.get("entry_time", ""),
+            "exit_time": now_str,
+            "gross_pnl": gross_pnl,
+            "fees": fees,
+            "pnl": net_pnl,
+            "reason": reason,
+            "date": pos.get("entry_date", today_str),
+            "exit_date": today_str
+        }
+
+        ledger_data.setdefault("trade_history", []).append(trade_record)
+        ledger_data["realized_pnl"] = round(float(ledger_data.get("realized_pnl", 0.0)) + net_pnl, 2)
+        invested_amt = float(pos.get("amount", pos.get("invested", round(ep * qty, 2))))
+        returned_cash = (xp * qty) - fees
+        ledger_data["free_cash"] = round(float(ledger_data.get("free_cash", 1000000.0)) + returned_cash, 2)
+        ledger_data["deployed_cash"] = max(0.0, round(float(ledger_data.get("deployed_cash", 0.0)) - invested_amt, 2))
+        ledger_data["last_updated"] = now_str
+        return True, trade_record
+
+    return locked_ledger_transaction(ledger_path, _op)
 
 def add_symbol_to_watchlist(symbol, account_id="gautam"):
     """

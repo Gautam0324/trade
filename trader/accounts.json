@@ -15,7 +15,9 @@
         "RELIANCE",
         "INFY",
         "HDFCBANK",
-        "SBIN"
+        "SBIN",
+        "IDEA",
+        "BSE"
       ],
       "linked_at": "2026-11-03 17:14:32"
     },
@@ -61,7 +63,10 @@
       "status": "ACTIVE",
       "watchlist": [
         "NIFTY 50",
-        "BANKNIFTY"
+        "BANKNIFTY",
+        "IDEA",
+        "HDFCBANK",
+        "BSE"
       ]
     }
   }

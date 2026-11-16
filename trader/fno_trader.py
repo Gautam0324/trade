@@ -52,8 +52,11 @@ CONTRACTS_CACHE_PATH = BASE_DIR / "historical_data" / "fno_contracts.json"
 LOCK_PATH = BASE_DIR / "trader" / "fno_trader.lock"
 
 INDICES = [
-    {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "step": 50},
-    {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "step": 100}
+    {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "exchange": "NSE", "step": 50, "default_lot": 65},
+    {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "exchange": "NSE", "step": 100, "default_lot": 30},
+    {"name": "IDEA", "symbol": "IDEA", "token": "14366", "exchange": "NSE", "step": 1.0, "default_lot": 71475},
+    {"name": "HDFCBANK", "symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "step": 10.0, "default_lot": 650},
+    {"name": "BSE", "symbol": "BSE", "token": "19585", "exchange": "NSE", "step": 50.0, "default_lot": 200}
 ]
 
 # Risk Parameters: 5% Stop-Loss, 15% Target (1:3 Risk:Reward)
@@ -91,17 +94,28 @@ CACHED_CONTRACTS = load_fno_contracts()
 
 def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = "CE"):
     """
-    Finds the exact ATM contract for the nearest active weekly expiry.
+    Finds the exact ATM contract for the nearest active weekly or monthly expiry (Index & Stock Options).
+    Supports NIFTY, BANKNIFTY, FINNIFTY, IDEA, HDFCBANK, BSE, SENSEX, BANKEX.
     """
-    step = 50 if underlying == "NIFTY" else 100
+    step_map = {
+        "NIFTY": 50.0,
+        "BANKNIFTY": 100.0,
+        "FINNIFTY": 50.0,
+        "IDEA": 1.0,
+        "HDFCBANK": 10.0,
+        "BSE": 50.0,
+        "SENSEX": 100.0,
+        "BANKEX": 100.0
+    }
+    step = step_map.get(underlying, 50.0)
     atm_strike = round(spot_price / step) * step
 
     opts = [
         c for c in CACHED_CONTRACTS
         if c.get("name") == underlying
-        and c.get("instrumenttype") == "OPTIDX"
+        and c.get("instrumenttype") in ("OPTIDX", "OPTSTK")
         and c.get("symbol", "").endswith(option_type.upper())
-        and abs(float(c.get("strike", 0)) / 100 - atm_strike) < 1.0
+        and abs(float(c.get("strike", 0)) / 100 - atm_strike) <= (step * 0.75)
     ]
 
     today_dt = datetime.datetime.now().date()
@@ -117,15 +131,23 @@ def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = 
 
     if future_opts:
         best = future_opts[0]
+        default_lot_map = {
+            "NIFTY": 65,
+            "BANKNIFTY": 30,
+            "IDEA": 71475,
+            "HDFCBANK": 650,
+            "BSE": 200
+        }
         return {
             "symbol": best["symbol"],
             "token": best["token"],
             "strike": float(best["strike"]) / 100,
             "expiry": best["expiry"],
-            "lotsize": int(best.get("lotsize", 65 if underlying == "NIFTY" else 30)),
+            "lotsize": int(best.get("lotsize", default_lot_map.get(underlying, 1))),
             "option_type": option_type.upper(),
             "underlying": underlying,
-            "atm_strike": atm_strike
+            "atm_strike": atm_strike,
+            "exchange": best.get("exch_seg", "NFO")
         }
     return None
 
@@ -685,13 +707,13 @@ class FnoOptionsTrader:
 
         startup_msg = (
             "⚡ <b>F&O Options Trading Desk is LIVE!</b>\n\n"
-            "📊 <b>Underlying Assets:</b> <code>NIFTY 50</code>, <code>BANKNIFTY</code>\n"
+            "📊 <b>Underlying Assets:</b> <code>NIFTY 50</code>, <code>BANKNIFTY</code>, <code>IDEA</code>, <code>HDFCBANK</code>, <code>BSE</code>\n"
             "🎯 <b>Strategy:</b> Intraday Confluence Momentum (Supertrend + EMA Channel + VWAP)\n"
-            "📦 <b>Strike Resolution:</b> Dynamic Weekly ATM Contracts\n"
+            "📦 <b>Strike Resolution:</b> Dynamic Weekly/Monthly ATM Contracts\n"
             f"💰 <b>Paper Capital:</b> ₹{self.capital:,.2f}\n"
             "🛡️ <b>Risk Rules:</b> 1 Lot | 5% SL | 15% Target (1:3 R:R)\n"
             "⏰ <b>Intraday Flat By:</b> 15:20 IST\n\n"
-            "🔔 <i>Live NFO paper entries and exits will be reported here!</i>"
+            "🔔 <i>Live NFO/BFO paper entries and exits will be reported here!</i>"
         )
         self.send_telegram(startup_msg)
 
@@ -724,7 +746,7 @@ class FnoOptionsTrader:
                     for attempt in range(3):
                         try:
                             resp = self.api.getCandleData({
-                                "exchange": "NSE",
+                                "exchange": idx_info.get("exchange", "NSE"),
                                 "symboltoken": token,
                                 "interval": "ONE_MINUTE",
                                 "fromdate": f"{today_str} 09:15",
@@ -871,6 +893,7 @@ class FnoOptionsTrader:
         opt_sym = contract["symbol"]
         opt_token = contract["token"]
         qty = contract["lotsize"]
+        exchange = contract.get("exchange", "NFO")
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.datetime.now().strftime("%H:%M")
 
@@ -905,7 +928,7 @@ class FnoOptionsTrader:
 
         # 3. Retrieve and verify live option market quote (STRICT PRICE VALIDATION)
         time.sleep(0.5)
-        quote = self.fetch_option_quote(opt_sym, opt_token, exchange="NFO")
+        quote = self.fetch_option_quote(opt_sym, opt_token, exchange=exchange)
 
         # Reject/defer entry if valid fresh market quote is not obtained
         if not quote or quote.get("ltp", 0.0) <= 0:
@@ -913,7 +936,7 @@ class FnoOptionsTrader:
                 self.order_manager.update_order_status(order_id, OrderState.FAILED, rejection_reason="No verified market quote available")
             print(
                 f"[F&O ENTRY REJECTED] Live option quote unavailable for {opt_sym} "
-                f"(Exchange: NFO, Token: {opt_token}, Strike: {contract['strike']}, Expiry: {contract['expiry']}). "
+                f"(Exchange: {exchange}, Token: {opt_token}, Strike: {contract['strike']}, Expiry: {contract['expiry']}). "
                 f"Entry deferred to protect capital. Fallback pricing is strictly prohibited."
             )
             return
@@ -935,7 +958,7 @@ class FnoOptionsTrader:
 
         # Log exact contract specification and quote telemetry
         print(
-            f"[F&O QUOTE VERIFIED] Contract: {opt_sym} | Exchange: NFO | Expiry: {contract['expiry']} | "
+            f"[F&O QUOTE VERIFIED] Contract: {opt_sym} | Exchange: {exchange} | Expiry: {contract['expiry']} | "
             f"Strike: {contract['strike']} {option_type} | Token: {opt_token} | "
             f"LTP: Rs {ltp:.2f} | Bid: Rs {bid:.2f} | Ask: Rs {ask:.2f} | "
             f"Source: {quote.get('quote_source')} @ {quote.get('quote_timestamp')} | "

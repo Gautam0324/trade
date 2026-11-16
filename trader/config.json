@@ -59,11 +59,12 @@
   "require_completed_candles": true,
   "require_fresh_market_data": true,
   "benchmark_symbol": "NIFTY 50",
-  "allow_bse": false,
-  "blocked_exchanges": [
-    "BSE"
-  ],
+  "allow_bse": true,
+  "blocked_exchanges": [],
   "watchlist": [
-    "SBIN"
+    "SBIN",
+    "IDEA",
+    "HDFCBANK",
+    "BSE"
   ]
 }

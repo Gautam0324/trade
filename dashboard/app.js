@@ -336,6 +336,14 @@ async function refreshCurrentView(isBackground = false) {
         await loadSettingsData();
         break;
     }
+
+    // Keep topbar badges (Market Status & Bot State) synchronized across all views
+    if (activeView !== "overview") {
+      authFetch(`/api/status?account=${encodeURIComponent(currentAccount)}`)
+        .then(r => r.json())
+        .then(data => updateTopbarBadges(data))
+        .catch(() => {});
+    }
   } catch (err) {
     if (!isBackground) console.error("Error refreshing view:", err);
   }
@@ -711,7 +719,7 @@ async function loadLiveTradingData() {
         <td class="${pnlClass}">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</td>
         <td>₹${Number(p.current_stop || p.sl_price || 0).toFixed(2)}</td>
         <td>
-          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="event.stopPropagation(); confirmClosePosition('${p.symbol}')">Square Off</button>
+          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="event.stopPropagation(); confirmClosePosition('${p.symbol}', '${p.id || ''}')">Square Off</button>
         </td>
       </tr>
     `;
@@ -727,24 +735,34 @@ async function loadFnoDeskData() {
   if (!res.ok) return;
   const data = await res.json();
 
-  const nifty = data.indices?.NIFTY || {};
-  const bnf = data.indices?.BANKNIFTY || {};
+  const indices = data.indices || {};
 
-  const niftyCeText = nifty.ce_contract ? `${nifty.ce_contract}${Number(nifty.ce_price || 0) > 0 ? ' • ₹' + Number(nifty.ce_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
-  const niftyPeText = nifty.pe_contract ? `${nifty.pe_contract}${Number(nifty.pe_price || 0) > 0 ? ' • ₹' + Number(nifty.pe_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+  const renderCard = (prefix, key) => {
+    const item = indices[key] || {};
+    const ceText = item.ce_contract ? `${item.ce_contract}${Number(item.ce_price || 0) > 0 ? ' • ₹' + Number(item.ce_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+    const peText = item.pe_contract ? `${item.pe_contract}${Number(item.pe_price || 0) > 0 ? ' • ₹' + Number(item.pe_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
 
-  document.getElementById("niftySpotBadge").textContent = `Spot: ₹${Number(nifty.spot || 0).toLocaleString('en-IN')}`;
-  document.getElementById("niftyAtmStrike").textContent = `${nifty.atm_strike || '--'}`;
-  document.getElementById("niftyCeContract").textContent = niftyCeText;
-  document.getElementById("niftyPeContract").textContent = niftyPeText;
+    const spotEl = document.getElementById(`${prefix}SpotBadge`);
+    if (spotEl) spotEl.textContent = `Spot: ₹${Number(item.spot || 0).toLocaleString('en-IN')}`;
 
-  const bnfCeText = bnf.ce_contract ? `${bnf.ce_contract}${Number(bnf.ce_price || 0) > 0 ? ' • ₹' + Number(bnf.ce_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
-  const bnfPeText = bnf.pe_contract ? `${bnf.pe_contract}${Number(bnf.pe_price || 0) > 0 ? ' • ₹' + Number(bnf.pe_price).toFixed(2) : ''}` : "QUOTE UNAVAILABLE";
+    const atmEl = document.getElementById(`${prefix}AtmStrike`);
+    if (atmEl) atmEl.textContent = `${item.atm_strike !== undefined ? item.atm_strike : '--'}`;
 
-  document.getElementById("bankniftySpotBadge").textContent = `Spot: ₹${Number(bnf.spot || 0).toLocaleString('en-IN')}`;
-  document.getElementById("bankniftyAtmStrike").textContent = `${bnf.atm_strike || '--'}`;
-  document.getElementById("bankniftyCeContract").textContent = bnfCeText;
-  document.getElementById("bankniftyPeContract").textContent = bnfPeText;
+    const lotEl = document.getElementById(`${prefix}LotSize`);
+    if (lotEl && item.lot_size) lotEl.textContent = `${Number(item.lot_size).toLocaleString('en-IN')} Units`;
+
+    const ceEl = document.getElementById(`${prefix}CeContract`);
+    if (ceEl) ceEl.textContent = ceText;
+
+    const peEl = document.getElementById(`${prefix}PeContract`);
+    if (peEl) peEl.textContent = peText;
+  };
+
+  renderCard("nifty", "NIFTY");
+  renderCard("banknifty", "BANKNIFTY");
+  renderCard("idea", "IDEA");
+  renderCard("hdfc", "HDFCBANK");
+  renderCard("bse", "BSE");
 
   const fnoPos = data.open_positions || [];
   const tbody = document.getElementById("fnoPositionsTableBody");
@@ -759,6 +777,8 @@ async function loadFnoDeskData() {
   fnoPos.forEach(p => {
     const pnl = Number(p.unrealized_pnl || 0);
     const pnlClass = pnl >= 0 ? "val-green" : "val-red";
+    const slVal = (p.sl_price && Number(p.sl_price) < Number(p.entry_price) * 2) ? Number(p.sl_price) : (Number(p.entry_price || 0) * 0.95);
+    const tgtVal = (p.target_price && Number(p.target_price) < Number(p.entry_price) * 3) ? Number(p.target_price) : (Number(p.entry_price || 0) * 1.15);
     html += `
       <tr>
         <td><strong>${p.symbol}</strong></td>
@@ -769,10 +789,10 @@ async function loadFnoDeskData() {
         <td>₹${Number(p.current_price || 0).toFixed(2)}</td>
         <td>₹${Number(p.invested || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
         <td class="${pnlClass}">${formatSignedINR(pnl)}</td>
-        <td>₹${Number(p.sl_price || (p.entry_price * 0.95)).toFixed(2)}</td>
-        <td>₹${Number(p.target_price || (p.entry_price * 1.15)).toFixed(2)}</td>
+        <td>₹${slVal.toFixed(2)}</td>
+        <td>₹${tgtVal.toFixed(2)}</td>
         <td>
-          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="confirmClosePosition('${p.symbol}')">Exit</button>
+          <button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;" onclick="confirmClosePosition('${p.symbol}', '${p.id || ''}')">Exit</button>
         </td>
       </tr>
     `;
@@ -1448,9 +1468,11 @@ function render13StepTimeline(t) {
 // 19. EMERGENCY CONTROLS & MANUAL EXITS
 // ==========================================================================
 let pendingCloseSymbol = null;
+let pendingCloseId = null;
 
-function confirmClosePosition(symbol) {
+function confirmClosePosition(symbol, posId = null) {
   pendingCloseSymbol = symbol;
+  pendingCloseId = posId;
   document.getElementById("modalTitle").textContent = "Confirm Position Square-Off";
   document.getElementById("modalBody").textContent = `Are you sure you want to manually square off position ${symbol}? This will record market exit and reconcile ledger.`;
   document.getElementById("modalConfirmBtn").onclick = executeConfirmedClose;
@@ -1460,14 +1482,19 @@ function confirmClosePosition(symbol) {
 function closeConfirmModal() {
   document.getElementById("confirmModal").classList.remove("active");
   pendingCloseSymbol = null;
+  pendingCloseId = null;
 }
 
 async function executeConfirmedClose() {
-  if (!pendingCloseSymbol) return;
+  if (!pendingCloseSymbol && !pendingCloseId) return;
   const res = await authFetch("/api/positions/close", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ symbol: pendingCloseSymbol })
+    body: JSON.stringify({ 
+      symbol: pendingCloseSymbol, 
+      id: pendingCloseId,
+      account: currentAccount 
+    })
   });
   const data = await res.json();
   closeConfirmModal();

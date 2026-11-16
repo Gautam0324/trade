@@ -19,7 +19,12 @@ class InstrumentManager:
         {"symbol": "BAJFINANCE", "token": "317", "exchange": "NSE", "name": "Bajaj Finance"},
         {"symbol": "ITC", "token": "1660", "exchange": "NSE", "name": "ITC Limited"},
         {"symbol": "AXISBANK", "token": "5900", "exchange": "NSE", "name": "Axis Bank"},
-        {"symbol": "WIPRO", "token": "3787", "exchange": "NSE", "name": "Wipro Limited"}
+        {"symbol": "WIPRO", "token": "3787", "exchange": "NSE", "name": "Wipro Limited"},
+        {"symbol": "IDEA", "token": "14366", "exchange": "NSE", "name": "Vodafone Idea"},
+        {"symbol": "BSE", "token": "19585", "exchange": "NSE", "name": "BSE Limited"},
+        {"symbol": "HDFCBANK_BSE", "token": "500180", "exchange": "BSE", "name": "HDFC Bank (BSE)"},
+        {"symbol": "IDEA_BSE", "token": "532822", "exchange": "BSE", "name": "Vodafone Idea (BSE)"},
+        {"symbol": "SENSEX", "token": "99919000", "exchange": "BSE", "name": "S&P BSE SENSEX"}
     ]
 
     def __init__(self, initial_instruments: Optional[List[Dict]] = None):

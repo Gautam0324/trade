@@ -658,21 +658,20 @@ class PremiumDashboardHandler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/api/positions/close":
             symbol = data.get("symbol")
-            if not symbol:
-                self.send_json({"status": "ERROR", "message": "Symbol is required."}, status=400)
+            pos_id = data.get("id")
+            account = data.get("account", "gautam")
+            if not symbol and not pos_id:
+                self.send_json({"status": "ERROR", "message": "Symbol or Position ID is required."}, status=400)
                 return
 
-            import ledger
-            quote = service.fetch_live_quote_data(symbol)
-            cur_p = quote["price"] if quote else 0.0
-            if cur_p <= 0:
-                self.send_json({"status": "ERROR", "message": "Unable to verify live price for execution."}, status=400)
-                return
-
-            ok, res = ledger.record_trade_exit(symbol, cur_p, "Manual Exit from Dashboard Terminal")
+            ok, res = service.close_account_position(
+                account_id=account,
+                symbol_or_id=pos_id or symbol,
+                reason="Manual Exit from Dashboard Terminal"
+            )
             if ok:
-                service.log_audit_event("MANUAL_CLOSE_POSITION", {"symbol": symbol, "exit_price": cur_p})
-                self.send_json({"status": "SUCCESS", "message": f"Position {symbol} closed @ ₹{cur_p:,.2f}"})
+                service.log_audit_event("MANUAL_CLOSE_POSITION", {"account": account, "symbol": symbol, "pos_id": pos_id, "trade": res})
+                self.send_json({"status": "SUCCESS", "message": f"Position {symbol or pos_id} closed successfully.", "trade": res})
             else:
                 self.send_json({"status": "ERROR", "message": f"Failed to close position: {res}"}, status=400)
 
