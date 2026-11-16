@@ -11,10 +11,11 @@
       "side": "BUY",
       "qty": 65,
       "entry_price": 150.3,
-      "sl_price": 22999.5,
-      "target_price": 27841.5,
+      "sl_price": 142.78,
+      "target_price": 172.84,
       "entry_time": "13:05",
-      "amount": 9769.5
+      "amount": 9769.5,
+      "current_stop": 142.78
     },
     {
       "id": "POS-20261116130506-BC453D-BANKNIFTY26NOV51500PE",
@@ -22,10 +23,11 @@
       "side": "BUY",
       "qty": 30,
       "entry_price": 200.4,
-      "sl_price": 48915.5,
-      "target_price": 59213.5,
+      "sl_price": 190.38,
+      "target_price": 230.46,
       "entry_time": "13:05",
-      "amount": 6012.0
+      "amount": 6012.0,
+      "current_stop": 190.38
     }
   ],
   "trade_history": [

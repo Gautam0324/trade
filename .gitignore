@@ -27,3 +27,4 @@ trader/reports/
 historical_data/
 trader/historical_data/*.csv
 trader/historical_data/*.json
+*.backup_phase2_1

@@ -10,17 +10,17 @@ Classifies completed candle series into:
 - HIGH_VOLATILITY
 - NO_TRADE
 
-Adheres to:
+Hardened in Phase 2.1:
 1. Strict use of completed candles only (no lookahead bias).
-2. Multi-timeframe synthesis (15m primary trend context + 5m confirmation).
-3. Configurable statistical thresholds.
-4. Robust data quality & staleness validation.
-5. Structured, auditable output contract.
+2. Mandatory 15m Higher Timeframe confirmation for production regime classification.
+3. Intraday Session VWAP reset (resets at 09:15 IST / daily session boundary; never cross-session).
+4. Robust timezone-aware staleness checking (IST/UTC normalized).
+5. Explicit reason codes and data quality auditing.
 """
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 from typing import Dict, List, Optional, Any, Union
 import numpy as np
 import pandas as pd
@@ -29,6 +29,11 @@ import pandas as pd
 @dataclass
 class RegimeConfig:
     """Configurable thresholds for regime classification."""
+    # Multi-timeframe validation
+    require_15m: bool = True  # Mandatory 15m HTF candle confirmation
+    min_required_candles_5m: int = 55  # To cleanly seed EMA 50 & ADX 14
+    min_required_candles_15m: int = 40  # To cleanly seed HTF EMA 50 & ADX 14
+    
     # ADX thresholds
     adx_period: int = 14
     adx_strong_trend: float = 25.0
@@ -38,7 +43,7 @@ class RegimeConfig:
     # ATR & Volatility thresholds
     atr_period: int = 14
     atr_baseline_period: int = 20
-    atr_expansion_min: float = 1.05
+    atr_expansion_min: float = 1.00
     atr_high_volatility_ratio: float = 1.80
     atr_compression_max: float = 0.85
     
@@ -56,8 +61,8 @@ class RegimeConfig:
     vwap_near_threshold_bps: float = 25.0  # 0.25% distance
     
     # Staleness & Data Quality
-    max_candle_age_seconds: int = 900  # 15 minutes max staleness for 5m bar
-    min_required_candles: int = 55  # To cleanly seed EMA 50 & ADX 14
+    max_candle_age_seconds_5m: int = 900  # 15 minutes max staleness for 5m bar
+    max_candle_age_seconds_15m: int = 1800  # 30 minutes max staleness for 15m bar
 
 
 @dataclass
@@ -95,8 +100,8 @@ class RegimeOutput:
 
 class MarketRegimeEngine:
     """
-    Independent Market Regime Classifier for F&O V4.
-    Evaluates completed 5m and optional 15m candles to classify market state.
+    Hardened Market Regime Classifier for F&O V4.
+    Evaluates completed 5m and mandatory 15m candles to classify market state.
     """
 
     def __init__(self, config: Optional[RegimeConfig] = None):
@@ -112,9 +117,9 @@ class MarketRegimeEngine:
         Main entry point for regime classification.
         
         Args:
-            candles_5m: 5-minute candle series (DataFrame or list of dicts).
-            candles_15m: Optional 15-minute candle series for higher timeframe context.
-            reference_time: Current evaluation time (defaults to utcnow).
+            candles_5m: 5-minute completed candle series.
+            candles_15m: 15-minute completed candle series (mandatory if config.require_15m=True).
+            reference_time: Current evaluation time.
             
         Returns:
             RegimeOutput dataclass instance.
@@ -123,8 +128,8 @@ class MarketRegimeEngine:
         eval_timestamp = now_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
 
         # 1. Normalize 5m candles
-        df_5m, dq_err = self._normalize_candles(candles_5m, "5m")
-        if dq_err:
+        df_5m, dq_err_5m = self._normalize_candles(candles_5m, "5m")
+        if dq_err_5m:
             return RegimeOutput(
                 regime="NO_TRADE",
                 confidence_score=0.0,
@@ -134,14 +139,14 @@ class MarketRegimeEngine:
                 atr_ratio=1.0,
                 ema_slope=0.0,
                 vwap_status="UNAVAILABLE",
-                data_quality=dq_err,
-                reason_codes=[f"DATA_QUALITY_ERROR: {dq_err}"],
+                data_quality=dq_err_5m,
+                reason_codes=[f"DATA_QUALITY_ERROR_5M: {dq_err_5m}"],
                 evaluated_at=eval_timestamp,
                 candle_timestamp=""
             )
 
-        # 2. Check minimum length
-        if len(df_5m) < self.config.min_required_candles:
+        # 2. Check 5m minimum length
+        if len(df_5m) < self.config.min_required_candles_5m:
             last_ts = str(df_5m['timestamp'].iloc[-1]) if len(df_5m) > 0 else ""
             return RegimeOutput(
                 regime="NO_TRADE",
@@ -153,22 +158,15 @@ class MarketRegimeEngine:
                 ema_slope=0.0,
                 vwap_status="UNAVAILABLE",
                 data_quality="INSUFFICIENT_DATA",
-                reason_codes=[f"Insufficient 5m candles: {len(df_5m)} < {self.config.min_required_candles}"],
+                reason_codes=[f"Insufficient 5m candles: {len(df_5m)} < {self.config.min_required_candles_5m}"],
                 evaluated_at=eval_timestamp,
                 candle_timestamp=last_ts
             )
 
-        # 3. Staleness Check
-        last_candle_time = pd.to_datetime(df_5m['timestamp'].iloc[-1])
-        if last_candle_time.tzinfo is None:
-            # Assume UTC if naive
-            last_candle_time = last_candle_time.replace(tzinfo=timezone.utc)
-        
-        # If reference_time is provided with or without tz, normalize
-        ref_cmp = now_dt if now_dt.tzinfo is not None else now_dt.replace(tzinfo=timezone.utc)
-        age_seconds = (ref_cmp - last_candle_time).total_seconds()
-        
-        if age_seconds > self.config.max_candle_age_seconds:
+        # 3. 5m Staleness Check
+        last_5m_time = df_5m['timestamp'].iloc[-1]
+        age_5m = self._calculate_age_seconds(now_dt, last_5m_time)
+        if age_5m is not None and age_5m > self.config.max_candle_age_seconds_5m:
             return RegimeOutput(
                 regime="NO_TRADE",
                 confidence_score=0.0,
@@ -179,12 +177,104 @@ class MarketRegimeEngine:
                 ema_slope=0.0,
                 vwap_status="UNAVAILABLE",
                 data_quality="STALE_DATA",
-                reason_codes=[f"Candle data is stale: age {int(age_seconds)}s > limit {self.config.max_candle_age_seconds}s"],
+                reason_codes=[f"5m candle data is stale: age {int(age_5m)}s > limit {self.config.max_candle_age_seconds_5m}s"],
                 evaluated_at=eval_timestamp,
-                candle_timestamp=str(df_5m['timestamp'].iloc[-1])
+                candle_timestamp=str(last_5m_time)
             )
 
-        # 4. Compute 5m Indicators
+        # 4. Mandatory 15m HTF Validation
+        htf_trend = "NEUTRAL"
+        htf_reasons = []
+
+        if self.config.require_15m:
+            if candles_15m is None or len(candles_15m) == 0:
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.0,
+                    trend_direction="NEUTRAL",
+                    adx_value=0.0,
+                    atr_value=0.0,
+                    atr_ratio=1.0,
+                    ema_slope=0.0,
+                    vwap_status="UNAVAILABLE",
+                    data_quality="MISSING_15M_DATA",
+                    reason_codes=["NO_TRADE: Mandatory 15m HTF candle confirmation is missing"],
+                    evaluated_at=eval_timestamp,
+                    candle_timestamp=str(last_5m_time)
+                )
+
+            df_15m, dq_err_15m = self._normalize_candles(candles_15m, "15m")
+            if dq_err_15m:
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.0,
+                    trend_direction="NEUTRAL",
+                    adx_value=0.0,
+                    atr_value=0.0,
+                    atr_ratio=1.0,
+                    ema_slope=0.0,
+                    vwap_status="UNAVAILABLE",
+                    data_quality=f"INVALID_15M_DATA: {dq_err_15m}",
+                    reason_codes=[f"NO_TRADE: 15m HTF data error: {dq_err_15m}"],
+                    evaluated_at=eval_timestamp,
+                    candle_timestamp=str(last_5m_time)
+                )
+
+            if len(df_15m) < self.config.min_required_candles_15m:
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.0,
+                    trend_direction="NEUTRAL",
+                    adx_value=0.0,
+                    atr_value=0.0,
+                    atr_ratio=1.0,
+                    ema_slope=0.0,
+                    vwap_status="UNAVAILABLE",
+                    data_quality="INSUFFICIENT_15M_DATA",
+                    reason_codes=[f"NO_TRADE: Insufficient 15m candles: {len(df_15m)} < {self.config.min_required_candles_15m}"],
+                    evaluated_at=eval_timestamp,
+                    candle_timestamp=str(last_5m_time)
+                )
+
+            last_15m_time = df_15m['timestamp'].iloc[-1]
+            age_15m = self._calculate_age_seconds(now_dt, last_15m_time)
+            if age_15m is not None and age_15m > self.config.max_candle_age_seconds_15m:
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.0,
+                    trend_direction="NEUTRAL",
+                    adx_value=0.0,
+                    atr_value=0.0,
+                    atr_ratio=1.0,
+                    ema_slope=0.0,
+                    vwap_status="UNAVAILABLE",
+                    data_quality="STALE_15M_DATA",
+                    reason_codes=[f"NO_TRADE: 15m candle is stale: age {int(age_15m)}s > limit {self.config.max_candle_age_seconds_15m}s"],
+                    evaluated_at=eval_timestamp,
+                    candle_timestamp=str(last_15m_time)
+                )
+
+            ind_15m = self._calculate_indicators(df_15m)
+            if ind_15m is None:
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.0,
+                    trend_direction="NEUTRAL",
+                    adx_value=0.0,
+                    atr_value=0.0,
+                    atr_ratio=1.0,
+                    ema_slope=0.0,
+                    vwap_status="UNAVAILABLE",
+                    data_quality="INVALID_15M_INDICATORS",
+                    reason_codes=["NO_TRADE: Failed to compute 15m technical indicators"],
+                    evaluated_at=eval_timestamp,
+                    candle_timestamp=str(last_15m_time)
+                )
+
+            htf_trend = ind_15m["trend_dir"]
+            htf_reasons.append(f"15m_HTF_TREND: {htf_trend} (ADX {ind_15m['adx']:.1f})")
+
+        # 5. Compute 5m Indicators
         indicators_5m = self._calculate_indicators(df_5m)
         if indicators_5m is None:
             return RegimeOutput(
@@ -199,21 +289,8 @@ class MarketRegimeEngine:
                 data_quality="INVALID_DATA",
                 reason_codes=["Failed to calculate technical indicators due to NaN/Inf values"],
                 evaluated_at=eval_timestamp,
-                candle_timestamp=str(df_5m['timestamp'].iloc[-1])
+                candle_timestamp=str(last_5m_time)
             )
-
-        # 5. Evaluate 15m HTF Context if provided
-        htf_trend = "NEUTRAL"
-        htf_reasons = []
-        if candles_15m is not None:
-            df_15m, dq_err_15 = self._normalize_candles(candles_15m, "15m")
-            if not dq_err_15 and len(df_15m) >= self.config.min_required_candles:
-                ind_15m = self._calculate_indicators(df_15m)
-                if ind_15m:
-                    htf_trend = ind_15m["trend_dir"]
-                    htf_reasons.append(f"15m_HTF_TREND: {htf_trend}")
-            else:
-                htf_reasons.append("15m_HTF_UNAVAILABLE_OR_INSUFFICIENT")
 
         # 6. Synthesize Regime Decision
         return self._classify_regime(
@@ -221,8 +298,24 @@ class MarketRegimeEngine:
             htf_trend=htf_trend,
             htf_reasons=htf_reasons,
             eval_time=eval_timestamp,
-            candle_time=str(df_5m['timestamp'].iloc[-1])
+            candle_time=str(last_5m_time)
         )
+
+    def _calculate_age_seconds(self, ref_time: datetime, candle_time: pd.Timestamp) -> Optional[float]:
+        """Calculates seconds between reference time and candle timestamp, normalizing timezones."""
+        try:
+            c_dt = candle_time.to_pydatetime() if isinstance(candle_time, pd.Timestamp) else candle_time
+            if ref_time.tzinfo is not None and c_dt.tzinfo is not None:
+                return (ref_time - c_dt).total_seconds()
+            elif ref_time.tzinfo is None and c_dt.tzinfo is None:
+                return (ref_time - c_dt).total_seconds()
+            else:
+                # One is naive, one is aware: normalize both to UTC
+                r = ref_time.replace(tzinfo=timezone.utc) if ref_time.tzinfo is None else ref_time.astimezone(timezone.utc)
+                c = c_dt.replace(tzinfo=timezone.utc) if c_dt.tzinfo is None else c_dt.astimezone(timezone.utc)
+                return (r - c).total_seconds()
+        except Exception:
+            return None
 
     def _normalize_candles(
         self,
@@ -238,19 +331,17 @@ class MarketRegimeEngine:
                 return None, "EMPTY_DATA"
             df = pd.DataFrame(candles)
         elif isinstance(candles, pd.DataFrame):
-            if df_len := len(candles) == 0:
+            if len(candles) == 0:
                 return None, "EMPTY_DATA"
             df = candles.copy()
         else:
             return None, "UNSUPPORTED_DATA_TYPE"
 
-        # Required columns check
         req_cols = ['open', 'high', 'low', 'close']
         for col in req_cols:
             if col not in df.columns:
                 return None, f"MISSING_COLUMN_{col.upper()}"
 
-        # Standardize timestamp
         if 'timestamp' not in df.columns:
             if 'datetime' in df.columns:
                 df['timestamp'] = df['datetime']
@@ -261,7 +352,6 @@ class MarketRegimeEngine:
             else:
                 return None, "MISSING_TIMESTAMP_COLUMN"
 
-        # Clean numerical values
         for col in req_cols:
             df[col] = pd.to_numeric(df[col], errors='coerce')
         if 'volume' in df.columns:
@@ -269,23 +359,24 @@ class MarketRegimeEngine:
         else:
             df['volume'] = 0.0
 
-        # Discard NaN in OHLC
         if df[req_cols].isna().any().any():
             return None, "NAN_VALUES_IN_OHLC"
 
-        # OHLC logic validity
         invalid_ohlc = (df['high'] < df['low']) | (df['high'] < df['open']) | (df['high'] < df['close']) | (df['low'] > df['open']) | (df['low'] > df['close'])
         if invalid_ohlc.any():
             return None, "INVALID_OHLC_RELATIONS"
 
-        # Monotonic time check
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df.sort_values('timestamp').reset_index(drop=True)
+        
+        # Check and handle duplicates
+        if df['timestamp'].duplicated().any():
+            df = df.drop_duplicates(subset=['timestamp'], keep='last')
 
+        df = df.sort_values('timestamp').reset_index(drop=True)
         return df, None
 
     def _calculate_indicators(self, df: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Calculates ADX, ATR, ATR ratio, EMA slopes, and VWAP distance."""
+        """Calculates ADX, ATR, ATR ratio, EMA slopes, and Intraday Session VWAP."""
         try:
             high = df['high']
             low = df['low']
@@ -319,7 +410,7 @@ class MarketRegimeEngine:
             ema20 = close.ewm(span=self.config.ema_fast, adjust=False).mean()
             ema50 = close.ewm(span=self.config.ema_slow, adjust=False).mean()
 
-            # Normalized slope of EMA20 (% change per bar over slope lookback)
+            # Normalized slope of EMA20
             lookback = self.config.ema_slope_bars
             ema_slope = (ema20.iloc[-1] - ema20.iloc[-1 - lookback]) / (ema20.iloc[-1 - lookback] * lookback + 1e-9)
 
@@ -329,14 +420,28 @@ class MarketRegimeEngine:
             range_low = low.iloc[-c_lookback:].min()
             consolidation_width = (range_high - range_low) / (atr14.iloc[-1] + 1e-9)
 
-            # --- VWAP (only if volume > 0) ---
+            # --- Correct Intraday Session VWAP ---
             vwap_status = "UNAVAILABLE"
-            has_vol = (vol.iloc[-c_lookback:].sum() > 0)
-            if has_vol:
-                cum_vol = vol.cumsum()
-                cum_pv = (close * vol).cumsum()
-                vwap = cum_pv / (cum_vol + 1e-9)
-                curr_vwap = vwap.iloc[-1]
+            # Extract date for session boundary
+            ts_series = df['timestamp']
+            if ts_series.dt.tz is not None:
+                # Convert to IST if tz-aware
+                session_dates = ts_series.dt.tz_convert('Asia/Kolkata').dt.date
+            else:
+                session_dates = ts_series.dt.date
+
+            current_session_date = session_dates.iloc[-1]
+            session_mask = (session_dates == current_session_date)
+            session_df = df[session_mask]
+
+            session_vol = session_df['volume']
+            if session_vol.sum() > 0:
+                # Typical price = (H + L + C) / 3
+                tp = (session_df['high'] + session_df['low'] + session_df['close']) / 3.0
+                cum_vol = session_vol.cumsum()
+                cum_pv = (tp * session_vol).cumsum()
+                session_vwap = cum_pv / (cum_vol + 1e-9)
+                curr_vwap = session_vwap.iloc[-1]
                 curr_close = close.iloc[-1]
                 dist_bps = ((curr_close - curr_vwap) / curr_vwap) * 10000.0
 
@@ -394,7 +499,6 @@ class MarketRegimeEngine:
         vwap_status = ind["vwap_status"]
 
         reasons = list(htf_reasons)
-        confidence = 0.50
 
         # Rule 1: High Volatility Shock / Extreme Expansion
         if atr_ratio >= self.config.atr_high_volatility_ratio:
@@ -439,45 +543,45 @@ class MarketRegimeEngine:
             )
 
         # Rule 2b: Multi-Timeframe Divergence Conflict
-        if htf_trend != "NEUTRAL" and trend_dir != "NEUTRAL" and htf_trend != trend_dir:
-            reasons.append(f"HTF_CONFLICT: 15m Trend ({htf_trend}) opposes 5m ({trend_dir})")
-            return RegimeOutput(
-                regime="NO_TRADE",
-                confidence_score=0.35,
-                trend_direction=trend_dir,
-                adx_value=adx,
-                atr_value=atr,
-                atr_ratio=atr_ratio,
-                ema_slope=slope,
-                vwap_status=vwap_status,
-                data_quality="VALID",
-                reason_codes=reasons,
-                evaluated_at=eval_time,
-                candle_timestamp=candle_time
-            )
+        if self.config.require_15m:
+            if htf_trend != "NEUTRAL" and trend_dir != "NEUTRAL" and htf_trend != trend_dir:
+                reasons.append(f"HTF_CONFLICT: 15m Trend ({htf_trend}) opposes 5m ({trend_dir})")
+                return RegimeOutput(
+                    regime="NO_TRADE",
+                    confidence_score=0.35,
+                    trend_direction=trend_dir,
+                    adx_value=adx,
+                    atr_value=atr,
+                    atr_ratio=atr_ratio,
+                    ema_slope=slope,
+                    vwap_status=vwap_status,
+                    data_quality="VALID",
+                    reason_codes=reasons,
+                    evaluated_at=eval_time,
+                    candle_timestamp=candle_time
+                )
 
         # Rule 3: Strong Trend
-        # Requires: ADX >= 25, Clean Direction, EMA Slope above threshold, and Volatility Expanding
         slope_abs = abs(slope)
         slope_qualifies = (slope_abs >= self.config.ema_slope_threshold)
-        vol_expanding = (atr_ratio >= self.config.atr_expansion_min)
+        vol_expanding = (atr_ratio >= self.config.atr_expansion_min - 1e-4)
 
         if adx >= self.config.adx_strong_trend and trend_dir != "NEUTRAL":
             if slope_qualifies and vol_expanding:
                 confidence = 0.85
                 reasons.append(f"STRONG_TREND: ADX {adx:.1f} >= {self.config.adx_strong_trend}, Slope {slope:.5f}, ATR Ratio {atr_ratio:.2f}")
 
-                # Boost or penalize based on HTF agreement
-                if htf_trend != "NEUTRAL":
+                # If 15m is required, check if HTF confirms or is neutral
+                if self.config.require_15m:
                     if htf_trend == trend_dir:
                         confidence = 0.95
-                        reasons.append(f"HTF_CONFLUENCE: 15m Trend agrees ({htf_trend})")
-                    else:
-                        # Conflicting HTF
-                        reasons.append(f"HTF_CONFLICT: 15m Trend ({htf_trend}) opposes 5m ({trend_dir})")
+                        reasons.append(f"HTF_CONFIRMED: 15m aligns with 5m ({trend_dir})")
+                    elif htf_trend == "NEUTRAL":
+                        # HTF hasn't confirmed yet -> downgrade to WEAK_TREND
+                        reasons.append("HTF_NEUTRAL: 15m has not confirmed strong directional momentum")
                         return RegimeOutput(
-                            regime="NO_TRADE",
-                            confidence_score=0.40,
+                            regime="WEAK_TREND",
+                            confidence_score=0.65,
                             trend_direction=trend_dir,
                             adx_value=adx,
                             atr_value=atr,
@@ -505,7 +609,6 @@ class MarketRegimeEngine:
                     candle_timestamp=candle_time
                 )
             else:
-                # ADX high but momentum/volatility stalling -> WEAK_TREND
                 reasons.append(f"WEAK_TREND: High ADX ({adx:.1f}) but sluggish slope or contracting ATR")
                 return RegimeOutput(
                     regime="WEAK_TREND",
