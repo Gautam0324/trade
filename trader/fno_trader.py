@@ -59,9 +59,12 @@ INDICES = [
     {"name": "BSE", "symbol": "BSE", "token": "19585", "exchange": "NSE", "step": 50.0, "default_lot": 200}
 ]
 
-# Risk Parameters: 5% Stop-Loss, 15% Target (1:3 Risk:Reward)
-STOP_LOSS_PCT = 0.05
-TARGET_PCT = 0.15
+# Hardened Risk Parameters: 15% Stop-Loss (survives noise), 30% Target (1:2 R:R), +12% Breakeven Lock
+V3_STOP_LOSS_PCT = 0.05
+V3_TARGET_PCT = 0.15
+STOP_LOSS_PCT = 0.15
+TARGET_PCT = 0.30
+BREAKEVEN_LOCK_PCT = 0.12
 
 _fno_lock_handle = None
 
@@ -660,10 +663,14 @@ class FnoOptionsTrader:
 
     def save_ledger(self):
         def _update(data):
+            deployed = round(sum(float(p["qty"]) * float(p["entry_price"]) for p in self.open_positions.values()), 2)
+            real_pnl = round(self.realized_pnl, 2)
             data["initial_capital"] = self.capital
-            data["free_cash"] = round(self.free_cash, 2)
-            data["deployed_cash"] = round(sum(p["qty"] * p["entry_price"] for p in self.open_positions.values()), 2)
-            data["realized_pnl"] = round(self.realized_pnl, 2)
+            data["deployed_cash"] = deployed
+            data["realized_pnl"] = real_pnl
+            # Strict accounting conservation: free_cash = initial_capital + realized_pnl - deployed_cash
+            data["free_cash"] = round(self.capital + real_pnl - deployed, 2)
+            self.free_cash = data["free_cash"]
             data["open_positions"] = list(self.open_positions.values())
             data["trade_history"] = self.completed_trades
             data["last_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
@@ -782,6 +789,7 @@ class FnoOptionsTrader:
                     highs = [float(b[2]) for b in completed]
                     lows = [float(b[3]) for b in completed]
                     spot_c = closes[-1]
+                    day_open = float(completed[0][1])  # 09:15 session open price
 
                     # Indicators
                     ema5 = indicators.calculate_ema(closes, 5)[-1]
@@ -790,7 +798,11 @@ class FnoOptionsTrader:
                     st_data = indicators.calculate_supertrend(highs, lows, closes, 10, 3.0)
                     st_dir = st_data["direction"][-1] if (st_data and len(st_data.get("direction", [])) > 0) else 0
 
-                    print(f"[F&O {bar_time}] {sym:12s} Spot: Rs {spot_c:8.2f} | ST: {st_dir:+d} | EMA5: {ema5:.1f} | EMA9: {ema9:.1f}")
+                    # Market Regime Direction Guard (Strictly prevents taking counter-trend trades like PEs in Bull Run)
+                    is_bull_trend = (spot_c >= day_open) and (spot_c >= ema33)
+                    is_bear_trend = (spot_c < day_open) and (spot_c < ema33)
+
+                    print(f"[F&O {bar_time}] {sym:12s} Spot: Rs {spot_c:8.2f} (Open: {day_open:.1f}) | ST: {st_dir:+d} | Bull:{is_bull_trend} Bear:{is_bear_trend} | EMA5: {ema5:.1f} | EMA9: {ema9:.1f}")
 
                     # Manage Open Positions for this underlying
                     for open_sym, pos in list(self.open_positions.items()):
@@ -801,16 +813,25 @@ class FnoOptionsTrader:
                     has_open = any(p.get("underlying") == uname for p in self.open_positions.values())
                     if not has_open and "09:30" <= bar_time < "15:10":
                         # BULLISH CONFLUENCE -> BUY ATM CALL
-                        if st_dir == 1 and ema5 > ema9 > ema33 and spot_c > ema9:
+                        # Requires Supertrend Bullish + EMA 5>9>33 + Market Direction is Bullish (Spot >= DayOpen)
+                        if st_dir == 1 and ema5 > ema9 > ema33 and spot_c > ema9 and is_bull_trend:
                             contract = resolve_atm_contract(uname, spot_c, "CE")
                             if contract and contract["symbol"] not in self.open_positions:
-                                self.enter_option_trade(contract, spot_c, "CE", "Bullish Supertrend + EMA Channel Alignment")
+                                self.enter_option_trade(contract, spot_c, "CE", "Bullish Supertrend + EMA Channel + Bull Run Regime Alignment")
 
                         # BEARISH CONFLUENCE -> BUY ATM PUT
-                        elif st_dir == -1 and ema5 < ema9 < ema33 and spot_c < ema9:
+                        # Requires Supertrend Bearish + EMA 5<9<33 + Market Direction is Bearish (Spot < DayOpen)
+                        # NEVER BUY PUT IN A BULL RUN!
+                        elif st_dir == -1 and ema5 < ema9 < ema33 and spot_c < ema9 and is_bear_trend:
                             contract = resolve_atm_contract(uname, spot_c, "PE")
                             if contract and contract["symbol"] not in self.open_positions:
-                                self.enter_option_trade(contract, spot_c, "PE", "Bearish Supertrend + EMA Channel Alignment")
+                                self.enter_option_trade(contract, spot_c, "PE", "Bearish Supertrend + EMA Channel + Bear Run Regime Alignment")
+                        else:
+                            # Explicitly log and guard counter-trend attempt
+                            if st_dir == -1 and is_bull_trend:
+                                print(f"[F&O REGIME GUARD] Blocked PE entry on {sym}: Overall Market is Bullish (Spot {spot_c:.2f} >= DayOpen {day_open:.2f}). No PUTs in Bull Run.")
+                            elif st_dir == 1 and is_bear_trend:
+                                print(f"[F&O REGIME GUARD] Blocked CE entry on {sym}: Overall Market is Bearish (Spot {spot_c:.2f} < DayOpen {day_open:.2f}). No CALLs in Bear Run.")
 
                 time.sleep(45)
 
@@ -865,13 +886,22 @@ class FnoOptionsTrader:
 
         order_id = None
         if hasattr(self, "order_manager") and self.order_manager:
+            # Estimate option premium to register realistic option-level order price, SL and Target
+            est_premium = 100.0
+            try:
+                pre_quote = self.fetch_option_quote(opt_sym, opt_token, exchange=contract.get("exchange", "NFO"))
+                if pre_quote and pre_quote.get("ltp", 0.0) > 0:
+                    est_premium = float(pre_quote["ltp"])
+            except Exception:
+                pass
+
             order_res = self.order_manager.create_order(
                 symbol=opt_sym,
                 side="BUY",
                 quantity=qty,
-                price=spot_price,
-                stop_loss=round(spot_price * 0.95, 2),
-                target_price=round(spot_price * 1.15, 2),
+                price=est_premium,
+                stop_loss=round(est_premium * (1.0 - STOP_LOSS_PCT), 2),
+                target_price=round(est_premium * (1.0 + TARGET_PCT), 2),
                 signal_id=signal_id,
                 strategy_name="FNO_OPTIONS_CONFLUENCE"
             )
@@ -1127,17 +1157,26 @@ class FnoOptionsTrader:
         pos["amount"] = round(entry_p * qty, 2)
         pos["unrealized_pnl"] = round((current_premium - entry_p) * qty, 2)
         pos["unrealized_pnl_pct"] = round(((current_premium - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
+
+        # Breakeven Trail Protection: If profit crosses +12%, move SL to Cost (Zero Loss)
+        if not pos.get("breakeven_locked") and current_premium >= (entry_p * (1.0 + BREAKEVEN_LOCK_PCT)):
+            pos["breakeven_locked"] = True
+            pos["sl_price"] = entry_p
+            print(f"[F&O BREAKEVEN LOCKED] {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit. SL moved to entry @ Rs {entry_p:.2f}")
+            self.send_telegram(f"🛡️ <b>[BREAKEVEN LOCKED]</b> {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit! SL locked at Cost (₹{entry_p:.2f}) to eliminate downside risk.")
+
         self.save_ledger()
         update_open_option_on_all_ledgers(opt_sym, current_premium)
 
         # Check Target Hit
         if current_premium >= tgt_p:
-            self.exit_position(opt_sym, f"🎯 Target Hit (+15% R:R) @ Rs {current_premium:.2f}", current_premium)
+            self.exit_position(opt_sym, f"🎯 Target Hit (+{int(TARGET_PCT*100)}% R:R) @ Rs {current_premium:.2f}", current_premium)
             return
 
         # Check Stop-Loss Hit
         if current_premium <= sl_p:
-            self.exit_position(opt_sym, f"🛑 Stop-Loss Hit (-5%) @ Rs {current_premium:.2f}", current_premium)
+            reason_text = "🛡️ Breakeven Cost Hit (Zero Loss)" if pos.get("breakeven_locked") else f"🛑 Stop-Loss Hit (-{int(STOP_LOSS_PCT*100)}%)"
+            self.exit_position(opt_sym, f"{reason_text} @ Rs {current_premium:.2f}", current_premium)
             return
 
         # Supertrend Reversal

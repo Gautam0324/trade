@@ -171,3 +171,4 @@ The Market Regime Engine is hardened, deterministic, and fully verified. The led
 
 ---
 *Report Certified by Senior Quantitative Systems Architect & Auditor.*
+

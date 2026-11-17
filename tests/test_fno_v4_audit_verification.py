@@ -36,11 +36,18 @@ class TestFnoV4AuditVerification:
         assert adapter.paper is True, "BrokerAdapter.paper must be True"
 
     def test_2_fno_v3_hardcoded_rigid_risk_parameters(self):
-        """Verify that V3 fno_trader.py uses rigid -5% SL and +15% target constants."""
-        assert hasattr(fno_trader, "STOP_LOSS_PCT"), "fno_trader must define STOP_LOSS_PCT"
-        assert hasattr(fno_trader, "TARGET_PCT"), "fno_trader must define TARGET_PCT"
-        assert fno_trader.STOP_LOSS_PCT == 0.05, "V3 Stop loss must be hardcoded to 5%"
-        assert fno_trader.TARGET_PCT == 0.15, "V3 Target must be hardcoded to 15%"
+        """Verify that V3 baseline preserves rigid -5% SL and +15% target constants."""
+        import fno_trader_v3_baseline
+        assert hasattr(fno_trader_v3_baseline, "STOP_LOSS_PCT"), "fno_trader_v3_baseline must define STOP_LOSS_PCT"
+        assert hasattr(fno_trader_v3_baseline, "TARGET_PCT"), "fno_trader_v3_baseline must define TARGET_PCT"
+        assert fno_trader_v3_baseline.STOP_LOSS_PCT == 0.05, "V3 Stop loss must be hardcoded to 5%"
+        assert fno_trader_v3_baseline.TARGET_PCT == 0.15, "V3 Target must be hardcoded to 15%"
+
+    def test_2b_fno_v4_hardened_risk_parameters(self):
+        """Verify that active fno_trader uses hardened 15% SL, 30% target, and breakeven locking."""
+        assert fno_trader.STOP_LOSS_PCT == 0.15, "Hardened SL must be 15% to survive market noise"
+        assert fno_trader.TARGET_PCT == 0.30, "Hardened Target must be 30% (1:2 R:R)"
+        assert fno_trader.BREAKEVEN_LOCK_PCT == 0.12, "Breakeven lock must be active at +12%"
 
     def test_3_config_vs_runtime_discrepancy_phantom_indicators(self):
         """Verify that VWAP and multi-strategy confluence advertised in config/logs are absent in fno_trader."""
