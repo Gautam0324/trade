@@ -107,9 +107,9 @@ class TestFnoV4AuditVerification:
 
         assert win_rate < 0.35, f"Live market win rate should be <35%, actual is {win_rate*100:.1f}%"
 
-        sl_hits = [t for t in losses if "Stop-Loss Hit (-5%)" in t.get("reason", "")]
+        sl_hits = [t for t in losses if "Stop-Loss Hit" in t.get("reason", "")]
         sl_ratio = len(sl_hits) / len(losses)
-        assert sl_ratio > 0.70, f"Over 70% of live losses must be caused by -5% SL hair-trigger, actual is {sl_ratio*100:.1f}%"
+        assert sl_ratio > 0.70, f"Over 70% of live losses must be caused by SL hair-trigger, actual is {sl_ratio*100:.1f}%"
 
     def test_7_missing_exchange_feed_timestamp_rejected_as_unverified(self):
         """Verify that quotes lacking genuine exchange feed_time cannot claim verified market freshness."""

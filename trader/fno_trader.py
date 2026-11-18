@@ -51,13 +51,29 @@ ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
 CONTRACTS_CACHE_PATH = BASE_DIR / "historical_data" / "fno_contracts.json"
 LOCK_PATH = BASE_DIR / "trader" / "fno_trader.lock"
 
-INDICES = [
-    {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "exchange": "NSE", "step": 50, "default_lot": 65},
-    {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "exchange": "NSE", "step": 100, "default_lot": 30},
-    {"name": "IDEA", "symbol": "IDEA", "token": "14366", "exchange": "NSE", "step": 1.0, "default_lot": 71475},
-    {"name": "HDFCBANK", "symbol": "HDFCBANK", "token": "1333", "exchange": "NSE", "step": 10.0, "default_lot": 650},
-    {"name": "BSE", "symbol": "BSE", "token": "19585", "exchange": "NSE", "step": 50.0, "default_lot": 200}
+# Universe Configuration: Focus exclusively on High-Momentum Stock Options to avoid index chop/decay
+ENABLE_INDEX_OPTIONS = False  # Set to True only if explicitly intending to trade choppy Index derivatives
+
+INDEX_UNIVERSE = [
+    {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "exchange": "NSE", "step": 50, "default_lot": 65, "is_index": True},
+    {"name": "BANKNIFTY", "symbol": "BANKNIFTY", "token": "99926009", "exchange": "NSE", "step": 100, "default_lot": 30, "is_index": True},
 ]
+
+STOCK_FNO_UNIVERSE = [
+    {"name": "BSE", "symbol": "BSE-EQ", "token": "19585", "exchange": "NSE", "step": 50.0, "default_lot": 200, "is_index": False},
+    {"name": "HDFCBANK", "symbol": "HDFCBANK-EQ", "token": "1333", "exchange": "NSE", "step": 10.0, "default_lot": 650, "is_index": False},
+    {"name": "RELIANCE", "symbol": "RELIANCE-EQ", "token": "2885", "exchange": "NSE", "step": 10.0, "default_lot": 500, "is_index": False},
+    {"name": "ICICIBANK", "symbol": "ICICIBANK-EQ", "token": "4963", "exchange": "NSE", "step": 10.0, "default_lot": 700, "is_index": False},
+    {"name": "SBIN", "symbol": "SBIN-EQ", "token": "3045", "exchange": "NSE", "step": 10.0, "default_lot": 750, "is_index": False},
+    {"name": "BHARTIARTL", "symbol": "BHARTIARTL-EQ", "token": "10604", "exchange": "NSE", "step": 20.0, "default_lot": 475, "is_index": False},
+    {"name": "TATASTEEL", "symbol": "TATASTEEL-EQ", "token": "3499", "exchange": "NSE", "step": 2.5, "default_lot": 2750, "is_index": False},
+    {"name": "LT", "symbol": "LT-EQ", "token": "11483", "exchange": "NSE", "step": 50.0, "default_lot": 175, "is_index": False},
+    {"name": "AXISBANK", "symbol": "AXISBANK-EQ", "token": "5900", "exchange": "NSE", "step": 10.0, "default_lot": 625, "is_index": False},
+    {"name": "TITAN", "symbol": "TITAN-EQ", "token": "3506", "exchange": "NSE", "step": 50.0, "default_lot": 175, "is_index": False},
+]
+
+ACTIVE_FNO_UNIVERSE = (INDEX_UNIVERSE if ENABLE_INDEX_OPTIONS else []) + STOCK_FNO_UNIVERSE
+INDICES = ACTIVE_FNO_UNIVERSE  # Backward-compatible alias
 
 # Hardened Risk Parameters: 15% Stop-Loss (survives noise), 30% Target (1:2 R:R), +12% Breakeven Lock
 V3_STOP_LOSS_PCT = 0.05
@@ -65,6 +81,7 @@ V3_TARGET_PCT = 0.15
 STOP_LOSS_PCT = 0.15
 TARGET_PCT = 0.30
 BREAKEVEN_LOCK_PCT = 0.12
+MAX_CONCURRENT_POSITIONS = 3
 
 _fno_lock_handle = None
 
@@ -97,28 +114,15 @@ CACHED_CONTRACTS = load_fno_contracts()
 
 def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = "CE"):
     """
-    Finds the exact ATM contract for the nearest active weekly or monthly expiry (Index & Stock Options).
-    Supports NIFTY, BANKNIFTY, FINNIFTY, IDEA, HDFCBANK, BSE, SENSEX, BANKEX.
+    Finds the exact ATM contract for the nearest active weekly or monthly expiry (Stock & Index Options).
+    Dynamically finds the closest strike contract for nearest expiry date across NFO and BFO.
+    Supports RELIANCE, HDFCBANK, BSE, ICICIBANK, SBIN, BHARTIARTL, TATASTEEL, LT, AXISBANK, TITAN, etc.
     """
-    step_map = {
-        "NIFTY": 50.0,
-        "BANKNIFTY": 100.0,
-        "FINNIFTY": 50.0,
-        "IDEA": 1.0,
-        "HDFCBANK": 10.0,
-        "BSE": 50.0,
-        "SENSEX": 100.0,
-        "BANKEX": 100.0
-    }
-    step = step_map.get(underlying, 50.0)
-    atm_strike = round(spot_price / step) * step
-
     opts = [
         c for c in CACHED_CONTRACTS
         if c.get("name") == underlying
         and c.get("instrumenttype") in ("OPTIDX", "OPTSTK")
         and c.get("symbol", "").endswith(option_type.upper())
-        and abs(float(c.get("strike", 0)) / 100 - atm_strike) <= (step * 0.75)
     ]
 
     today_dt = datetime.datetime.now().date()
@@ -130,29 +134,53 @@ def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = 
             return datetime.date.max
 
     future_opts = [c for c in opts if parse_exp(c) >= today_dt]
-    future_opts.sort(key=parse_exp)
+    if not future_opts:
+        return None
 
-    if future_opts:
-        best = future_opts[0]
-        default_lot_map = {
-            "NIFTY": 65,
-            "BANKNIFTY": 30,
-            "IDEA": 71475,
-            "HDFCBANK": 650,
-            "BSE": 200
-        }
-        return {
-            "symbol": best["symbol"],
-            "token": best["token"],
-            "strike": float(best["strike"]) / 100,
-            "expiry": best["expiry"],
-            "lotsize": int(best.get("lotsize", default_lot_map.get(underlying, 1))),
-            "option_type": option_type.upper(),
-            "underlying": underlying,
-            "atm_strike": atm_strike,
-            "exchange": best.get("exch_seg", "NFO")
-        }
-    return None
+    # Sort by expiry to pick nearest expiry
+    future_opts.sort(key=parse_exp)
+    nearest_exp = parse_exp(future_opts[0])
+    nearest_opts = [c for c in future_opts if parse_exp(c) == nearest_exp]
+
+    # Select contract whose strike price is closest to spot_price
+    best = min(nearest_opts, key=lambda c: abs((float(c.get("strike", 0)) / 100.0) - spot_price))
+    atm_strike = float(best["strike"]) / 100.0
+
+    default_lot_map = {
+        "NIFTY": 65,
+        "BANKNIFTY": 30,
+        "FINNIFTY": 65,
+        "SENSEX": 20,
+        "BANKEX": 30,
+        "IDEA": 71475,
+        "HDFCBANK": 650,
+        "BSE": 200,
+        "RELIANCE": 500,
+        "ICICIBANK": 700,
+        "SBIN": 750,
+        "BHARTIARTL": 475,
+        "TATASTEEL": 2750,
+        "TCS": 225,
+        "INFY": 400,
+        "BAJFINANCE": 750,
+        "LT": 175,
+        "AXISBANK": 625,
+        "MARUTI": 50,
+        "TITAN": 175,
+        "KOTAKBANK": 2000
+    }
+
+    return {
+        "symbol": best["symbol"],
+        "token": best["token"],
+        "strike": atm_strike,
+        "expiry": best["expiry"],
+        "lotsize": int(best.get("lotsize", default_lot_map.get(underlying, 1))),
+        "option_type": option_type.upper(),
+        "underlying": underlying,
+        "atm_strike": atm_strike,
+        "exchange": best.get("exch_seg", "NFO")
+    }
 
 def calculate_option_costs(buy_price: float, sell_price: float, qty: int):
     """
@@ -702,8 +730,8 @@ class FnoOptionsTrader:
         mode_str = "LIVE BROKER" if self.broker_adapter.is_live() else "PAPER"
 
         print("=" * 75)
-        print("[START] F&O OPTIONS TRADING DESK (NIFTY & BANKNIFTY ATM Momentum Paper Engine)")
-        print(f"[CONFIG] Capital: Rs {self.capital:,.2f} | Mode: {mode_str} | Auto-Squareoff: 15:20 IST")
+        print(f"[START] F&O LIQUID STOCK OPTIONS DESK ({len(ACTIVE_FNO_UNIVERSE)} Assets: BSE, HDFCBANK, RELIANCE, ICICIBANK, SBIN, etc.)")
+        print(f"[CONFIG] Capital: Rs {self.capital:,.2f} | Mode: {mode_str} | Max Positions: {MAX_CONCURRENT_POSITIONS} | Auto-Squareoff: 15:20 IST")
         print("=" * 75)
 
         self.api = dh.get_smart_api_session()
@@ -711,14 +739,14 @@ class FnoOptionsTrader:
         if hasattr(self.broker_adapter, "executor") and self.broker_adapter.executor:
             self.broker_adapter.executor.api = self.api
 
-
+        symbols_list_str = ", ".join([f"<code>{u['name']}</code>" for u in ACTIVE_FNO_UNIVERSE])
         startup_msg = (
-            "⚡ <b>F&O Options Trading Desk is LIVE!</b>\n\n"
-            "📊 <b>Underlying Assets:</b> <code>NIFTY 50</code>, <code>BANKNIFTY</code>, <code>IDEA</code>, <code>HDFCBANK</code>, <code>BSE</code>\n"
-            "🎯 <b>Strategy:</b> Intraday Confluence Momentum (Supertrend + EMA Channel + VWAP)\n"
-            "📦 <b>Strike Resolution:</b> Dynamic Weekly/Monthly ATM Contracts\n"
+            "⚡ <b>F&O Liquid Stock Options Trading Desk is LIVE!</b>\n\n"
+            f"📊 <b>Active Universe ({len(ACTIVE_FNO_UNIVERSE)} Liquid Assets):</b> {symbols_list_str}\n"
+            "🎯 <b>Strategy:</b> Stock Momentum Confluence (Supertrend + EMA Channel + Bull Run Regime Alignment)\n"
+            "📦 <b>Strike Resolution:</b> Dynamic Liquid Stock ATM Options (Noise Filtered)\n"
             f"💰 <b>Paper Capital:</b> ₹{self.capital:,.2f}\n"
-            "🛡️ <b>Risk Rules:</b> 1 Lot | 5% SL | 15% Target (1:3 R:R)\n"
+            "🛡️ <b>Risk Rules:</b> 1 Lot | 15% SL | 30% Target (1:2 R:R) | +12% Breakeven Lock | Max 3 Pos\n"
             "⏰ <b>Intraday Flat By:</b> 15:20 IST\n\n"
             "🔔 <i>Live NFO/BFO paper entries and exits will be reported here!</i>"
         )
@@ -812,6 +840,10 @@ class FnoOptionsTrader:
                     # Signal Evaluation (between 09:30 and 15:10)
                     has_open = any(p.get("underlying") == uname for p in self.open_positions.values())
                     if not has_open and "09:30" <= bar_time < "15:10":
+                        if len(self.open_positions) >= MAX_CONCURRENT_POSITIONS:
+                            print(f"[F&O RISK GUARD] Max concurrent positions ({MAX_CONCURRENT_POSITIONS}) reached across desk. Skipping entry on {uname}.")
+                            continue
+
                         # BULLISH CONFLUENCE -> BUY ATM CALL
                         # Requires Supertrend Bullish + EMA 5>9>33 + Market Direction is Bullish (Spot >= DayOpen)
                         if st_dir == 1 and ema5 > ema9 > ema33 and spot_c > ema9 and is_bull_trend:
