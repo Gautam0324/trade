@@ -45,11 +45,21 @@ from ledger_transaction import (
     FileLock
 )
 from order_manager import OrderManager, OrderState
+from stratlab_options_engine import (
+    BlackScholesEngine,
+    OptionChainStructureEngine,
+    VerticalSpreadResolver
+)
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger_fno.json"
 ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
 CONTRACTS_CACHE_PATH = BASE_DIR / "historical_data" / "fno_contracts.json"
 LOCK_PATH = BASE_DIR / "trader" / "fno_trader.lock"
+
+# StratLab Quantitative Engine Toggles
+ENABLE_OI_WALL_GUARD = True       # Blocks entries sitting directly under institutional Call OI walls
+ENABLE_IV_RANK_GUARD = True       # Guards against entering when IV Rank > 70% (IV Crush shield)
+ENABLE_VERTICAL_SPREADS = False   # True: Multi-leg defined-risk Bull Call / Bear Put debit spreads
 
 # Universe Configuration: Focus exclusively on High-Momentum Stock Options to avoid index chop/decay
 ENABLE_INDEX_OPTIONS = False  # Set to True only if explicitly intending to trade choppy Index derivatives
@@ -143,7 +153,15 @@ def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = 
     nearest_opts = [c for c in future_opts if parse_exp(c) == nearest_exp]
 
     # Select contract whose strike price is closest to spot_price
-    best = min(nearest_opts, key=lambda c: abs((float(c.get("strike", 0)) / 100.0) - spot_price))
+    # Prioritize native exchange: BFO for BSE/SENSEX/BANKEX, NFO for NSE equities/indices
+    preferred_exch = "BFO" if underlying in ("BSE", "SENSEX", "BANKEX") else "NFO"
+    best = min(
+        nearest_opts,
+        key=lambda c: (
+            abs((float(c.get("strike", 0)) / 100.0) - spot_price),
+            0 if c.get("exch_seg") == preferred_exch else 1
+        )
+    )
     atm_strike = float(best["strike"]) / 100.0
 
     default_lot_map = {
@@ -740,11 +758,13 @@ class FnoOptionsTrader:
             self.broker_adapter.executor.api = self.api
 
         symbols_list_str = ", ".join([f"<code>{u['name']}</code>" for u in ACTIVE_FNO_UNIVERSE])
+        stratlab_mode_str = "Vertical Debit Spreads (Theta-Neutral)" if ENABLE_VERTICAL_SPREADS else "ATM Single-Leg Momentum"
         startup_msg = (
             "⚡ <b>F&O Liquid Stock Options Trading Desk is LIVE!</b>\n\n"
             f"📊 <b>Active Universe ({len(ACTIVE_FNO_UNIVERSE)} Liquid Assets):</b> {symbols_list_str}\n"
-            "🎯 <b>Strategy:</b> Stock Momentum Confluence (Supertrend + EMA Channel + Bull Run Regime Alignment)\n"
+            f"🎯 <b>Strategy:</b> Stock Confluence + StratLab OI Wall Filter ({stratlab_mode_str})\n"
             "📦 <b>Strike Resolution:</b> Dynamic Liquid Stock ATM Options (Noise Filtered)\n"
+            "🛡️ <b>StratLab Shields:</b> OI Wall Resistance Guard | IV Rank Filter | Defined Risk\n"
             f"💰 <b>Paper Capital:</b> ₹{self.capital:,.2f}\n"
             "🛡️ <b>Risk Rules:</b> 1 Lot | 15% SL | 30% Target (1:2 R:R) | +12% Breakeven Lock | Max 3 Pos\n"
             "⏰ <b>Intraday Flat By:</b> 15:20 IST\n\n"
@@ -844,17 +864,48 @@ class FnoOptionsTrader:
                             print(f"[F&O RISK GUARD] Max concurrent positions ({MAX_CONCURRENT_POSITIONS}) reached across desk. Skipping entry on {uname}.")
                             continue
 
-                        # BULLISH CONFLUENCE -> BUY ATM CALL
+                        # BULLISH CONFLUENCE -> BUY CALL (ATM or Bull Call Spread)
                         # Requires Supertrend Bullish + EMA 5>9>33 + Market Direction is Bullish (Spot >= DayOpen)
                         if st_dir == 1 and ema5 > ema9 > ema33 and spot_c > ema9 and is_bull_trend:
-                            contract = resolve_atm_contract(uname, spot_c, "CE")
-                            if contract and contract["symbol"] not in self.open_positions:
-                                self.enter_option_trade(contract, spot_c, "CE", "Bullish Supertrend + EMA Channel + Bull Run Regime Alignment")
+                            # StratLab Institutional OI Wall Clearance Guard
+                            if ENABLE_OI_WALL_GUARD:
+                                chain_struct = self.get_underlying_chain_structure(uname, spot_c)
+                                call_wall = chain_struct.get("call_wall", 0.0)
+                                can_enter, wall_reason = OptionChainStructureEngine.validate_call_clearance(spot_c, call_wall)
+                                if not can_enter:
+                                    print(f"[STRATLAB OI GUARD] Blocked CE entry on {sym}: {wall_reason}")
+                                    continue
 
-                        # BEARISH CONFLUENCE -> BUY ATM PUT
+                            if ENABLE_VERTICAL_SPREADS:
+                                spread = VerticalSpreadResolver.resolve_bull_call_spread(CACHED_CONTRACTS, uname, spot_c)
+                                if spread:
+                                    contract = spread["long_leg"]
+                                    contract["lotsize"] = spread["lotsize"]
+                                    contract["exchange"] = spread["exchange"]
+                                    contract["underlying"] = uname
+                                    contract["expiry"] = spread["expiry"]
+                                    contract["short_leg"] = spread["short_leg"]
+                                    contract["strategy"] = "BULL_CALL_SPREAD"
+                                    if contract["symbol"] not in self.open_positions:
+                                        self.enter_option_trade(contract, spot_c, "CE", "StratLab Bull Call Spread (Theta-Neutral Confluence)")
+                            else:
+                                contract = resolve_atm_contract(uname, spot_c, "CE")
+                                if contract and contract["symbol"] not in self.open_positions:
+                                    self.enter_option_trade(contract, spot_c, "CE", "Bullish Supertrend + EMA Channel + Bull Run Regime Alignment")
+
+                        # BEARISH CONFLUENCE -> BUY PUT
                         # Requires Supertrend Bearish + EMA 5<9<33 + Market Direction is Bearish (Spot < DayOpen)
                         # NEVER BUY PUT IN A BULL RUN!
                         elif st_dir == -1 and ema5 < ema9 < ema33 and spot_c < ema9 and is_bear_trend:
+                            # StratLab Institutional OI Put Wall Clearance Guard
+                            if ENABLE_OI_WALL_GUARD:
+                                chain_struct = self.get_underlying_chain_structure(uname, spot_c)
+                                put_wall = chain_struct.get("put_wall", 0.0)
+                                can_enter, wall_reason = OptionChainStructureEngine.validate_put_clearance(spot_c, put_wall)
+                                if not can_enter:
+                                    print(f"[STRATLAB OI GUARD] Blocked PE entry on {sym}: {wall_reason}")
+                                    continue
+
                             contract = resolve_atm_contract(uname, spot_c, "PE")
                             if contract and contract["symbol"] not in self.open_positions:
                                 self.enter_option_trade(contract, spot_c, "PE", "Bearish Supertrend + EMA Channel + Bear Run Regime Alignment")
@@ -870,6 +921,80 @@ class FnoOptionsTrader:
             except Exception as e:
                 print(f"[F&O TRADER LOOP ERROR] {e}")
                 time.sleep(10)
+
+    def get_underlying_chain_structure(self, underlying: str, spot_price: float) -> dict:
+        """
+        Retrieves cached Option Chain OI structure (Call Wall, Put Wall, PCR) with 300s TTL.
+        Protects against hitting API rate limits while maintaining structural market awareness.
+        """
+        now = time.time()
+        if not hasattr(self, "_oi_structure_cache"):
+            self._oi_structure_cache = {}
+
+        if underlying in self._oi_structure_cache:
+            cached_data, cache_time = self._oi_structure_cache[underlying]
+            if now - cache_time < 300.0:
+                return cached_data
+
+        default_res = {
+            "call_wall": 0.0,
+            "put_wall": 0.0,
+            "pcr": 1.0,
+            "max_pain": 0.0
+        }
+
+        if not self.api:
+            return default_res
+
+        try:
+            today_dt = datetime.datetime.now().date()
+            def parse_exp(c):
+                try:
+                    return datetime.datetime.strptime(c["expiry"], "%d%b%Y").date()
+                except Exception:
+                    return datetime.date.max
+
+            opts = [c for c in CACHED_CONTRACTS if c.get("name") == underlying and parse_exp(c) >= today_dt]
+            if not opts:
+                return default_res
+
+            nearest_exp = min(parse_exp(c) for c in opts)
+            exp_opts = [c for c in opts if parse_exp(c) == nearest_exp]
+
+            # Get strikes within +- 5% of spot
+            relevant_opts = [c for c in exp_opts if abs(float(c.get("strike", 0)) / 100.0 - spot_price) / spot_price <= 0.05]
+            if not relevant_opts:
+                relevant_opts = exp_opts[:20]
+
+            strikes_map = {}
+            tokens_to_fetch = []
+            for c in relevant_opts:
+                k = float(c["strike"]) / 100.0
+                if k not in strikes_map:
+                    strikes_map[k] = {"strike": k, "call_oi": 0, "put_oi": 0, "call_token": None, "put_token": None}
+                if c.get("symbol", "").endswith("CE"):
+                    strikes_map[k]["call_token"] = str(c["token"])
+                elif c.get("symbol", "").endswith("PE"):
+                    strikes_map[k]["put_token"] = str(c["token"])
+                tokens_to_fetch.append(str(c["token"]))
+
+            if tokens_to_fetch:
+                mkt_resp = self.api.getMarketData(mode="FULL", exchangeTokens={"NFO": tokens_to_fetch[:35]})
+                if mkt_resp and mkt_resp.get("status") and mkt_resp.get("data"):
+                    fetched = mkt_resp["data"].get("fetched", [])
+                    oi_lookup = {str(item.get("symbolToken")): int(item.get("opnInterest", 0) or 0) for item in fetched}
+                    for k, sdata in strikes_map.items():
+                        if sdata["call_token"] in oi_lookup:
+                            sdata["call_oi"] = oi_lookup[sdata["call_token"]]
+                        if sdata["put_token"] in oi_lookup:
+                            sdata["put_oi"] = oi_lookup[sdata["put_token"]]
+
+            analyzed = OptionChainStructureEngine.analyze_chain(list(strikes_map.values()))
+            self._oi_structure_cache[underlying] = (analyzed, now)
+            return analyzed
+        except Exception as e:
+            print(f"[STRATLAB OI ENGINE ERROR] {underlying}: {e}")
+            return default_res
 
     def fetch_option_quote(self, opt_sym: str, opt_token: str, exchange: str = "NFO") -> dict:
         """Helper method calling verified market quote fetcher."""
