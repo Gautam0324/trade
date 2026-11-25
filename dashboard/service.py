@@ -158,7 +158,28 @@ def is_pid_running(pid):
         return False
 
 _fno_token_map = None
+_fno_contract_map = None
 _service_smartapi = None
+
+def get_fno_contract_by_symbol(symbol: str) -> dict:
+    """Fast cache for F&O contract symbols to {token, exchange}."""
+    global _fno_contract_map
+    if _fno_contract_map is None:
+        _fno_contract_map = {}
+        fno_path = BASE_DIR / "historical_data" / "fno_contracts.json"
+        if fno_path.exists():
+            try:
+                with open(fno_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for c in data:
+                        if "symbol" in c and "token" in c:
+                            _fno_contract_map[c["symbol"]] = {
+                                "token": str(c["token"]),
+                                "exchange": c.get("exch_seg", "NFO")
+                            }
+            except Exception:
+                pass
+    return _fno_contract_map.get(symbol, {})
 
 def get_fno_token_by_symbol(symbol: str) -> str:
     """Fast cache for F&O contract symbols to instrument tokens."""
@@ -240,11 +261,53 @@ def fetch_live_quote_data(symbol, token=None, exchange=None):
         except Exception:
             pass
 
-    # 2. F&O Options Contract (CE/PE or exchange NFO)
-    is_option = clean_sym.endswith("CE") or clean_sym.endswith("PE") or exchange == "NFO"
+    # 2. F&O Options Contract (CE/PE or exchange NFO/BFO)
+    is_option = clean_sym.endswith("CE") or clean_sym.endswith("PE") or exchange in ("NFO", "BFO")
     if is_option:
-        opt_token = token or get_fno_token_by_symbol(clean_sym)
-        # Check active fno_trader position in ledger_fno.json
+        c_info = get_fno_contract_by_symbol(clean_sym)
+        opt_token = token or c_info.get("token") or get_fno_token_by_symbol(clean_sym)
+        opt_exch = exchange or c_info.get("exchange") or ("BFO" if clean_sym.startswith("BSE") else "NFO")
+
+        # 1. Query SmartAPI for live option tick first if token is available
+        if opt_token:
+            try:
+                api = get_service_smartapi()
+                if api:
+                    resp = api.getLtpData(exchange=opt_exch, tradingsymbol=clean_sym, symboltoken=str(opt_token))
+                    if resp and resp.get("status") and resp.get("data"):
+                        cur_p = round(float(resp["data"].get("ltp", 0.0)), 2)
+                        if cur_p > 0:
+                            data = {
+                                "symbol": clean_sym,
+                                "price": cur_p,
+                                "prev_close": cur_p,
+                                "change": 0.0,
+                                "change_pct": 0.0,
+                                "high": cur_p,
+                                "low": cur_p,
+                                "open": cur_p,
+                                "volume": 0,
+                                "signal": "HOLD",
+                                "confluence_score": 50.0,
+                                "confluence_weights": {},
+                                "rejections": [],
+                                "ema5": cur_p,
+                                "ema9": cur_p,
+                                "ema33_high": cur_p,
+                                "ema33_low": cur_p,
+                                "supertrend": None,
+                                "rsi": 50.0,
+                                "adx": 20.0,
+                                "vwap": cur_p,
+                                "rvol": 1.0,
+                                "last_updated": get_ist_now().strftime("%H:%M:%S IST")
+                            }
+                            quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
+                            return data
+            except Exception:
+                pass
+
+        # 2. Fallback to active fno_trader position in ledger_fno.json if live API is temporarily unavailable
         try:
             fno_led = read_json_file(TRADER_DIR / "ledger_fno.json", default={})
             for p in fno_led.get("open_positions", []):
@@ -280,45 +343,6 @@ def fetch_live_quote_data(symbol, token=None, exchange=None):
                     return data
         except Exception:
             pass
-
-        # Query SmartAPI for live option tick if token is available
-        if opt_token:
-            try:
-                api = get_service_smartapi()
-                if api:
-                    resp = api.getLtpData(exchange="NFO", tradingsymbol=clean_sym, symboltoken=str(opt_token))
-                    if resp and resp.get("status") and resp.get("data"):
-                        cur_p = round(float(resp["data"].get("ltp", 0.0)), 2)
-                        if cur_p > 0:
-                            data = {
-                                "symbol": clean_sym,
-                                "price": cur_p,
-                                "prev_close": cur_p,
-                                "change": 0.0,
-                                "change_pct": 0.0,
-                                "high": cur_p,
-                                "low": cur_p,
-                                "open": cur_p,
-                                "volume": 0,
-                                "signal": "HOLD",
-                                "confluence_score": 50.0,
-                                "confluence_weights": {},
-                                "rejections": [],
-                                "ema5": cur_p,
-                                "ema9": cur_p,
-                                "ema33_high": cur_p,
-                                "ema33_low": cur_p,
-                                "supertrend": None,
-                                "rsi": 50.0,
-                                "adx": 20.0,
-                                "vwap": cur_p,
-                                "rvol": 1.0,
-                                "last_updated": get_ist_now().strftime("%H:%M:%S IST")
-                            }
-                            quote_cache[clean_sym] = {"timestamp": now_ts, "data": data}
-                            return data
-            except Exception:
-                pass
 
         # For option contracts: do NOT fall through to Yahoo Finance daemon
         fallback_data = {
@@ -499,8 +523,9 @@ def compute_dashboard_metrics(account_id="gautam"):
 
         # Determine if option contract
         is_option = p.get("option_type") or sym.endswith("CE") or sym.endswith("PE")
-        pos_token = p.get("token") or (get_fno_token_by_symbol(sym) if is_option else None)
-        pos_exch = p.get("exchange", "NFO" if is_option else "NSE")
+        c_info = get_fno_contract_by_symbol(sym) if is_option else {}
+        pos_token = p.get("token") or c_info.get("token") or (get_fno_token_by_symbol(sym) if is_option else None)
+        pos_exch = p.get("exchange") or c_info.get("exchange") or ("BFO" if is_option and c_info.get("exchange") == "BFO" else ("NFO" if is_option else "NSE"))
 
         quote = fetch_live_quote_data(sym, token=pos_token, exchange=pos_exch)
         cur_p = 0.0

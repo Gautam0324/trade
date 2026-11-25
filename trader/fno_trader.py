@@ -1223,6 +1223,7 @@ class FnoOptionsTrader:
             "option_type": option_type,
             "strike": contract["strike"],
             "expiry": contract["expiry"],
+            "exchange": exchange,
             "side": "BUY",
             "qty": qty,
             "quantity": qty,
@@ -1248,7 +1249,7 @@ class FnoOptionsTrader:
             "ask": ask,
             "slippage_applied": slippage,
             "contract_details": {
-                "exchange": "NFO",
+                "exchange": exchange,
                 "trading_symbol": opt_sym,
                 "instrument_token": str(opt_token),
                 "underlying": contract["underlying"],
@@ -1297,8 +1298,9 @@ class FnoOptionsTrader:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.datetime.now().strftime("%H:%M")
 
-        # Fetch verified current option quote
-        quote = self.fetch_option_quote(opt_sym, opt_token, exchange="NFO")
+        # Fetch verified current option quote using contract's actual exchange (NFO or BFO)
+        pos_exch = pos.get("exchange") or pos.get("contract_details", {}).get("exchange") or ("BFO" if opt_sym.startswith("BSE") else "NFO")
+        quote = self.fetch_option_quote(opt_sym, opt_token, exchange=pos_exch)
         if quote and quote.get("ltp", 0.0) > 0:
             current_premium = float(quote["ltp"])
             pos["price_source"] = "VERIFIED_MARKET_QUOTE"
