@@ -92,6 +92,7 @@ STOP_LOSS_PCT = 0.15
 TARGET_PCT = 0.30
 BREAKEVEN_LOCK_PCT = 0.12
 MAX_CONCURRENT_POSITIONS = 3
+ENABLE_SUPERTREND_REVERSAL_EXIT = False  # Disabled: 1-min Supertrend flicker causes instant 0% churn & fee bleeding
 
 _fno_lock_handle = None
 
@@ -1336,9 +1337,10 @@ class FnoOptionsTrader:
             self.exit_position(opt_sym, f"{reason_text} @ Rs {current_premium:.2f}", current_premium)
             return
 
-        # Supertrend Reversal
-        if (pos["option_type"] == "CE" and st_dir == -1) or (pos["option_type"] == "PE" and st_dir == 1):
-            self.exit_position(opt_sym, f"🔄 Supertrend Reversal on Underlying Spot @ Rs {current_premium:.2f}", current_premium)
+        # Supertrend Reversal (Disabled by default: 1-min Supertrend flicker causes premature churn & fee bleeding)
+        if ENABLE_SUPERTREND_REVERSAL_EXIT:
+            if (pos["option_type"] == "CE" and st_dir == -1) or (pos["option_type"] == "PE" and st_dir == 1):
+                self.exit_position(opt_sym, f"🔄 Supertrend Reversal on Underlying Spot @ Rs {current_premium:.2f}", current_premium)
 
     def exit_position(self, opt_sym: str, reason: str, exit_price: float = None, max_retries: int = 3, backoff_base: float = 0.5):
         """
