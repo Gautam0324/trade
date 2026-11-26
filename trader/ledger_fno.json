@@ -35,7 +35,7 @@
       "price_source": "VERIFIED_MARKET_QUOTE",
       "verified_market_data": true,
       "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:17:25 IST",
+      "quote_timestamp": "2026-11-26 12:41:37 IST",
       "base_ltp": 100.85,
       "bid": 0.0,
       "ask": 0.0,
@@ -83,7 +83,7 @@
       "price_source": "VERIFIED_MARKET_QUOTE",
       "verified_market_data": true,
       "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:17:46 IST",
+      "quote_timestamp": "2026-11-26 12:42:03 IST",
       "base_ltp": 1.2,
       "bid": 0.0,
       "ask": 0.0,
@@ -131,7 +131,7 @@
       "price_source": "VERIFIED_MARKET_QUOTE",
       "verified_market_data": true,
       "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:17:59 IST",
+      "quote_timestamp": "2026-11-26 12:42:19 IST",
       "base_ltp": 3.3,
       "bid": 0.0,
       "ask": 0.0,
@@ -5232,5 +5232,5 @@
       }
     }
   ],
-  "last_updated": "2026-11-26 12:17:59 IST"
+  "last_updated": "2026-11-26 12:42:22 IST"
 }

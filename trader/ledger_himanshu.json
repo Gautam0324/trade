@@ -1,7 +1,7 @@
 {
   "initial_capital": 1000000.0,
-  "free_cash": 658366.1,
-  "deployed_cash": 844799.25,
+  "free_cash": 651853.1,
+  "deployed_cash": 851312.25,
   "realized_pnl": 503165.35,
   "open_positions": [
     {
@@ -16,7 +16,10 @@
       "target_price": 163.32,
       "strategy_name": "CONFLUENCE",
       "entry_time": "10:28",
-      "status": "OPEN"
+      "status": "OPEN",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795672841633-BSE26DEC3950CE",
@@ -63,7 +66,9 @@
         "strike": 3950.0,
         "option_type": "CE"
       },
-      "unrealized_pnl": -40.0
+      "unrealized_pnl": -40.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795672878752-ICICIBANK26NOV1620PE",
@@ -110,7 +115,9 @@
         "strike": 1620.0,
         "option_type": "PE"
       },
-      "unrealized_pnl": 0.0
+      "unrealized_pnl": 0.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795672901447-BHARTIARTL26NOV2100PE",
@@ -157,7 +164,9 @@
         "strike": 2100.0,
         "option_type": "PE"
       },
-      "unrealized_pnl": -4.75
+      "unrealized_pnl": -4.75,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795674251216-ICICIBANK",
@@ -171,7 +180,10 @@
       "target_price": 1633.1,
       "strategy_name": "CONFLUENCE",
       "entry_time": "11:54",
-      "status": "OPEN"
+      "status": "OPEN",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795674484680-SBIN",
@@ -185,7 +197,56 @@
       "target_price": 1152.15,
       "strategy_name": "CONFLUENCE",
       "entry_time": "11:58",
-      "status": "OPEN"
+      "status": "OPEN",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "OPT-HIM-1795676794131-NIFTY26NOV24200CE",
+      "order_id": "ORD-20261126-123633-02E251-NIFTY26NOV24200CE",
+      "fill_id": "FILL-BUY-20261126-123633-E15F6D-NIFTY26NOV24200CE",
+      "symbol": "NIFTY26NOV24200CE",
+      "token": "45001",
+      "broker_order_id": null,
+      "broker_sl_order_id": null,
+      "underlying": "NIFTY",
+      "option_type": "CE",
+      "strike": 24200.0,
+      "expiry": "26NOV2026",
+      "exchange": "NFO",
+      "side": "BUY",
+      "qty": 65,
+      "quantity": 65,
+      "entry_price": 100.2,
+      "current_price": 100.2,
+      "peak_price": 100.2,
+      "amount": 6513.0,
+      "invested": 6513.0,
+      "sl_price": 85.17,
+      "current_stop": 85.17,
+      "target_price": 130.26,
+      "entry_spot": 24210.0,
+      "entry_time": "12:36",
+      "reason": "Initial",
+      "status": "OPEN",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_LTP_API",
+      "quote_timestamp": "2026-11-26 12:36:33 IST",
+      "base_ltp": 100.0,
+      "bid": 0.0,
+      "ask": 0.0,
+      "slippage_applied": 0.2,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "NIFTY26NOV24200CE",
+        "instrument_token": "45001",
+        "underlying": "NIFTY",
+        "expiry": "26NOV2026",
+        "strike": 24200.0,
+        "option_type": "CE"
+      }
     }
   ],
   "trade_history": [
@@ -3822,7 +3883,10 @@
       "pnl": -63.99,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794813315852-LT",
@@ -3839,7 +3903,10 @@
       "pnl": -1378.58,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794812975996-NIFTY23NOV2625250PE",
@@ -3870,7 +3937,9 @@
         "expiry": "23NOV2026",
         "strike": 25250.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794891500343-NIFTY17NOV2625400CE",
@@ -3901,7 +3970,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794891517143-BANKNIFTY23NOV2662300CE",
@@ -3932,7 +4003,9 @@
         "expiry": "23NOV2026",
         "strike": 62300.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794891550166-BSE23NOV263950PE",
@@ -3963,7 +4036,9 @@
         "expiry": "23NOV2026",
         "strike": 3950.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794892092723-ICICIBANK",
@@ -3980,7 +4055,10 @@
       "pnl": -383.23,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794892094598-LT",
@@ -3997,7 +4075,10 @@
       "pnl": 672.39,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794892641965-NIFTY17NOV2625400PE",
@@ -4028,7 +4109,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794892359691-HDFCBANK23NOV26820PE",
@@ -4059,7 +4142,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794893137195-ICICIBANK",
@@ -4076,7 +4161,10 @@
       "pnl": 142.5,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794892881070-TATASTEEL",
@@ -4093,7 +4181,10 @@
       "pnl": -5.86,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794814501429-NIFTY26NOV24200CE",
@@ -4145,7 +4236,9 @@
       "date": "2026-11-17",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794891532338-IDEA23NOV2613PE",
@@ -4198,7 +4291,9 @@
       "date": "2026-11-17",
       "gross_pnl": -714.75,
       "fees": 20.0,
-      "pnl": -734.75
+      "pnl": -734.75,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794893845556-TATASTEEL",
@@ -4215,7 +4310,10 @@
       "pnl": -69.85,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794894030563-NIFTY17NOV2625450CE",
@@ -4246,7 +4344,9 @@
         "expiry": "17NOV2026",
         "strike": 25450.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794893603094-HDFCBANK23NOV26820CE",
@@ -4277,7 +4377,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794893050259-BSE23NOV263950CE",
@@ -4308,7 +4410,9 @@
         "expiry": "23NOV2026",
         "strike": 3950.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794892756657-LT",
@@ -4325,7 +4429,10 @@
       "pnl": 1443.89,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794896875383-NIFTY17NOV2625500CE",
@@ -4356,7 +4463,9 @@
         "expiry": "17NOV2026",
         "strike": 25500.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794896295178-LT",
@@ -4373,7 +4482,10 @@
       "pnl": 1029.66,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794894606294-ICICIBANK",
@@ -4390,7 +4502,10 @@
       "pnl": 495.88,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794897127135-BSE23NOV264000CE",
@@ -4421,7 +4536,9 @@
         "expiry": "23NOV2026",
         "strike": 4000.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794896295906-TATASTEEL",
@@ -4438,7 +4555,10 @@
       "pnl": -57.83,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794894693091-BANKNIFTY23NOV2662400CE",
@@ -4469,7 +4589,9 @@
         "expiry": "23NOV2026",
         "strike": 62400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794899135027-IDEA23NOV2612PE",
@@ -4500,7 +4622,9 @@
         "expiry": "23NOV2026",
         "strike": 12.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794898456204-ICICIBANK",
@@ -4517,7 +4641,10 @@
       "pnl": -542.1,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794899338091-BSE23NOV263900PE",
@@ -4548,7 +4675,9 @@
         "expiry": "23NOV2026",
         "strike": 3900.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794901159795-BSE23NOV263850PE",
@@ -4579,7 +4708,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794904219507-ICICIBANK",
@@ -4596,7 +4727,10 @@
       "pnl": -490.01,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794891686639-SBIN",
@@ -4613,7 +4747,10 @@
       "pnl": -452.02,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794978746527-BANKNIFTY23NOV2662000PE",
@@ -4644,7 +4781,9 @@
         "expiry": "23NOV2026",
         "strike": 62000.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794978962153-HDFCBANK23NOV26810PE",
@@ -4675,7 +4814,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794978919115-NIFTY23NOV2625200PE",
@@ -4706,7 +4847,9 @@
         "expiry": "23NOV2026",
         "strike": 25200.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794980654704-TATASTEEL",
@@ -4723,7 +4866,10 @@
       "pnl": 26.58,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794981189022-BSE23NOV263850CE",
@@ -4754,7 +4900,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794981562013-TATASTEEL",
@@ -4771,7 +4919,10 @@
       "pnl": -80.41,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794983148293-BSE23NOV263800PE",
@@ -4802,7 +4953,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794983892800-TATASTEEL",
@@ -4819,7 +4972,10 @@
       "pnl": 12.59,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794982658534-TITAN23NOV264700PE",
@@ -4850,7 +5006,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794982588941-SBIN23NOV261120CE",
@@ -4881,7 +5039,9 @@
         "expiry": "23NOV2026",
         "strike": 1120.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794983913776-BHARTIARTL23NOV262140PE",
@@ -4912,7 +5072,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794985147309-AXISBANK23NOV261370PE",
@@ -4943,7 +5105,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794985643268-TATASTEEL",
@@ -4960,7 +5124,10 @@
       "pnl": 39.46,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794987132020-SBIN23NOV261110CE",
@@ -4991,7 +5158,9 @@
         "expiry": "23NOV2026",
         "strike": 1110.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794984788788-ICICIBANK23NOV261600PE",
@@ -5022,7 +5191,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794989778330-SBIN",
@@ -5039,7 +5210,10 @@
       "pnl": 62.73,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794987678962-BHARTIARTL23NOV262120PE",
@@ -5070,7 +5244,9 @@
         "expiry": "23NOV2026",
         "strike": 2120.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794984911814-LT23NOV264150PE",
@@ -5101,7 +5277,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794990507545-RELIANCE23NOV261370CE",
@@ -5132,7 +5310,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794988762785-AXISBANK23NOV261360PE",
@@ -5163,7 +5343,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794990294160-TATASTEEL23NOV26180CE",
@@ -5194,7 +5376,9 @@
         "expiry": "23NOV2026",
         "strike": 180.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794990203742-SBIN",
@@ -5211,7 +5395,10 @@
       "pnl": 1047.02,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794992043707-ICICIBANK",
@@ -5228,7 +5415,10 @@
       "pnl": -291.54,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794991457251-SBIN23NOV261130CE",
@@ -5259,7 +5449,9 @@
         "expiry": "23NOV2026",
         "strike": 1130.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1794987540588-TATASTEEL",
@@ -5276,7 +5468,10 @@
       "pnl": -103.54,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1794990302339-LT",
@@ -5293,7 +5488,10 @@
       "pnl": 668.39,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1794991572971-ICICIBANK23NOV261600CE",
@@ -5324,7 +5522,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1794992072111-RELIANCE23NOV261370PE",
@@ -5355,7 +5555,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795063564526-ICICIBANK",
@@ -5372,7 +5574,10 @@
       "pnl": -476.92,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795063713901-AXISBANK23NOV261370CE",
@@ -5403,7 +5608,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795063722296-TITAN23NOV264650CE",
@@ -5434,7 +5641,9 @@
         "expiry": "23NOV2026",
         "strike": 4650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795063201764-HDFCBANK23NOV26810CE",
@@ -5465,7 +5674,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795063750819-LT",
@@ -5482,7 +5693,10 @@
       "pnl": 895.99,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795064302040-RELIANCE23NOV261360PE",
@@ -5513,7 +5727,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795065495814-BSE23NOV263800CE",
@@ -5544,7 +5760,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795066624708-SBIN23NOV261140PE",
@@ -5575,7 +5793,9 @@
         "expiry": "23NOV2026",
         "strike": 1140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795064310290-ICICIBANK23NOV261590PE",
@@ -5606,7 +5826,9 @@
         "expiry": "23NOV2026",
         "strike": 1590.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795067674397-RELIANCE23NOV261360CE",
@@ -5637,7 +5859,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795067870178-LT23NOV264150CE",
@@ -5668,7 +5892,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795069490186-BHARTIARTL23NOV262140CE",
@@ -5699,7 +5925,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795071009378-TITAN23NOV264700CE",
@@ -5730,7 +5958,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795072795963-LT23NOV264200CE",
@@ -5761,7 +5991,9 @@
         "expiry": "23NOV2026",
         "strike": 4200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795072903569-SBIN23NOV261150PE",
@@ -5792,7 +6024,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795071321400-BSE23NOV263750PE",
@@ -5823,7 +6057,9 @@
         "expiry": "23NOV2026",
         "strike": 3750.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795075802429-AXISBANK23NOV261380CE",
@@ -5854,7 +6090,9 @@
         "expiry": "23NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795075986785-SBIN23NOV261150CE",
@@ -5885,7 +6123,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795063627211-TATASTEEL",
@@ -5902,7 +6142,10 @@
       "pnl": -1812.07,
       "reason": "Stop Loss Hit (Gapped Below SL)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795584084069-TATASTEEL",
@@ -5919,7 +6162,10 @@
       "pnl": 38.86,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795582632952-RELIANCE26NOV1380CE",
@@ -5950,7 +6196,9 @@
         "expiry": "26NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795582853884-TATASTEEL26NOV162.5CE",
@@ -5981,7 +6229,9 @@
         "expiry": "26NOV2026",
         "strike": 162.5,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795582655498-ICICIBANK26NOV1650CE",
@@ -6012,7 +6262,9 @@
         "expiry": "26NOV2026",
         "strike": 1650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795585580117-SBIN26NOV1140CE",
@@ -6043,7 +6295,9 @@
         "expiry": "26NOV2026",
         "strike": 1140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795587160960-SBIN",
@@ -6060,7 +6314,10 @@
       "pnl": 180.29,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795586547881-LT",
@@ -6077,7 +6334,10 @@
       "pnl": 1229.46,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795586751287-LT26NOV4150CE",
@@ -6108,7 +6368,9 @@
         "expiry": "26NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795586019501-AXISBANK26NOV1440CE",
@@ -6139,7 +6401,9 @@
         "expiry": "26NOV2026",
         "strike": 1440.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795587276361-BSE26DEC3800CE",
@@ -6170,7 +6434,9 @@
         "expiry": "29DEC2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795588184368-HDFCBANK26NOV850CE",
@@ -6201,7 +6467,9 @@
         "expiry": "26NOV2026",
         "strike": 850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795588207375-SBIN",
@@ -6218,7 +6486,10 @@
       "pnl": -567.96,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795588716492-LT",
@@ -6235,7 +6506,10 @@
       "pnl": -1043.6,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795589532861-ICICIBANK",
@@ -6252,7 +6526,10 @@
       "pnl": -501.61,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795596559513-SBIN",
@@ -6269,7 +6546,10 @@
       "pnl": -495.03,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795598960102-SBIN",
@@ -6286,7 +6566,10 @@
       "pnl": -274.17,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795598519968-ICICIBANK",
@@ -6303,7 +6586,10 @@
       "pnl": -22.21,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795596379311-LT",
@@ -6320,7 +6606,10 @@
       "pnl": -1024.04,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-HIM-1795588205970-SBIN26NOV1150CE",
@@ -6373,7 +6662,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795588585796-BHARTIARTL26NOV2140PE",
@@ -6426,7 +6717,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-HIM-1795588598601-TATASTEEL26NOV162.5PE",
@@ -6479,7 +6772,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-HIM-1795669095489-SBIN",
@@ -6496,7 +6791,10 @@
       "pnl": 195.55,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795670720757-SBIN",
@@ -6513,7 +6811,10 @@
       "pnl": -394.45,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795669209833-LT",
@@ -6530,7 +6831,10 @@
       "pnl": -1079.9,
       "reason": "Stop Loss Hit (Wick Touch)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795672501624-SBIN",
@@ -6547,7 +6851,10 @@
       "pnl": -259.47,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795673837412-SBIN",
@@ -6564,7 +6871,10 @@
       "pnl": 165.36,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-HIM-1795673784623-LT",
@@ -6581,8 +6891,11 @@
       "pnl": 579.13,
       "reason": "Target Hit (+1.5R - Wick Touch)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     }
   ],
-  "last_updated": "2026-11-26 11:31:42 IST"
+  "last_updated": "2026-11-26 12:36:34 IST"
 }

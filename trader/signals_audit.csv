@@ -3269,3 +3269,14 @@ timestamp,signal_type,asset,option_contract,spot_price,trigger_level,status,reas
 "2026-11-26 12:16:10 IST","BUY","ITC","ITC",308.25,308.30,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): EMA_CHANNEL + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
 "2026-11-26 12:17:18 IST","BUY","INFY","INFY",1163.90,1163.40,"REJECTED_BY_RISK","Risk Engine Blocked: Maximum open positions reached (3/3)",False
 "2026-11-26 12:18:09 IST","BUY","INFY","INFY",1164.30,1164.30,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (140.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + EMA_CHANNEL + VWAP_PULLBACK + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-11-26 12:18:59 IST","BUY","INFY","INFY",1164.40,1164.30,"REJECTED_BY_RISK","Risk Engine Blocked: Maximum open positions reached (3/3)",False
+"2026-11-26 12:19:10 IST","BUY","ITC","ITC",308.20,308.40,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): EMA_CHANNEL + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-11-26 12:20:20 IST","BUY","INFY","INFY",1164.30,1164.50,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): EMA_CHANNEL + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-11-26 12:22:09 IST","BUY","INFY","INFY",1164.80,1164.50,"REJECTED_BY_RISK","Risk Engine Blocked: Maximum open positions reached (3/3)",False
+"2026-11-26 12:23:01 IST","BUY","HDFCBANK","HDFCBANK",870.50,870.40,"REJECTED_BY_RISK","Risk Engine Blocked: Maximum open positions reached (3/3)",False
+"2026-11-26 12:23:28 IST","BUY","INFY","INFY",1165.30,1165.50,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): EMA_CHANNEL + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-11-26 12:24:23 IST","BUY","HDFCBANK","HDFCBANK",870.35,870.75,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (90.0 pts >= 65.0): EMA_CHANNEL + TREND_MOMENTUM + Regime Alignment (TRENDING_UP) + Favorable R:R (1.50))",False
+"2026-11-26 12:24:27 IST","BUY","SBIN","SBIN",1148.65,1148.00,"REJECTED_BY_RISK","Risk Engine Blocked: Maximum open positions reached (3/3)",False
+"2026-11-26 12:25:17 IST","BUY","SBIN","SBIN",1147.55,1148.95,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (95.0 pts >= 65.0): EMA_CHANNEL + ORB + TREND_MOMENTUM + Favorable R:R (1.50))",False
+"2026-11-26 12:25:26 IST","BUY","BAJFINANCE","BAJFINANCE",1119.95,1119.95,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (120.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + EMA_CHANNEL + VWAP_PULLBACK + TREND_MOMENTUM + Favorable R:R (1.50))",False
+"2026-11-26 12:35:15 IST","BUY","AXISBANK","AXISBANK",1418.30,1418.80,"SIGNAL_GENERATED","CONFLUENCE (Multi-Strategy Confluence (95.0 pts >= 65.0): TREND_PULLBACK_RECLAIM + EMA_CHANNEL + TREND_MOMENTUM + Favorable R:R (1.50))",False

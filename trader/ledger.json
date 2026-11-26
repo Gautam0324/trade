@@ -1,8 +1,8 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 1427288.09,
-  "deployed_cash": 22622.25,
+  "free_cash": 1411506.59,
+  "deployed_cash": 38403.75,
   "realized_pnl": 449910.34,
   "open_positions": [
     {
@@ -50,7 +50,9 @@
         "strike": 3950.0,
         "option_type": "CE"
       },
-      "unrealized_pnl": -40.0
+      "unrealized_pnl": -40.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795672877202-ICICIBANK26NOV1620PE",
@@ -97,7 +99,9 @@
         "strike": 1620.0,
         "option_type": "PE"
       },
-      "unrealized_pnl": 0.0
+      "unrealized_pnl": 0.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795672900579-BHARTIARTL26NOV2100PE",
@@ -144,7 +148,31 @@
         "strike": 2100.0,
         "option_type": "PE"
       },
-      "unrealized_pnl": -4.75
+      "unrealized_pnl": -4.75,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "POS-20261126123633-62D4AE-NIFTY26NOV24200CE",
+      "symbol": "NIFTY26NOV24200CE",
+      "side": "BUY",
+      "qty": 65,
+      "entry_price": 150.3,
+      "sl_price": 127.5,
+      "target_price": 195.0,
+      "entry_time": "12:36",
+      "amount": 9769.5
+    },
+    {
+      "id": "POS-20261126123640-A1E45A-BANKNIFTY26NOV51500PE",
+      "symbol": "BANKNIFTY26NOV51500PE",
+      "side": "BUY",
+      "qty": 30,
+      "entry_price": 200.4,
+      "sl_price": 170.0,
+      "target_price": 260.0,
+      "entry_time": "12:36",
+      "amount": 6012.0
     }
   ],
   "trade_history": [
@@ -6285,7 +6313,10 @@
       "pnl": -1183.0,
       "reason": "Supertrend Bearish Reversal (Held 83 bars)",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794812975317-NIFTY23NOV2625250PE",
@@ -6316,7 +6347,9 @@
         "expiry": "23NOV2026",
         "strike": 25250.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261116142723-5C4431-HDFCBANK",
@@ -6332,7 +6365,10 @@
       "pnl": -867.79,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261116150505-682CB7-HDFCBANK",
@@ -6348,7 +6384,10 @@
       "pnl": -744.87,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794891499452-NIFTY17NOV2625400CE",
@@ -6379,7 +6418,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794891516136-BANKNIFTY23NOV2662300CE",
@@ -6410,7 +6451,9 @@
         "expiry": "23NOV2026",
         "strike": 62300.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794891548906-BSE23NOV263950PE",
@@ -6441,7 +6484,9 @@
         "expiry": "23NOV2026",
         "strike": 3950.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794892641225-NIFTY17NOV2625400PE",
@@ -6472,7 +6517,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794892358936-HDFCBANK23NOV26820PE",
@@ -6503,7 +6550,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261116130500-A466C3-NIFTY26NOV24200CE",
@@ -6524,7 +6573,10 @@
       "fees": 20.0,
       "pnl": -20.0,
       "status": "CLOSED",
-      "reason": "Manual Square-Off for Stale/Penny Position"
+      "reason": "Manual Square-Off for Stale/Penny Position",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261116130506-BC453D-BANKNIFTY26NOV51500PE",
@@ -6545,7 +6597,10 @@
       "fees": 20.0,
       "pnl": -20.0,
       "status": "CLOSED",
-      "reason": "Manual Square-Off for Stale/Penny Position"
+      "reason": "Manual Square-Off for Stale/Penny Position",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794891531287-IDEA23NOV2613PE",
@@ -6598,7 +6653,9 @@
       "date": "2026-11-17",
       "gross_pnl": -714.75,
       "fees": 20.0,
-      "pnl": -734.75
+      "pnl": -734.75,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794894029847-NIFTY17NOV2625450CE",
@@ -6629,7 +6686,9 @@
         "expiry": "17NOV2026",
         "strike": 25450.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794893602368-HDFCBANK23NOV26820CE",
@@ -6660,7 +6719,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261117110804-F92A4D-RELIANCE",
@@ -6676,7 +6737,10 @@
       "pnl": -114.25,
       "reason": "Supertrend Bearish Reversal (Held 29 bars)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794893049507-BSE23NOV263950CE",
@@ -6693,7 +6757,10 @@
       "pnl": 3325.04,
       "reason": "Manual Exit from Dashboard Terminal",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794896874670-NIFTY17NOV2625500CE",
@@ -6724,7 +6791,9 @@
         "expiry": "17NOV2026",
         "strike": 25500.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261117115524-361D01-RELIANCE",
@@ -6740,7 +6809,10 @@
       "pnl": 1393.75,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794897126427-BSE23NOV264000CE",
@@ -6771,7 +6843,9 @@
         "expiry": "23NOV2026",
         "strike": 4000.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261117123115-C4C429-HDFCBANK",
@@ -6787,7 +6861,10 @@
       "pnl": -1082.18,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794894692334-BANKNIFTY23NOV2662400CE",
@@ -6818,7 +6895,9 @@
         "expiry": "23NOV2026",
         "strike": 62400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794899134312-IDEA23NOV2612PE",
@@ -6849,7 +6928,9 @@
         "expiry": "23NOV2026",
         "strike": 12.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794899337393-BSE23NOV263900PE",
@@ -6880,7 +6961,9 @@
         "expiry": "23NOV2026",
         "strike": 3900.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261117125718-1384D4-HDFCBANK",
@@ -6896,7 +6979,10 @@
       "pnl": -815.9,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117130304-96D99E-RELIANCE",
@@ -6912,7 +6998,10 @@
       "pnl": -971.24,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794901158929-BSE23NOV263850PE",
@@ -6943,7 +7032,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261117132615-7E5DBA-RELIANCE",
@@ -6959,7 +7050,10 @@
       "pnl": 975.13,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117134828-ACEED2-RELIANCE",
@@ -6975,7 +7069,10 @@
       "pnl": 1558.9,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117134410-FE8852-HDFCBANK",
@@ -6991,7 +7088,10 @@
       "pnl": -474.24,
       "reason": "Supertrend Bearish Reversal (Held 30 bars)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117143004-0B8195-HDFCBANK",
@@ -7007,7 +7107,10 @@
       "pnl": -890.13,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117145920-64A18A-JPL",
@@ -7023,7 +7126,10 @@
       "pnl": -1832.98,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117151807-A8B775-JPL",
@@ -7039,7 +7145,10 @@
       "pnl": -152.48,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261117152107-8AEC49-JPL",
@@ -7055,7 +7164,10 @@
       "pnl": -665.46,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261118101318-72C7B9-TCS",
@@ -7071,7 +7183,10 @@
       "pnl": -1164.73,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261118103514-BAF309-SBIN",
@@ -7087,7 +7202,10 @@
       "pnl": -1055.48,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261118101324-E3B59E-HDFCBANK",
@@ -7103,7 +7221,10 @@
       "pnl": -782.46,
       "reason": "Supertrend Bearish Reversal (Held 31 bars)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794978745860-BANKNIFTY23NOV2662000PE",
@@ -7134,7 +7255,9 @@
         "expiry": "23NOV2026",
         "strike": 62000.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118111312-543FF3-HDFCBANK",
@@ -7150,7 +7273,10 @@
       "pnl": -253.76,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794978961465-HDFCBANK23NOV26810PE",
@@ -7181,7 +7307,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794978918403-NIFTY23NOV2625200PE",
@@ -7212,7 +7340,9 @@
         "expiry": "23NOV2026",
         "strike": 25200.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794981188322-BSE23NOV263850CE",
@@ -7243,7 +7373,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794981597796-BANKNIFTY23NOV2662200CE",
@@ -7274,7 +7406,9 @@
         "expiry": "23NOV2026",
         "strike": 62200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118113459-0D956B-INFY",
@@ -7290,7 +7424,10 @@
       "pnl": -33.47,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261118112104-E2202C-TCS",
@@ -7306,7 +7443,10 @@
       "pnl": -472.96,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794983147424-BSE23NOV263800PE",
@@ -7337,7 +7477,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794982656561-TITAN23NOV264700PE",
@@ -7368,7 +7510,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118111822-41912A-SBIN",
@@ -7384,7 +7528,10 @@
       "pnl": -244.6,
       "reason": "Supertrend Bearish Reversal (Held 37 bars)",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794982588220-SBIN23NOV261120CE",
@@ -7415,7 +7562,9 @@
         "expiry": "23NOV2026",
         "strike": 1120.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794983913055-BHARTIARTL23NOV262140PE",
@@ -7446,7 +7595,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794985146416-AXISBANK23NOV261370PE",
@@ -7477,7 +7628,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794987131222-SBIN23NOV261110CE",
@@ -7508,7 +7661,9 @@
         "expiry": "23NOV2026",
         "strike": 1110.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794984778034-ICICIBANK23NOV261600PE",
@@ -7539,7 +7694,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794987678241-BHARTIARTL23NOV262120PE",
@@ -7570,7 +7727,9 @@
         "expiry": "23NOV2026",
         "strike": 2120.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794984909230-LT23NOV264150PE",
@@ -7601,7 +7760,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118135802-C5E5A7-JPL",
@@ -7617,7 +7778,10 @@
       "pnl": -866.22,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794990506785-RELIANCE23NOV261370CE",
@@ -7648,7 +7812,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794988762054-AXISBANK23NOV261360PE",
@@ -7679,7 +7845,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794990293435-TATASTEEL23NOV26180CE",
@@ -7710,7 +7878,9 @@
         "expiry": "23NOV2026",
         "strike": 180.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118141020-70418F-SBIN",
@@ -7726,7 +7896,10 @@
       "pnl": 2334.77,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794991456513-SBIN23NOV261130CE",
@@ -7757,7 +7930,9 @@
         "expiry": "23NOV2026",
         "strike": 1130.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1794991572192-ICICIBANK23NOV261600CE",
@@ -7788,7 +7963,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261118142106-E4AB8B-JPL",
@@ -7804,7 +7981,10 @@
       "pnl": -926.11,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-18",
-      "exit_date": "2026-11-18"
+      "exit_date": "2026-11-18",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1794992071359-RELIANCE23NOV261370PE",
@@ -7835,7 +8015,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795063713201-AXISBANK23NOV261370CE",
@@ -7866,7 +8048,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119101130-2DE0D7-HDFCBANK",
@@ -7882,7 +8066,10 @@
       "pnl": -1190.02,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795063721619-TITAN23NOV264650CE",
@@ -7913,7 +8100,9 @@
         "expiry": "23NOV2026",
         "strike": 4650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795063201039-HDFCBANK23NOV26810CE",
@@ -7944,7 +8133,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119101203-8E19A9-JPL",
@@ -7960,7 +8151,10 @@
       "pnl": -1125.79,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261119104710-4D073F-TCS",
@@ -7976,7 +8170,10 @@
       "pnl": 1364.62,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795064301342-RELIANCE23NOV261360PE",
@@ -8007,7 +8204,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795065495128-BSE23NOV263800CE",
@@ -8038,7 +8237,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795066623992-SBIN23NOV261140PE",
@@ -8069,7 +8270,9 @@
         "expiry": "23NOV2026",
         "strike": 1140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795064309580-ICICIBANK23NOV261590PE",
@@ -8100,7 +8303,9 @@
         "expiry": "23NOV2026",
         "strike": 1590.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119110700-0A8B1C-RELIANCE",
@@ -8116,7 +8321,10 @@
       "pnl": 529.05,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795067673598-RELIANCE23NOV261360CE",
@@ -8147,7 +8355,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119112705-3E574F-TCS",
@@ -8163,7 +8373,10 @@
       "pnl": -2155.64,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795067869133-LT23NOV264150CE",
@@ -8194,7 +8407,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119121410-C71105-HDFCBANK",
@@ -8210,7 +8425,10 @@
       "pnl": 1218.3,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795069489261-BHARTIARTL23NOV262140CE",
@@ -8241,7 +8459,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119123615-D4B0A6-TCS",
@@ -8257,7 +8477,10 @@
       "pnl": -1133.67,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795071008645-TITAN23NOV264700CE",
@@ -8288,7 +8511,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119124422-6A7EE7-RELIANCE",
@@ -8304,7 +8529,10 @@
       "pnl": -923.78,
       "reason": "Supertrend Bearish Reversal (Held 21 bars)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795072791679-LT23NOV264200CE",
@@ -8335,7 +8563,9 @@
         "expiry": "23NOV2026",
         "strike": 4200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795072902788-SBIN23NOV261150PE",
@@ -8366,7 +8596,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119132309-673941-RELIANCE",
@@ -8382,7 +8614,10 @@
       "pnl": 202.95,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261119134019-B84D47-SBIN",
@@ -8398,7 +8633,10 @@
       "pnl": 688.31,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261119133317-A8C695-HDFCBANK",
@@ -8414,7 +8652,10 @@
       "pnl": 1774.03,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795075801729-AXISBANK23NOV261380CE",
@@ -8445,7 +8686,9 @@
         "expiry": "23NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795075985588-SBIN23NOV261150CE",
@@ -8476,7 +8719,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261119144617-5D5B01-JPL",
@@ -8492,7 +8737,10 @@
       "pnl": -3650.73,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261119144618-FBA61D-TCS",
@@ -8508,7 +8756,10 @@
       "pnl": 132.87,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261119145009-1AB59A-SBIN",
@@ -8524,7 +8775,10 @@
       "pnl": -181.67,
       "reason": "Simulated EOD Square-Off (flat_by 15:20 reached)",
       "date": "2026-11-19",
-      "exit_date": "2026-11-19"
+      "exit_date": "2026-11-19",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795582631792-RELIANCE26NOV1380CE",
@@ -8555,7 +8809,9 @@
         "expiry": "26NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795582853107-TATASTEEL26NOV162.5CE",
@@ -8586,7 +8842,9 @@
         "expiry": "26NOV2026",
         "strike": 162.5,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795582654169-ICICIBANK26NOV1650CE",
@@ -8617,7 +8875,9 @@
         "expiry": "26NOV2026",
         "strike": 1650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795585579165-SBIN26NOV1140CE",
@@ -8648,7 +8908,9 @@
         "expiry": "26NOV2026",
         "strike": 1140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261125114239-B44A5F-SBIN",
@@ -8664,7 +8926,10 @@
       "pnl": 746.7,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795586750338-LT26NOV4150CE",
@@ -8695,7 +8960,9 @@
         "expiry": "26NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795586018584-AXISBANK26NOV1440CE",
@@ -8726,7 +8993,9 @@
         "expiry": "26NOV2026",
         "strike": 1440.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261125115916-F40248-HDFCBANK",
@@ -8742,7 +9011,10 @@
       "pnl": -1268.25,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-25",
-      "exit_date": "2026-11-25"
+      "exit_date": "2026-11-25",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-GAU-1795587275366-BSE26DEC3800CE",
@@ -8773,7 +9045,9 @@
         "expiry": "29DEC2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795588183638-HDFCBANK26NOV850CE",
@@ -8804,7 +9078,9 @@
         "expiry": "26NOV2026",
         "strike": 850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795588205228-SBIN26NOV1150CE",
@@ -8857,7 +9133,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795588585054-BHARTIARTL26NOV2140PE",
@@ -8910,7 +9188,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "OPT-GAU-1795588597885-TATASTEEL26NOV162.5PE",
@@ -8963,7 +9243,9 @@
       "date": "2026-11-26",
       "gross_pnl": 0.0,
       "fees": 20.0,
-      "pnl": -20.0
+      "pnl": -20.0,
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-20261126105519-68EB5B-SBIN",
@@ -8979,7 +9261,10 @@
       "pnl": -1259.18,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261126105604-248415-RELIANCE",
@@ -8995,7 +9280,10 @@
       "pnl": 1427.36,
       "reason": "TICK_TARGET_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261126105900-B2B7C6-JPL",
@@ -9011,7 +9299,10 @@
       "pnl": -56.77,
       "reason": "Supertrend Bearish Reversal (Held 14 bars)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261126111413-202AFD-HDFCBANK",
@@ -9027,7 +9318,10 @@
       "pnl": -1430.03,
       "reason": "Supertrend Bearish Reversal (Held 4 bars)",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261126112500-25468C-SBIN",
@@ -9043,7 +9337,10 @@
       "pnl": -788.03,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-20261126112922-E88562-RELIANCE",
@@ -9059,10 +9356,13 @@
       "pnl": -1671.3,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-26",
-      "exit_date": "2026-11-26"
+      "exit_date": "2026-11-26",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     }
   ],
-  "last_updated": "2026-11-26 11:31:42 IST",
+  "last_updated": "2026-11-26 12:36:41 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15,
