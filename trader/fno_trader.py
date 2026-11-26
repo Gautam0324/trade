@@ -703,8 +703,21 @@ class FnoOptionsTrader:
                     self.free_cash = float(data.get("free_cash", self.capital))
                     self.realized_pnl = float(data.get("realized_pnl", 0.0))
                     self.completed_trades = data.get("trade_history", [])
+                    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+                    stale_to_close = []
                     for p in data.get("open_positions", []):
-                        self.open_positions[p["symbol"]] = p
+                        pos_date = p.get("entry_date") or p.get("date", "")
+                        # Intraday desk: auto-reconcile positions left open from prior days
+                        if pos_date and pos_date < today_str:
+                            stale_to_close.append(p)
+                        else:
+                            self.open_positions[p["symbol"]] = p
+
+                    if stale_to_close:
+                        print(f"[STARTUP RECONCILE] Automatically closed {len(stale_to_close)} overnight stale positions: {[p['symbol'] for p in stale_to_close]}")
+                        for p in stale_to_close:
+                            cur_p = float(p.get("current_price", p.get("entry_price", 0.0)))
+                            self.exit_position(p["symbol"], f"EOD Square-Off (Overnight Session Auto-Reconciled for {today_str})", cur_p)
             except Exception as e:
                 print(f"[FNO LEDGER LOAD ERROR] {e}")
 

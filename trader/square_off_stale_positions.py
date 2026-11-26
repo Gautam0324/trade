@@ -17,9 +17,9 @@ BASE_DIR = Path("d:/Trade-agent/day-trader-skill")
 TRADER_DIR = BASE_DIR / "trader"
 
 SYMBOLS_TO_CLOSE = [
-    "NIFTY26NOV24200CE",
-    "BANKNIFTY26NOV51500PE",
-    "IDEA23NOV2613PE"
+    "SBIN26NOV1150CE",
+    "BHARTIARTL26NOV2140PE",
+    "TATASTEEL26NOV162.5PE"
 ]
 
 def square_off():
@@ -59,7 +59,7 @@ def square_off():
                 closed_record["fees"] = fees
                 closed_record["pnl"] = net_pnl
                 closed_record["status"] = "CLOSED"
-                closed_record["reason"] = "Manual Square-Off for Stale/Penny Position"
+                closed_record["reason"] = "EOD Mandatory Square-Off (Overnight Session Reconciled)"
 
                 th.append(closed_record)
                 closed_now.append(sym)

@@ -2519,5 +2519,96 @@
       "ip": "127.0.0.1"
     },
     "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-17 11:42:17 IST",
+    "action": "MANUAL_CLOSE_POSITION",
+    "details": {
+      "account": "gautam",
+      "symbol": "BSE23NOV263950CE",
+      "pos_id": "OPT-GAU-1794893049507-BSE23NOV263950CE",
+      "trade": {
+        "id": "OPT-GAU-1794893049507-BSE23NOV263950CE",
+        "symbol": "BSE23NOV263950CE",
+        "side": "BUY",
+        "qty": 200,
+        "quantity": 200,
+        "entry_price": 73.15,
+        "exit_price": 90.2,
+        "entry_time": "10:54",
+        "exit_time": "2026-11-17 11:42:17 IST",
+        "gross_pnl": 3410.0,
+        "fees": 84.96,
+        "pnl": 3325.04,
+        "reason": "Manual Exit from Dashboard Terminal",
+        "date": "2026-11-17",
+        "exit_date": "2026-11-17"
+      }
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-18 10:46:11 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-18 11:45:55 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-19 10:17:22 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-25 10:26:40 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-25 11:29:51 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-25 12:12:35 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-25 13:30:15 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-26 10:24:25 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
   }
 ]
