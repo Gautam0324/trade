@@ -707,6 +707,15 @@ class FnoOptionsTrader:
                     stale_to_close = []
                     for p in data.get("open_positions", []):
                         pos_date = p.get("entry_date") or p.get("date", "")
+                        if not pos_date:
+                            qt = p.get("quote_timestamp", "")
+                            if len(qt) >= 10 and qt[4] == "-" and qt[7] == "-":
+                                pos_date = qt[:10]
+                            elif p.get("id", "").startswith("FILL-BUY-"):
+                                parts = p["id"].split("-")
+                                if len(parts) >= 3 and len(parts[2]) == 8 and parts[2].isdigit():
+                                    pos_date = f"{parts[2][:4]}-{parts[2][4:6]}-{parts[2][6:8]}"
+
                         # Intraday desk: auto-reconcile positions left open from prior days
                         if pos_date and pos_date < today_str:
                             stale_to_close.append(p)

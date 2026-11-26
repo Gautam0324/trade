@@ -1,22 +1,10 @@
 {
   "starting_capital": 1000000.0,
   "currency": "INR",
-  "free_cash": 1054653.3,
-  "deployed_cash": 399146.4,
-  "realized_pnl": 453799.7,
-  "open_positions": [
-    {
-      "id": "POS-20261126111413-202AFD-HDFCBANK",
-      "symbol": "HDFCBANK",
-      "side": "BUY",
-      "qty": 459,
-      "entry_price": 869.6,
-      "sl_price": 866.12,
-      "target_price": 874.82,
-      "entry_time": "11:14",
-      "amount": 399146.4
-    }
-  ],
+  "free_cash": 1452369.67,
+  "deployed_cash": 0,
+  "realized_pnl": 452369.67,
+  "open_positions": [],
   "trade_history": [
     {
       "id": "POS-1",
@@ -8882,9 +8870,25 @@
       "reason": "Supertrend Bearish Reversal (Held 14 bars)",
       "date": "2026-11-26",
       "exit_date": "2026-11-26"
+    },
+    {
+      "id": "POS-20261126111413-202AFD-HDFCBANK",
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 459,
+      "entry_price": 869.6,
+      "exit_price": 867.25,
+      "entry_time": "11:14",
+      "exit_time": "11:18",
+      "gross_pnl": -1078.65,
+      "fees": 351.38,
+      "pnl": -1430.03,
+      "reason": "Supertrend Bearish Reversal (Held 4 bars)",
+      "date": "2026-11-26",
+      "exit_date": "2026-11-26"
     }
   ],
-  "last_updated": "2026-11-26 11:14:13 IST",
+  "last_updated": "2026-11-26 11:18:16 IST",
   "next_position_seq": 73,
   "realized_pnl_by_day": {
     "2026-10-26": 449.15,
@@ -8905,7 +8909,7 @@
     "2026-11-18": -11254.33,
     "2026-11-19": -15291.97,
     "2026-11-25": -839.26,
-    "2026-11-26": 51.41
+    "2026-11-26": -1378.62
   },
   "trades": []
 }

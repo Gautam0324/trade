@@ -1,7 +1,7 @@
 {
   "initial_capital": 1000000.0,
-  "free_cash": 957983.33,
-  "deployed_cash": 544697.0,
+  "free_cash": 1486463.33,
+  "deployed_cash": 16217.0,
   "realized_pnl": 502680.33,
   "open_positions": [
     {
@@ -6364,5 +6364,5 @@
       "exit_date": "2026-11-26"
     }
   ],
-  "last_updated": "2026-11-26 10:53:30 IST"
+  "last_updated": "2026-11-26 11:18:01 IST"
 }
