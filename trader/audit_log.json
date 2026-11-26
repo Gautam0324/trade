@@ -2610,5 +2610,13 @@
       "ip": "127.0.0.1"
     },
     "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-11-26 12:17:37 IST",
+    "action": "AUTH_SUCCESS",
+    "details": {
+      "ip": "127.0.0.1"
+    },
+    "status": "SUCCESS"
   }
 ]
