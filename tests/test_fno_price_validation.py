@@ -23,11 +23,17 @@ sys.path.insert(0, str(BASE_DIR / "trader"))
 import fno_trader
 
 class MockSmartApi:
-    def __init__(self, ltp=None, bid=0.0, ask=0.0, fail=False):
+    def __init__(self, ltp=None, bid=None, ask=None, fail=False, feed_time=None):
         self.ltp = ltp
-        self.bid = bid
-        self.ask = ask
+        # Default bid/ask to reasonable values if ltp is provided and bid/ask omitted
+        if ltp is not None:
+            self.bid = bid if bid is not None else round(ltp * 0.999, 2)
+            self.ask = ask if ask is not None else round(ltp * 1.001, 2)
+        else:
+            self.bid = bid or 0.0
+            self.ask = ask or 0.0
         self.fail = fail
+        self.feed_time = feed_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def getLtpData(self, exchange, tradingsymbol, symboltoken):
         if self.fail or self.ltp is None:
@@ -41,7 +47,8 @@ class MockSmartApi:
                 "symboltoken": symboltoken,
                 "ltp": self.ltp,
                 "bid": self.bid,
-                "ask": self.ask
+                "ask": self.ask,
+                "feed_time": self.feed_time
             }
         }
 
@@ -53,6 +60,7 @@ class MockSmartApi:
             "data": {
                 "fetched": [{
                     "ltp": self.ltp,
+                    "feed_time": self.feed_time,
                     "depth": {
                         "buy": [{"price": self.bid}],
                         "sell": [{"price": self.ask}]
@@ -72,21 +80,24 @@ class MockSmartApi:
 
 class TestFnoPriceValidation(unittest.TestCase):
     def setUp(self):
+        # Use dynamic future expiry to avoid test fixture expiry failure across dates
+        future_exp = (datetime.datetime.now() + datetime.timedelta(days=7)).strftime("%d%b%Y").upper()
+        self.future_exp = future_exp
         self.nifty_contract = {
-            "symbol": "NIFTY26NOV24200CE",
+            "symbol": f"NIFTY{future_exp[:5]}24200CE",
             "token": "45001",
             "strike": 24200.0,
-            "expiry": "26NOV2026",
+            "expiry": future_exp,
             "lotsize": 65,
             "option_type": "CE",
             "underlying": "NIFTY",
             "atm_strike": 24200
         }
         self.banknifty_contract = {
-            "symbol": "BANKNIFTY26NOV51500PE",
+            "symbol": f"BANKNIFTY{future_exp[:5]}51500PE",
             "token": "45002",
             "strike": 51500.0,
-            "expiry": "26NOV2026",
+            "expiry": future_exp,
             "lotsize": 30,
             "option_type": "PE",
             "underlying": "BANKNIFTY",
@@ -185,7 +196,7 @@ class TestFnoPriceValidation(unittest.TestCase):
         self.assertEqual(details.get("trading_symbol"), opt_sym)
         self.assertEqual(details.get("instrument_token"), "45001")
         self.assertEqual(details.get("strike"), 24200.0)
-        self.assertEqual(details.get("expiry"), "26NOV2026")
+        self.assertEqual(details.get("expiry"), self.future_exp)
         self.assertEqual(details.get("option_type"), "CE")
 
         # Verification of audit fields

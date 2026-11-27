@@ -5,6 +5,57 @@ This changelog strictly adheres to the Phase-by-Phase engineering protocol.
 
 ---
 
+## [Phase 1.2 — Master Repair] — 2026-11-27
+
+### Added
+- `trader/fno/quote_validator.py`: Hardened `QuoteValidator` to strictly prohibit historical candle data from generating executable fills (`HISTORICAL_CANDLE_CANNOT_BE_USED_FOR_EXECUTION`), added regex cleaning for timezone suffixes (`IST`, `UTC`, `GMT`).
+- `reports/fno_v4/repair_execution_report.md`: Master repair execution report detailing root causes and fixes across all subsystems.
+- `reports/fno_v4/ledger_reconciliation_report.md`: Complete accounting reconciliation report investigating the ₹528,540 deployed cash mismatch.
+- `reports/fno_v4/market_data_validation_report.md`: Quote integrity rules and validation workflow.
+- `reports/fno_v4/strategy_implementation_audit.md`: Detailed configuration vs. execution discrepancy matrix.
+- `reports/fno_v4/test_results.md`: Complete automated test execution log.
+
+### Fixed
+- **Order Execution Hardening:** Updated `_execute_option_entry` in `trader/fno_trader.py` to enforce `QuoteValidator` depth checks and prohibit fills on candle closes.
+- **Fail-Closed Overnight Reconciliation:** Updated `load_ledger` in `trader/fno_trader.py` to query live morning auction quotes; if unavailable, positions are preserved open in state `RECONCILIATION_PENDING` without artificial fills or fabricated P&L.
+- **Ledger Invariant Conservation:** Reconstructed balances across all 4 account ledgers (`ledger.json`, `ledger_fno.json`, `ledger_himanshu.json`, `ledger_prateek.json`) with zero residual drift.
+- **Test Fixture Date Drift:** Updated `test_fno_price_validation.py` to dynamically compute future test expiries, preventing test failures across dates.
+
+### Verified
+- Executed 62 automated tests across all 5 test suites: 62 passed, 0 failed in 11.50s.
+
+---
+
+## [Phase 1.1] — 2026-11-27
+
+### Added
+- `trader/fno/pnl_engine.py`: Created centralized `OptionsPnLEngine` and `OptionPnLBreakdown` for CE/PE Buy/Sell PnL, partial exit aggregation, statutory charges, and directional signal validation.
+- `tests/test_fno_directional_pnl.py`: Implemented 15 deterministic unit tests covering CE/PE Buy/Sell profit/loss logic, lot sizes, partial exits, IV crush divergence, and quote rejection.
+- `reports/fno_v4/directional_pnl_execution_audit.md`: Comprehensive audit report on directional P&L and execution logic.
+
+### Verified
+- Executed 62 automated tests across all 5 test suites: 62 passed, 0 failed.
+
+---
+
+## [Phase 1] — 2026-11-26
+
+### Added
+- `trader/fno/quote_validator.py`: Built centralized `QuoteValidator` and `ValidationResult` enforcing timestamp presence, staleness rejection (<60s for ticks, <180s for candles), positive finite LTP, bid <= ask, and BFO/NFO exchange routing validation.
+- `trader/fno/__init__.py`: Package initialization exporting `QuoteValidator`.
+- `tests/test_fno_v4_phase1_integrity.py`: 8 comprehensive tests covering timestamp parsing, staleness rejection, crossed order books, BFO validation, and ledger cash conservation.
+- `reports/fno_v4/phase_1_data_integrity_report.md`: Formal Phase 1 sign-off report.
+
+### Fixed
+- **BFO/NFO Routing in Exits & Market Depth:** Fixed hardcoded `exchange="NFO"` in `_execute_exit_with_retry`, `get_underlying_chain_structure`, and live order dispatch in `trader/fno_trader.py`.
+- **Multi-Account Ledger Accounting Drift:** Reconciled deployed cash and free cash balances in `trader/ledger_himanshu.json` and `trader/ledger_prateek.json` to strictly preserve the fundamental accounting invariant.
+- **Overnight Stale Reconciliation:** Updated `fno_trader.py` startup reconciliation to fetch live morning quotes with dynamic exchange routing.
+
+### Verified
+- Executed 4 test suites: 47 tests passed, 0 failed.
+
+---
+
 ## [Phase 0] — 2026-11-26
 
 ### Added

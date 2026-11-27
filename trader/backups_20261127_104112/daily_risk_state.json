@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-27",
+  "trade_count": 0,
+  "order_count": 0,
+  "realized_loss": 0.0,
+  "realized_pnl": 0.0,
+  "kill_switch_triggered": false,
+  "kill_switch_reason": null
+}

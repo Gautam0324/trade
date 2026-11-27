@@ -706,11 +706,15 @@ async function loadLiveTradingData() {
     const pnlClass = pnl >= 0 ? "val-green" : "val-red";
     const posPayload = JSON.stringify(p).replace(/"/g, '&quot;');
 
+    const posDir = (p.position_direction || (p.side === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+    const sideBadgeClass = posDir === 'LONG' ? 'open' : 'paper';
+    const optType = p.option_type || (p.symbol.endsWith('CE') ? 'CE' : (p.symbol.endsWith('PE') ? 'PE' : 'EQ'));
+
     html += `
       <tr class="clickable-row" onclick="openTradeDrawer(${posPayload})">
         <td style="font-family: var(--font-mono); font-size: 11px;">${p.id || p.position_id || '--'}</td>
         <td><strong>${p.symbol}</strong></td>
-        <td><span class="status-badge ${p.side === 'BUY' ? 'open' : 'paper'}">${p.side || 'BUY'}</span></td>
+        <td><span class="status-badge ${sideBadgeClass}">${p.side || 'BUY'} (${posDir})</span></td>
         <td>${p.qty}</td>
         <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>
         <td>₹${Number(p.current_price || 0).toFixed(2)}</td>
@@ -779,10 +783,15 @@ async function loadFnoDeskData() {
     const pnlClass = pnl >= 0 ? "val-green" : "val-red";
     const slVal = (p.sl_price && Number(p.sl_price) < Number(p.entry_price) * 2) ? Number(p.sl_price) : (Number(p.entry_price || 0) * 0.95);
     const tgtVal = (p.target_price && Number(p.target_price) < Number(p.entry_price) * 3) ? Number(p.target_price) : (Number(p.entry_price || 0) * 1.15);
+    const posDir = (p.position_direction || (p.side === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+    const typeLabel = p.symbol.endsWith('CE') ? 'CALL (CE)' : (p.symbol.endsWith('PE') ? 'PUT (PE)' : 'F&O');
+    const badgeLabel = `${p.side || 'BUY'} ${typeLabel}`;
+    const badgeClass = (p.side === 'BUY') ? 'open' : 'paper';
+
     html += `
       <tr>
         <td><strong>${p.symbol}</strong></td>
-        <td><span class="status-badge paper">${p.symbol.endsWith('CE') ? 'CALL (CE)' : 'PUT (PE)'}</span></td>
+        <td><span class="status-badge ${badgeClass}">${badgeLabel}</span></td>
         <td>${p.lots || 1} Lot(s)</td>
         <td>${p.qty}</td>
         <td>₹${Number(p.entry_price || 0).toFixed(2)}</td>

@@ -536,7 +536,15 @@ def compute_dashboard_metrics(account_id="gautam"):
         else:
             cur_p = entry_p
         
-        pos_pnl = round((cur_p - entry_p) * qty, 2)
+        pos_side = p.get("side", "BUY").upper()
+        pos_dir = p.get("position_direction", "LONG" if pos_side == "BUY" else "SHORT").upper()
+        is_short = (pos_side == "SELL") or (pos_dir == "SHORT")
+
+        if is_short:
+            pos_pnl = round((entry_p - cur_p) * qty, 2)
+        else:
+            pos_pnl = round((cur_p - entry_p) * qty, 2)
+
         pos_pnl_pct = round((pos_pnl / invested) * 100, 2) if invested > 0 else 0.0
         unrealized_pnl += pos_pnl
 
@@ -1205,7 +1213,14 @@ def get_fno_desk_data():
         cur_p = float(quote["price"]) if (quote and quote.get("price", 0) > 0) else float(p.get("current_price", entry_p))
         qty = int(p.get("qty", 25))
         invested = float(p.get("amount", p.get("invested", round(qty * entry_p, 2))))
-        pnl = round((cur_p - entry_p) * qty, 2)
+        pos_side = p.get("side", "BUY").upper()
+        pos_dir = p.get("position_direction", "LONG" if pos_side == "BUY" else "SHORT").upper()
+        is_short = (pos_side == "SELL") or (pos_dir == "SHORT")
+
+        if is_short:
+            pnl = round((entry_p - cur_p) * qty, 2)
+        else:
+            pnl = round((cur_p - entry_p) * qty, 2)
         pnl_pct = round((pnl / invested) * 100, 2) if invested > 0 else 0.0
         lot_size = OptionsEngine.get_lot_size(sym)
         enriched_fno_pos.append({
@@ -1215,7 +1230,9 @@ def get_fno_desk_data():
             "unrealized_pnl": pnl,
             "unrealized_pnl_pct": pnl_pct,
             "lot_size": lot_size,
-            "lots": max(1, qty // lot_size) if lot_size > 0 else 1
+            "lots": max(1, qty // lot_size) if lot_size > 0 else 1,
+            "position_direction": pos_dir,
+            "side": pos_side
         })
 
     return {

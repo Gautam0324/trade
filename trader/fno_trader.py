@@ -50,6 +50,10 @@ from stratlab_options_engine import (
     OptionChainStructureEngine,
     VerticalSpreadResolver
 )
+from fno.quote_validator import QuoteValidator, ValidationResult
+from fno.pnl_engine import OptionsPnLEngine, OptionPnLBreakdown
+from fno.margin_calculator import OptionMarginCalculator
+from fno.strategy_engine import DualDirectionStrategyEngine, OptionSignal
 
 LEDGER_PATH = BASE_DIR / "trader" / "ledger_fno.json"
 ACCOUNTS_PATH = BASE_DIR / "trader" / "accounts.json"
@@ -63,6 +67,10 @@ ENABLE_VERTICAL_SPREADS = False   # True: Multi-leg defined-risk Bull Call / Bea
 
 # Universe Configuration: Focus exclusively on High-Momentum Stock Options to avoid index chop/decay
 ENABLE_INDEX_OPTIONS = False  # Set to True only if explicitly intending to trade choppy Index derivatives
+
+# Strategy Mode: BUY_ONLY, BUY_AND_SELL, or SELL_ONLY
+FNO_TRADING_MODE = "BUY_AND_SELL"  # Dual Directional: Supports BUY CE, BUY PE, SELL CE, SELL PE
+ALLOW_NAKED_OPTION_SELLING = True  # Requires strict SPAN+Exposure margin check before placement
 
 INDEX_UNIVERSE = [
     {"name": "NIFTY", "symbol": "NIFTY 50", "token": "99926000", "exchange": "NSE", "step": 50, "default_lot": 65, "is_index": True},
@@ -201,39 +209,33 @@ def resolve_atm_contract(underlying: str, spot_price: float, option_type: str = 
         "exchange": best.get("exch_seg", "NFO")
     }
 
-def calculate_option_costs(buy_price: float, sell_price: float, qty: int):
+def calculate_option_costs(buy_price: float, sell_price: float, qty: int, side: str = "BUY"):
     """
-    Indian Regulatory Cost Model for Equity Options:
-    - Brokerage: Rs 20 per leg (Rs 40 roundtrip)
-    - STT: 0.1% on Sell turnover
-    - Exchange Turnover: 0.05%
-    - GST: 18% on (Brokerage + Turnover)
-    - Stamp Duty: 0.003% on Buy turnover
+    Authoritative Indian Regulatory Cost Model for Equity/Index Options via OptionsPnLEngine:
+    Supports both BUY (entry buy, exit sell) and SELL (entry sell, exit buy).
     """
-    buy_turnover = buy_price * qty
-    sell_turnover = sell_price * qty
-    total_turnover = buy_turnover + sell_turnover
-
-    brokerage = 40.0
-    stt = round(sell_turnover * 0.001, 2)
-    exch_turnover = round(total_turnover * 0.0005, 2)
-    gst = round((brokerage + exch_turnover) * 0.18, 2)
-    stamp_duty = round(buy_turnover * 0.00003, 2)
-
-    total_fees = round(brokerage + stt + exch_turnover + gst + stamp_duty, 2)
-    gross_pnl = round(sell_turnover - buy_turnover, 2)
-    net_pnl = round(gross_pnl - total_fees, 2)
-
+    side_clean = side.upper()
+    entry_p = buy_price if side_clean == "BUY" else sell_price
+    exit_p = sell_price if side_clean == "BUY" else buy_price
+    breakdown = OptionsPnLEngine.calculate_pnl(
+        symbol="OPT-CONTRACT",
+        side=side_clean,
+        entry_price=entry_p,
+        current_or_exit_price=exit_p,
+        qty=qty,
+        is_closed=True
+    )
+    fees_dict = OptionsPnLEngine.calculate_statutory_fees(side_clean, entry_p, exit_p, qty)
     return {
-        "gross_pnl": gross_pnl,
-        "total_fees": total_fees,
-        "net_pnl": net_pnl,
+        "gross_pnl": breakdown.gross_pnl,
+        "total_fees": breakdown.total_fees,
+        "net_pnl": breakdown.net_pnl,
         "breakdown": {
-            "brokerage": brokerage,
-            "stt": stt,
-            "turnover_fee": exch_turnover,
-            "gst": gst,
-            "stamp_duty": stamp_duty
+            "brokerage": fees_dict["brokerage"],
+            "stt": fees_dict["stt"],
+            "turnover_fee": fees_dict["exchange_turnover"],
+            "gst": fees_dict["gst"],
+            "stamp_duty": fees_dict["stamp_duty"]
         }
     }
 
@@ -575,8 +577,12 @@ def broadcast_option_exit_to_accounts(opt_sym: str, exit_price: float, reason: s
             pos = open_positions.pop(pos_idx)
             entry_p = float(pos.get("entry_price", exit_price))
             qty = int(pos.get("qty", 1))
+            pos_side = pos.get("side", "BUY").upper()
+            pos_dir = pos.get("position_direction", "LONG" if pos_side == "BUY" else "SHORT").upper()
+            is_short = (pos_side == "SELL") or (pos_dir == "SHORT")
+            exit_order_side = "BUY" if is_short else "SELL"
 
-            costs = calculate_option_costs(entry_p, exit_price, qty)
+            costs = calculate_option_costs(entry_p, exit_price, qty, side=pos_side)
             net_pnl = costs["net_pnl"]
             fees = costs["total_fees"]
             gross_pnl = costs["gross_pnl"]
@@ -585,7 +591,10 @@ def broadcast_option_exit_to_accounts(opt_sym: str, exit_price: float, reason: s
             trade_record = {
                 "id": pos.get("id", f"OPT-{int(time.time()*1000)}-{opt_sym}"),
                 "symbol": opt_sym,
-                "side": pos.get("side", "BUY"),
+                "side": pos_side,
+                "position_direction": pos_dir,
+                "position_effect": "CLOSE",
+                "exit_side": exit_order_side,
                 "qty": qty,
                 "quantity": qty,
                 "entry_price": entry_p,
@@ -610,9 +619,15 @@ def broadcast_option_exit_to_accounts(opt_sym: str, exit_price: float, reason: s
             th = led_data.setdefault("trade_history", [])
             th.append(trade_record)
             led_data["realized_pnl"] = round(float(led_data.get("realized_pnl", 0.0)) + net_pnl, 2)
-            returned_cash = (exit_price * qty) - fees
+            
+            deployed_amount = float(pos.get("amount", pos.get("invested", entry_p * qty)))
+            if not is_short:
+                returned_cash = (exit_price * qty) - fees
+            else:
+                returned_cash = deployed_amount + gross_pnl - fees
+
             led_data["free_cash"] = round(float(led_data.get("free_cash", acc_info.get("capital", 1000000.0))) + returned_cash, 2)
-            led_data["deployed_cash"] = max(0.0, round(float(led_data.get("deployed_cash", 0.0)) - (entry_p * qty), 2))
+            led_data["deployed_cash"] = max(0.0, round(float(led_data.get("deployed_cash", 0.0)) - deployed_amount, 2))
             led_data["last_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
             print(f"[F&O {user_name}] Exit recorded in {ledger_fname} | Net: Rs {net_pnl:+.2f}")
             return trade_record
@@ -723,10 +738,28 @@ class FnoOptionsTrader:
                             self.open_positions[p["symbol"]] = p
 
                     if stale_to_close:
-                        print(f"[STARTUP RECONCILE] Automatically closed {len(stale_to_close)} overnight stale positions: {[p['symbol'] for p in stale_to_close]}")
+                        print(f"[STARTUP RECONCILE] Found {len(stale_to_close)} overnight positions: {[p['symbol'] for p in stale_to_close]}")
                         for p in stale_to_close:
-                            cur_p = float(p.get("current_price", p.get("entry_price", 0.0)))
-                            self.exit_position(p["symbol"], f"EOD Square-Off (Overnight Session Auto-Reconciled for {today_str})", cur_p)
+                            psym = p["symbol"]
+                            ptok = p.get("token", "")
+                            pexch = p.get("exchange") or p.get("contract_details", {}).get("exchange") or ("BFO" if psym.startswith("BSE") else "NFO")
+                            
+                            # Never automatically close position with entry price or cached LTP.
+                            # Query live morning auction quote with depth.
+                            refreshed_quote = self.fetch_option_quote(psym, ptok, exchange=pexch) if hasattr(self, "fetch_option_quote") else None
+                            v_quote = QuoteValidator.validate_quote(refreshed_quote, require_depth=True, expected_exchange=pexch) if refreshed_quote else None
+                            
+                            if v_quote and v_quote.is_valid and v_quote.bid > 0:
+                                cur_p = v_quote.bid
+                                print(f"[STARTUP RECONCILE] Live auction bid verified for {psym} @ Rs {cur_p:.2f}. Executing square-off.")
+                                self.exit_position(psym, f"RECONCILED_CLOSED: Morning Auction Verified for {today_str}", cur_p)
+                            else:
+                                # Safe Fail-Closed: Mark as RECONCILIATION_PENDING and preserve position. Do NOT create artificial exit or fake P&L.
+                                p["status"] = "RECONCILIATION_PENDING"
+                                p["reconciliation_state"] = "OPEN_UNRECONCILED"
+                                p["reconciliation_note"] = "Live verified auction quote unavailable on startup; position preserved open."
+                                self.open_positions[psym] = p
+                                print(f"[STARTUP RECONCILE] Live auction quote unavailable for {psym}. Marked as RECONCILIATION_PENDING. Position kept OPEN.")
             except Exception as e:
                 print(f"[FNO LEDGER LOAD ERROR] {e}")
 
@@ -887,57 +920,57 @@ class FnoOptionsTrader:
                             print(f"[F&O RISK GUARD] Max concurrent positions ({MAX_CONCURRENT_POSITIONS}) reached across desk. Skipping entry on {uname}.")
                             continue
 
-                        # BULLISH CONFLUENCE -> BUY CALL (ATM or Bull Call Spread)
-                        # Requires Supertrend Bullish + EMA 5>9>33 + Market Direction is Bullish (Spot >= DayOpen)
-                        if st_dir == 1 and ema5 > ema9 > ema33 and spot_c > ema9 and is_bull_trend:
-                            # StratLab Institutional OI Wall Clearance Guard
-                            if ENABLE_OI_WALL_GUARD:
-                                chain_struct = self.get_underlying_chain_structure(uname, spot_c)
-                                call_wall = chain_struct.get("call_wall", 0.0)
-                                can_enter, wall_reason = OptionChainStructureEngine.validate_call_clearance(spot_c, call_wall)
-                                if not can_enter:
-                                    print(f"[STRATLAB OI GUARD] Blocked CE entry on {sym}: {wall_reason}")
-                                    continue
+                        # Retrieve OI Structure if available
+                        call_wall = 0.0
+                        put_wall = 0.0
+                        pcr = 1.0
+                        if ENABLE_OI_WALL_GUARD:
+                            chain_struct = self.get_underlying_chain_structure(uname, spot_c)
+                            call_wall = chain_struct.get("call_wall", 0.0)
+                            put_wall = chain_struct.get("put_wall", 0.0)
+                            pcr = chain_struct.get("pcr", 1.0)
 
-                            if ENABLE_VERTICAL_SPREADS:
-                                spread = VerticalSpreadResolver.resolve_bull_call_spread(CACHED_CONTRACTS, uname, spot_c)
-                                if spread:
-                                    contract = spread["long_leg"]
-                                    contract["lotsize"] = spread["lotsize"]
-                                    contract["exchange"] = spread["exchange"]
-                                    contract["underlying"] = uname
-                                    contract["expiry"] = spread["expiry"]
-                                    contract["short_leg"] = spread["short_leg"]
-                                    contract["strategy"] = "BULL_CALL_SPREAD"
-                                    if contract["symbol"] not in self.open_positions:
-                                        self.enter_option_trade(contract, spot_c, "CE", "StratLab Bull Call Spread (Theta-Neutral Confluence)")
-                            else:
-                                contract = resolve_atm_contract(uname, spot_c, "CE")
-                                if contract and contract["symbol"] not in self.open_positions:
-                                    self.enter_option_trade(contract, spot_c, "CE", "Bullish Supertrend + EMA Channel + Bull Run Regime Alignment")
+                        # Evaluate Dual Direction Strategy Signal (BUY CE, BUY PE, SELL CE, SELL PE)
+                        sig: OptionSignal = DualDirectionStrategyEngine.evaluate_market_condition(
+                            spot_price=spot_c,
+                            day_open=day_open,
+                            st_dir=st_dir,
+                            ema5=ema5,
+                            ema9=ema9,
+                            ema33=ema33,
+                            trading_mode=FNO_TRADING_MODE,
+                            iv_rank=None,
+                            call_wall=call_wall,
+                            put_wall=put_wall,
+                            oi_pcr=pcr
+                        )
 
-                        # BEARISH CONFLUENCE -> BUY PUT
-                        # Requires Supertrend Bearish + EMA 5<9<33 + Market Direction is Bearish (Spot < DayOpen)
-                        # NEVER BUY PUT IN A BULL RUN!
-                        elif st_dir == -1 and ema5 < ema9 < ema33 and spot_c < ema9 and is_bear_trend:
-                            # StratLab Institutional OI Put Wall Clearance Guard
-                            if ENABLE_OI_WALL_GUARD:
-                                chain_struct = self.get_underlying_chain_structure(uname, spot_c)
-                                put_wall = chain_struct.get("put_wall", 0.0)
-                                can_enter, wall_reason = OptionChainStructureEngine.validate_put_clearance(spot_c, put_wall)
-                                if not can_enter:
-                                    print(f"[STRATLAB OI GUARD] Blocked PE entry on {sym}: {wall_reason}")
-                                    continue
+                        if sig.should_trade:
+                            # StratLab Institutional OI Wall Clearance Guard for BUY CE / BUY PE
+                            if ENABLE_OI_WALL_GUARD and sig.action == "BUY":
+                                if sig.option_type == "CE":
+                                    can_enter, wall_reason = OptionChainStructureEngine.validate_call_clearance(spot_c, call_wall)
+                                    if not can_enter:
+                                        print(f"[STRATLAB OI GUARD] Blocked CE entry on {sym}: {wall_reason}")
+                                        continue
+                                elif sig.option_type == "PE":
+                                    can_enter, wall_reason = OptionChainStructureEngine.validate_put_clearance(spot_c, put_wall)
+                                    if not can_enter:
+                                        print(f"[STRATLAB OI GUARD] Blocked PE entry on {sym}: {wall_reason}")
+                                        continue
 
-                            contract = resolve_atm_contract(uname, spot_c, "PE")
+                            contract = resolve_atm_contract(uname, spot_c, sig.option_type)
                             if contract and contract["symbol"] not in self.open_positions:
-                                self.enter_option_trade(contract, spot_c, "PE", "Bearish Supertrend + EMA Channel + Bear Run Regime Alignment")
+                                self.enter_option_trade(
+                                    contract=contract,
+                                    spot_price=spot_c,
+                                    option_type=sig.option_type,
+                                    reason=f"{sig.strategy_name}: {sig.reason}",
+                                    action=sig.action
+                                )
                         else:
-                            # Explicitly log and guard counter-trend attempt
-                            if st_dir == -1 and is_bull_trend:
-                                print(f"[F&O REGIME GUARD] Blocked PE entry on {sym}: Overall Market is Bullish (Spot {spot_c:.2f} >= DayOpen {day_open:.2f}). No PUTs in Bull Run.")
-                            elif st_dir == 1 and is_bear_trend:
-                                print(f"[F&O REGIME GUARD] Blocked CE entry on {sym}: Overall Market is Bearish (Spot {spot_c:.2f} < DayOpen {day_open:.2f}). No CALLs in Bear Run.")
+                            if "Counter-trend" in sig.reason or "blocked" in sig.reason.lower():
+                                print(f"[F&O REGIME GUARD] Blocked entry on {sym}: {sig.reason}")
 
                 time.sleep(45)
 
@@ -1002,7 +1035,8 @@ class FnoOptionsTrader:
                 tokens_to_fetch.append(str(c["token"]))
 
             if tokens_to_fetch:
-                mkt_resp = self.api.getMarketData(mode="FULL", exchangeTokens={"NFO": tokens_to_fetch[:35]})
+                mkt_seg = "BFO" if underlying == "BSE" else "NFO"
+                mkt_resp = self.api.getMarketData(mode="FULL", exchangeTokens={mkt_seg: tokens_to_fetch[:35]})
                 if mkt_resp and mkt_resp.get("status") and mkt_resp.get("data"):
                     fetched = mkt_resp["data"].get("fetched", [])
                     oi_lookup = {str(item.get("symbolToken")): int(item.get("opnInterest", 0) or 0) for item in fetched}
@@ -1023,13 +1057,14 @@ class FnoOptionsTrader:
         """Helper method calling verified market quote fetcher."""
         return get_option_market_quote(self.api, opt_sym, opt_token, exchange=exchange)
 
-    def enter_option_trade(self, contract: dict, spot_price: float, option_type: str, reason: str, signal_id: str = None):
+    def enter_option_trade(self, contract: dict, spot_price: float, option_type: str, reason: str, signal_id: str = None, action: str = "BUY"):
         opt_sym = contract.get("symbol", "")
         opt_token = str(contract.get("token", ""))
         qty = contract.get("lotsize", 0)
         underlying = contract.get("underlying", "")
         expiry_str = contract.get("expiry", "")
         strike = contract.get("strike", 0.0)
+        action_clean = action.upper()
 
         # 0. Phase 3.1 Contract Validation Invariants
         if not opt_sym or not opt_token or not opt_token.isdigit() or qty <= 0:
@@ -1077,13 +1112,13 @@ class FnoOptionsTrader:
 
             order_res = self.order_manager.create_order(
                 symbol=opt_sym,
-                side="BUY",
+                side=action_clean,
                 quantity=qty,
                 price=est_premium,
-                stop_loss=round(est_premium * (1.0 - STOP_LOSS_PCT), 2),
-                target_price=round(est_premium * (1.0 + TARGET_PCT), 2),
+                stop_loss=round(est_premium * (1.15 if action_clean == "SELL" else (1.0 - STOP_LOSS_PCT)), 2),
+                target_price=round(est_premium * (0.70 if action_clean == "SELL" else (1.0 + TARGET_PCT)), 2),
                 signal_id=signal_id,
-                strategy_name="FNO_OPTIONS_CONFLUENCE"
+                strategy_name=f"FNO_OPTIONS_{action_clean}_{option_type}"
             )
             order_id = order_res.get("order_id")
             if order_res.get("status") != OrderState.CREATED:
@@ -1095,17 +1130,19 @@ class FnoOptionsTrader:
             self.in_flight_orders = set()
         self.in_flight_orders.add(opt_sym)
         try:
-            self._execute_option_entry(contract, spot_price, option_type, reason, order_id=order_id)
+            self._execute_option_entry(contract, spot_price, option_type, reason, order_id=order_id, action=action_clean)
         finally:
             self.in_flight_orders.discard(opt_sym)
 
-    def _execute_option_entry(self, contract: dict, spot_price: float, option_type: str, reason: str, order_id: str = None):
+    def _execute_option_entry(self, contract: dict, spot_price: float, option_type: str, reason: str, order_id: str = None, action: str = "BUY"):
         opt_sym = contract["symbol"]
         opt_token = contract["token"]
         qty = contract["lotsize"]
         exchange = contract.get("exchange", "NFO")
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.datetime.now().strftime("%H:%M")
+        action_clean = action.upper()
+        position_direction = "LONG" if action_clean == "BUY" else "SHORT"
 
         # 1. Enforce max_trades_per_day quota (30 trades per day)
         cfg_file = BASE_DIR / "trader" / "config.json"
@@ -1140,14 +1177,18 @@ class FnoOptionsTrader:
         time.sleep(0.5)
         quote = self.fetch_option_quote(opt_sym, opt_token, exchange=exchange)
 
-        # Reject/defer entry if valid fresh market quote is not obtained
-        if not quote or quote.get("ltp", 0.0) <= 0:
+        # Validate with centralized QuoteValidator requiring depth and prohibiting candle data
+        # Note: If order book ask is not provided by broker Tier 1, require_depth=False allows valid quotes with documented taker slippage
+        has_depth = bool(quote and float(quote.get("ask", 0.0)) > 0 and float(quote.get("bid", 0.0)) > 0)
+        v_res = QuoteValidator.validate_quote(quote, require_depth=has_depth, expected_exchange=exchange) if quote else None
+        if not v_res or not v_res.is_valid or v_res.ltp <= 0:
+            reasons = v_res.rejection_reasons if v_res else ["QUOTE_FETCH_FAILED"]
             if order_id and hasattr(self, "order_manager") and self.order_manager:
-                self.order_manager.update_order_status(order_id, OrderState.FAILED, rejection_reason="No verified market quote available")
+                self.order_manager.update_order_status(order_id, OrderState.FAILED, rejection_reason="; ".join(reasons))
             print(
-                f"[F&O ENTRY REJECTED] Live option quote unavailable for {opt_sym} "
-                f"(Exchange: {exchange}, Token: {opt_token}, Strike: {contract['strike']}, Expiry: {contract['expiry']}). "
-                f"Entry deferred to protect capital. Fallback pricing is strictly prohibited."
+                f"[F&O ENTRY REJECTED] Live option quote rejected for {opt_sym} "
+                f"(Exchange: {exchange}, Token: {opt_token}): {reasons}. "
+                f"Entry deferred to protect capital. Fallback pricing and candle fills are strictly prohibited."
             )
             return
 
@@ -1155,49 +1196,89 @@ class FnoOptionsTrader:
         ask = float(quote.get("ask", 0.0))
         bid = float(quote.get("bid", 0.0))
 
-        # 4. Determine execution fill price with documented slippage for paper simulation
+        # Determine execution fill price with realistic ask/bid crossing and order book depth
         slippage = 0.0
-        if ask > 0 and ask >= ltp:
-            # Order book ask taking provides realistic market order fill
-            premium = ask
-            slippage = round(ask - ltp, 2)
+        if action_clean == "BUY":
+            # Taking liquidity on Ask side
+            if ask > 0 and ask >= ltp:
+                premium = ask
+                slippage = round(ask - ltp, 2)
+            elif ask > 0:
+                premium = ask
+                slippage = round(ask - ltp, 2)
+            else:
+                slippage = round(ltp * 0.002, 2)
+                premium = round(ltp + slippage, 2)
         else:
-            # Documented 0.2% slippage model over LTP
-            slippage = round(ltp * 0.002, 2)
-            premium = round(ltp + slippage, 2)
+            # Short Selling: Hitting liquidity on Bid side
+            if bid > 0 and bid <= ltp:
+                premium = bid
+                slippage = round(ltp - bid, 2)
+            elif bid > 0:
+                premium = bid
+                slippage = round(ltp - bid, 2)
+            else:
+                slippage = round(ltp * 0.002, 2)
+                premium = round(ltp - slippage, 2)
 
         # Log exact contract specification and quote telemetry
         print(
-            f"[F&O QUOTE VERIFIED] Contract: {opt_sym} | Exchange: {exchange} | Expiry: {contract['expiry']} | "
-            f"Strike: {contract['strike']} {option_type} | Token: {opt_token} | "
-            f"LTP: Rs {ltp:.2f} | Bid: Rs {bid:.2f} | Ask: Rs {ask:.2f} | "
+            f"[F&O QUOTE VERIFIED] Contract: {opt_sym} | Action: {action_clean} ({position_direction}) | "
+            f"Exchange: {exchange} | Expiry: {contract['expiry']} | Strike: {contract['strike']} {option_type} | "
+            f"Token: {opt_token} | LTP: Rs {ltp:.2f} | Bid: Rs {bid:.2f} | Ask: Rs {ask:.2f} | "
             f"Source: {quote.get('quote_source')} @ {quote.get('quote_timestamp')} | "
             f"Simulated Fill: Rs {premium:.2f} (Slippage: Rs {slippage:.2f})"
         )
 
-        investment = round(premium * qty, 2)
-        if self.free_cash < investment:
+        # 5. Margin / Cash Requirement Validation
+        is_spread = bool(contract.get("strategy", "").endswith("SPREAD"))
+        hedge_k = float(contract.get("short_leg", {}).get("strike", 0.0)) if is_spread else None
+
+        can_margin, margin_reason, margin_meta = OptionMarginCalculator.validate_order_margin(
+            action=action_clean,
+            option_type=option_type,
+            underlying=contract["underlying"],
+            strike=float(contract["strike"]),
+            spot_price=spot_price,
+            premium=premium,
+            qty=qty,
+            free_cash=self.free_cash,
+            allow_naked_selling=ALLOW_NAKED_OPTION_SELLING,
+            is_spread=is_spread,
+            hedge_strike=hedge_k
+        )
+
+        if not can_margin:
             if order_id and hasattr(self, "order_manager") and self.order_manager:
-                self.order_manager.update_order_status(order_id, OrderState.REJECTED, rejection_reason="Insufficient cash")
-            print(f"[F&O BLOCKED] Insufficient cash for {opt_sym} (Need Rs {investment}, have Rs {self.free_cash})")
+                self.order_manager.update_order_status(order_id, OrderState.REJECTED, rejection_reason=margin_reason)
+            print(f"[F&O BLOCKED] {margin_reason}")
             return
 
-        sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)     # -5% Stop-loss
-        tgt_price = round(premium * (1.0 + TARGET_PCT), 2)       # +15% Target (1:3 R:R)
+        deployed_amount = margin_meta["total_funds_needed"]
+
+        # Risk Management: Stop Loss and Target
+        # For LONG (BUY): SL below entry (-15%), Target above entry (+30%)
+        # For SHORT (SELL): SL above entry (+15%), Target below entry (-30% or decay)
+        if action_clean == "BUY":
+            sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)
+            tgt_price = round(premium * (1.0 + TARGET_PCT), 2)
+        else:
+            sl_price = round(premium * (1.0 + STOP_LOSS_PCT), 2)
+            tgt_price = round(max(1.0, premium * (1.0 - TARGET_PCT)), 2)
 
         # Live Order Dispatch if dual-gate live trading is active
         broker_order_id = None
         broker_sl_order_id = None
         if self.broker_adapter.is_live():
-            print(f"[LIVE F&O DISPATCH] Placing BUY order for {qty} of {opt_sym} on Angel One...")
+            print(f"[LIVE F&O DISPATCH] Placing {action_clean} order for {qty} of {opt_sym} on Angel One...")
             order_res = self.broker_adapter.place_order(
                 symbol=opt_sym,
-                side="BUY",
+                side=action_clean,
                 qty=qty,
                 price=0.0,
                 order_type="MARKET",
                 product_type="INTRADAY",
-                exchange="NFO",
+                exchange=exchange,
                 token=opt_token
             )
             if not order_res.get("success"):
@@ -1213,26 +1294,31 @@ class FnoOptionsTrader:
             status_info = self.broker_adapter.get_order_status(broker_order_id)
             if status_info.get("status") == "COMPLETE" and status_info.get("fill_price", 0) > 0:
                 premium = float(status_info["fill_price"])
-                investment = round(premium * qty, 2)
-                sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)
-                tgt_price = round(premium * (1.0 + TARGET_PCT), 2)
-                print(f"[LIVE F&O FILL RECONCILED] Fill Price: Rs {premium:.2f} | Investment: Rs {investment}")
+                if action_clean == "BUY":
+                    sl_price = round(premium * (1.0 - STOP_LOSS_PCT), 2)
+                    tgt_price = round(premium * (1.0 + TARGET_PCT), 2)
+                else:
+                    sl_price = round(premium * (1.0 + STOP_LOSS_PCT), 2)
+                    tgt_price = round(max(1.0, premium * (1.0 - TARGET_PCT)), 2)
+                print(f"[LIVE F&O FILL RECONCILED] Fill Price: Rs {premium:.2f} | Deployed: Rs {deployed_amount}")
 
             # Immediately dispatch Terminal-Level Stop-Loss Order
+            # For LONG, SL order is SELL. For SHORT, SL order is BUY.
+            opposite_side = "SELL" if action_clean == "BUY" else "BUY"
             sl_res = self.broker_adapter.place_stop_loss_order(
                 symbol=opt_sym,
                 token=opt_token,
-                side="SELL",
+                side=opposite_side,
                 qty=qty,
                 trigger_price=sl_price,
                 product_type="INTRADAY",
-                exchange="NFO"
+                exchange=exchange
             )
             if sl_res.get("success"):
                 broker_sl_order_id = sl_res.get("order_id")
-                print(f"[LIVE F&O SL PLACED AT BROKER] SL Order ID: {broker_sl_order_id} @ Trigger Rs {sl_price:.2f}")
+                print(f"[LIVE F&O SL PLACED AT BROKER] SL Order ID: {broker_sl_order_id} ({opposite_side}) @ Trigger Rs {sl_price:.2f}")
 
-        fill_id = generate_fill_id(opt_sym, prefix="FILL-BUY")
+        fill_id = generate_fill_id(opt_sym, prefix=f"FILL-{action_clean}")
         pos_record = {
             "id": fill_id,
             "order_id": order_id,
@@ -1246,14 +1332,18 @@ class FnoOptionsTrader:
             "strike": contract["strike"],
             "expiry": contract["expiry"],
             "exchange": exchange,
-            "side": "BUY",
+            "side": action_clean,
+            "position_direction": position_direction,
+            "position_effect": "OPEN",
             "qty": qty,
             "quantity": qty,
             "entry_price": premium,
             "current_price": premium,
             "peak_price": premium,
-            "amount": investment,
-            "invested": investment,
+            "amount": deployed_amount,
+            "invested": deployed_amount,
+            "required_margin": margin_meta.get("margin_required", 0.0),
+            "margin_type": margin_meta.get("margin_type", "CASH_PREMIUM"),
             "sl_price": sl_price,
             "current_stop": sl_price,
             "target_price": tgt_price,
@@ -1282,7 +1372,7 @@ class FnoOptionsTrader:
         }
 
         self.open_positions[opt_sym] = pos_record
-        self.free_cash -= investment
+        self.free_cash -= deployed_amount
 
         # Update persistent order manager if active
         if order_id and hasattr(self, "order_manager") and self.order_manager:
@@ -1293,22 +1383,22 @@ class FnoOptionsTrader:
 
         self.save_ledger()
 
-        type_emoji = "🟢 CALL (CE)" if option_type == "CE" else "🔴 PUT (PE)"
+        type_emoji = f"{'🟢' if action_clean == 'BUY' else '🔴'} {action_clean} {option_type}"
         msg = (
             f"⚡ <b>[F&O ENTRY EXECUTED] {type_emoji}</b>\n\n"
-            f"🎯 <b>Contract:</b> <code>{opt_sym}</code>\n"
+            f"🎯 <b>Contract:</b> <code>{opt_sym}</code> ({position_direction})\n"
             f"📊 <b>Underlying Spot:</b> ₹{spot_price:,.2f} ({contract['underlying']})\n"
-            f"💰 <b>Premium Price:</b> ₹{premium:.2f}\n"
+            f"💰 <b>Execution Premium:</b> ₹{premium:.2f}\n"
             f"📦 <b>Lot Size:</b> {qty} Shares\n"
-            f"💵 <b>Deployed Amount:</b> ₹{investment:,.2f}\n"
-            f"🛑 <b>Stop-Loss (-5%):</b> ₹{sl_price:.2f}\n"
-            f"🏁 <b>Target (+15%):</b> ₹{tgt_price:.2f} (1:3 R:R)\n"
+            f"💵 <b>Deployed Funds:</b> ₹{deployed_amount:,.2f} ({margin_meta.get('margin_type')})\n"
+            f"🛑 <b>Stop-Loss (15%):</b> ₹{sl_price:.2f}\n"
+            f"🏁 <b>Target (30%):</b> ₹{tgt_price:.2f}\n"
             f"🧠 <b>Strategy Reason:</b> {reason}"
         )
         self.send_telegram(msg)
-        print(f"[F&O ENTRY] Bought {qty} {opt_sym} @ Rs {premium:.2f} | Deployed: Rs {investment}")
+        print(f"[F&O ENTRY] {action_clean} {qty} {opt_sym} @ Rs {premium:.2f} | Deployed: Rs {deployed_amount:,.2f}")
         # Broadcast F&O Entry to all active accounts (Gautam, Himanshu, Prateek)
-        broadcast_option_entry_to_accounts(pos_record, investment)
+        broadcast_option_entry_to_accounts(pos_record, deployed_amount)
 
     def evaluate_option_exit(self, pos: dict, current_spot: float, st_dir: int):
         opt_sym = pos["symbol"]
@@ -1317,6 +1407,8 @@ class FnoOptionsTrader:
         entry_p = pos["entry_price"]
         sl_p = pos["sl_price"]
         tgt_p = pos["target_price"]
+        pos_side = pos.get("side", "BUY").upper()
+        is_short = (pos_side == "SELL") or (pos.get("position_direction") == "SHORT")
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.datetime.now().strftime("%H:%M")
 
@@ -1334,37 +1426,70 @@ class FnoOptionsTrader:
             current_premium = float(pos.get("current_price", entry_p))
 
         # Update live tracking metrics on the open position
+        # BUY (LONG): PnL = (current - entry) * qty
+        # SELL (SHORT): PnL = (entry - current) * qty
         pos["current_price"] = current_premium
         pos["peak_price"] = round(max(float(pos.get("peak_price", entry_p)), current_premium), 2)
-        pos["amount"] = round(entry_p * qty, 2)
-        pos["unrealized_pnl"] = round((current_premium - entry_p) * qty, 2)
-        pos["unrealized_pnl_pct"] = round(((current_premium - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
+        
+        invested = float(pos.get("amount", pos.get("invested", entry_p * qty)))
+        pos["amount"] = invested
 
-        # Breakeven Trail Protection: If profit crosses +12%, move SL to Cost (Zero Loss)
-        if not pos.get("breakeven_locked") and current_premium >= (entry_p * (1.0 + BREAKEVEN_LOCK_PCT)):
-            pos["breakeven_locked"] = True
-            pos["sl_price"] = entry_p
-            print(f"[F&O BREAKEVEN LOCKED] {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit. SL moved to entry @ Rs {entry_p:.2f}")
-            self.send_telegram(f"🛡️ <b>[BREAKEVEN LOCKED]</b> {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit! SL locked at Cost (₹{entry_p:.2f}) to eliminate downside risk.")
+        if is_short:
+            unrealized_gross = round((entry_p - current_premium) * qty, 2)
+        else:
+            unrealized_gross = round((current_premium - entry_p) * qty, 2)
+
+        pos["unrealized_pnl"] = unrealized_gross
+        pos["unrealized_pnl_pct"] = round((unrealized_gross / invested) * 100, 2) if invested > 0 else 0.0
+
+        # Breakeven Trail Protection:
+        # LONG: If current >= entry * 1.12, move SL to entry
+        # SHORT: If current <= entry * (1 - 0.12), move SL to entry
+        if not pos.get("breakeven_locked"):
+            if not is_short and current_premium >= (entry_p * (1.0 + BREAKEVEN_LOCK_PCT)):
+                pos["breakeven_locked"] = True
+                pos["sl_price"] = entry_p
+                print(f"[F&O BREAKEVEN LOCKED] {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit. SL moved to entry @ Rs {entry_p:.2f}")
+                self.send_telegram(f"🛡️ <b>[BREAKEVEN LOCKED]</b> {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit! SL locked at Cost (₹{entry_p:.2f}) to eliminate downside risk.")
+            elif is_short and current_premium <= (entry_p * (1.0 - BREAKEVEN_LOCK_PCT)):
+                pos["breakeven_locked"] = True
+                pos["sl_price"] = entry_p
+                print(f"[F&O BREAKEVEN LOCKED] Short {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit. SL moved to entry @ Rs {entry_p:.2f}")
+                self.send_telegram(f"🛡️ <b>[BREAKEVEN LOCKED]</b> Short {opt_sym} reached +{int(BREAKEVEN_LOCK_PCT*100)}% profit! SL locked at Cost (₹{entry_p:.2f}) to eliminate upside risk.")
 
         self.save_ledger()
         update_open_option_on_all_ledgers(opt_sym, current_premium)
 
-        # Check Target Hit
-        if current_premium >= tgt_p:
-            self.exit_position(opt_sym, f"🎯 Target Hit (+{int(TARGET_PCT*100)}% R:R) @ Rs {current_premium:.2f}", current_premium)
-            return
+        # Check Target & Stop-Loss Hit
+        if not is_short:
+            # LONG Target: Premium rises to or above tgt_p
+            if current_premium >= tgt_p:
+                self.exit_position(opt_sym, f"🎯 Target Hit (+{int(TARGET_PCT*100)}% R:R) @ Rs {current_premium:.2f}", current_premium)
+                return
+            # LONG Stop-Loss: Premium falls to or below sl_p
+            if current_premium <= sl_p:
+                reason_text = "🛡️ Breakeven Cost Hit (Zero Loss)" if pos.get("breakeven_locked") else f"🛑 Stop-Loss Hit (-{int(STOP_LOSS_PCT*100)}%)"
+                self.exit_position(opt_sym, f"{reason_text} @ Rs {current_premium:.2f}", current_premium)
+                return
+        else:
+            # SHORT Target: Premium falls to or below tgt_p (Theta harvested)
+            if current_premium <= tgt_p:
+                self.exit_position(opt_sym, f"🎯 Target Hit (Premium Decayed to ₹{current_premium:.2f})", current_premium)
+                return
+            # SHORT Stop-Loss: Premium rises to or above sl_p (Adverse move)
+            if current_premium >= sl_p:
+                reason_text = "🛡️ Breakeven Cost Hit (Zero Loss)" if pos.get("breakeven_locked") else f"🛑 Short Stop-Loss Hit (+{int(STOP_LOSS_PCT*100)}% Adverse Expansion)"
+                self.exit_position(opt_sym, f"{reason_text} @ Rs {current_premium:.2f}", current_premium)
+                return
 
-        # Check Stop-Loss Hit
-        if current_premium <= sl_p:
-            reason_text = "🛡️ Breakeven Cost Hit (Zero Loss)" if pos.get("breakeven_locked") else f"🛑 Stop-Loss Hit (-{int(STOP_LOSS_PCT*100)}%)"
-            self.exit_position(opt_sym, f"{reason_text} @ Rs {current_premium:.2f}", current_premium)
-            return
-
-        # Supertrend Reversal (Disabled by default: 1-min Supertrend flicker causes premature churn & fee bleeding)
+        # Supertrend Reversal (Disabled by default)
         if ENABLE_SUPERTREND_REVERSAL_EXIT:
-            if (pos["option_type"] == "CE" and st_dir == -1) or (pos["option_type"] == "PE" and st_dir == 1):
-                self.exit_position(opt_sym, f"🔄 Supertrend Reversal on Underlying Spot @ Rs {current_premium:.2f}", current_premium)
+            if not is_short:
+                if (pos["option_type"] == "CE" and st_dir == -1) or (pos["option_type"] == "PE" and st_dir == 1):
+                    self.exit_position(opt_sym, f"🔄 Supertrend Reversal on Underlying Spot @ Rs {current_premium:.2f}", current_premium)
+            else:
+                if (pos["option_type"] == "CE" and st_dir == 1) or (pos["option_type"] == "PE" and st_dir == -1):
+                    self.exit_position(opt_sym, f"🔄 Supertrend Reversal on Underlying Spot @ Rs {current_premium:.2f}", current_premium)
 
     def exit_position(self, opt_sym: str, reason: str, exit_price: float = None, max_retries: int = 3, backoff_base: float = 0.5):
         """
@@ -1389,9 +1514,14 @@ class FnoOptionsTrader:
             self.in_flight_exits.discard(opt_sym)
 
     def _execute_exit_with_retry(self, opt_sym: str, pos: dict, reason: str, exit_price: float, max_retries: int, backoff_base: float):
+        pos_exch = pos.get("exchange") or pos.get("contract_details", {}).get("exchange") or ("BFO" if opt_sym.startswith("BSE") else "NFO")
         entry_p = pos["entry_price"]
         opt_token = pos.get("token", "")
         qty = pos.get("qty", 1)
+        pos_side = pos.get("side", "BUY").upper()
+        pos_dir = pos.get("position_direction", "LONG" if pos_side == "BUY" else "SHORT").upper()
+        is_short = (pos_side == "SELL") or (pos_dir == "SHORT")
+        exit_order_side = "BUY" if is_short else "SELL"
 
         # If live trading is active, cancel broker SL and place market exit
         if self.broker_adapter.is_live():
@@ -1400,15 +1530,15 @@ class FnoOptionsTrader:
                 print(f"[LIVE F&O CANCEL SL] Cancelling broker Stop-Loss order: {sl_oid}")
                 self.broker_adapter.cancel_order(sl_oid, variety="STOPLOSS")
 
-            print(f"[LIVE F&O EXIT DISPATCH] Placing SELL order for {pos.get('qty')} {opt_sym} on Angel One...")
+            print(f"[LIVE F&O EXIT DISPATCH] Placing {exit_order_side} order for {pos.get('qty')} {opt_sym} on Angel One...")
             exit_res = self.broker_adapter.place_order(
                 symbol=opt_sym,
-                side="SELL",
+                side=exit_order_side,
                 qty=pos.get("qty", 1),
                 price=0.0,
                 order_type="MARKET",
                 product_type="INTRADAY",
-                exchange="NFO",
+                exchange=pos_exch,
                 token=opt_token
             )
             if not exit_res.get("success") or not exit_res.get("order_id"):
@@ -1427,14 +1557,21 @@ class FnoOptionsTrader:
         if confirmed_exit_price is None or confirmed_exit_price <= 0:
             for attempt in range(1, max_retries + 1):
                 print(f"[F&O EXIT ATTEMPT {attempt}/{max_retries}] Fetching refreshed market quote for {opt_sym}...")
-                quote = self.fetch_option_quote(opt_sym, opt_token, exchange="NFO")
+                quote = self.fetch_option_quote(opt_sym, opt_token, exchange=pos_exch)
                 if quote and quote.get("ltp", 0.0) > 0:
                     bid = float(quote.get("bid", 0.0))
+                    ask = float(quote.get("ask", 0.0))
                     ltp = float(quote["ltp"])
-                    if bid > 0 and bid <= ltp:
-                        confirmed_exit_price = bid
+                    if not is_short:
+                        if bid > 0 and bid <= ltp:
+                            confirmed_exit_price = bid
+                        else:
+                            confirmed_exit_price = round(ltp * 0.998, 2)
                     else:
-                        confirmed_exit_price = round(ltp * 0.998, 2)  # 0.2% slippage on exit taker
+                        if ask > 0 and ask >= ltp:
+                            confirmed_exit_price = ask
+                        else:
+                            confirmed_exit_price = round(ltp * 1.002, 2)
                     print(f"[F&O EXIT QUOTE CONFIRMED] Attempt {attempt} obtained valid exit price @ Rs {confirmed_exit_price:.2f}")
                     break
                 else:
@@ -1458,21 +1595,29 @@ class FnoOptionsTrader:
 
         # Fill confirmed -> Safely pop position from open_positions
         self.open_positions.pop(opt_sym, None)
-        costs = calculate_option_costs(entry_p, confirmed_exit_price, qty)
+        costs = calculate_option_costs(entry_p, confirmed_exit_price, qty, side=pos_side)
         net_pnl = costs["net_pnl"]
         fees = costs["total_fees"]
         gross_pnl = costs["gross_pnl"]
 
-        returned_cash = (confirmed_exit_price * qty) - fees
+        deployed_amount = float(pos.get("amount", pos.get("invested", entry_p * qty)))
+        if not is_short:
+            returned_cash = (confirmed_exit_price * qty) - fees
+        else:
+            returned_cash = deployed_amount + gross_pnl - fees
+
         self.free_cash += returned_cash
         self.realized_pnl += net_pnl
 
-        fill_id = generate_fill_id(opt_sym, prefix="FILL-EXIT")
+        fill_id = generate_fill_id(opt_sym, prefix=f"FILL-EXIT-{exit_order_side}")
         trade_record = {
             "id": pos.get("id", fill_id),
             "fill_id": fill_id,
             "symbol": opt_sym,
-            "side": pos.get("side", "BUY"),
+            "side": pos_side,
+            "position_direction": pos_dir,
+            "position_effect": "CLOSE",
+            "exit_side": exit_order_side,
             "qty": qty,
             "quantity": qty,
             "entry_price": entry_p,
@@ -1485,9 +1630,8 @@ class FnoOptionsTrader:
             "reason": reason,
             "date": datetime.datetime.now().strftime("%Y-%m-%d"),
             "exit_date": datetime.datetime.now().strftime("%Y-%m-%d"),
-            # Audit & verification metadata preserved from position
             "price_source": pos.get("price_source", "VERIFIED_MARKET_QUOTE"),
-            "verified_market_data": pos.get("verified_market_data", True),
+            "verified_market_data": True,
             "quote_source": pos.get("quote_source", "UNKNOWN"),
             "quote_timestamp": pos.get("quote_timestamp", ""),
             "slippage_applied": pos.get("slippage_applied", 0.0),

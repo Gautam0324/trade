@@ -1,154 +1,9 @@
 {
   "initial_capital": 200000.0,
-  "free_cash": 839650.32,
-  "deployed_cash": 22622.25,
-  "realized_pnl": 662272.57,
-  "open_positions": [
-    {
-      "id": "FILL-BUY-20261126-113039-E93659-BSE26DEC3950CE",
-      "order_id": "ORD-20261126-113038-B15D00-BSE26DEC3950CE",
-      "fill_id": "FILL-BUY-20261126-113039-E93659-BSE26DEC3950CE",
-      "symbol": "BSE26DEC3950CE",
-      "token": "2070306",
-      "broker_order_id": null,
-      "broker_sl_order_id": null,
-      "underlying": "BSE",
-      "option_type": "CE",
-      "strike": 3950.0,
-      "expiry": "29DEC2026",
-      "exchange": "BFO",
-      "side": "BUY",
-      "qty": 200,
-      "quantity": 200,
-      "entry_price": 101.05,
-      "current_price": 100.85,
-      "peak_price": 101.05,
-      "amount": 20210.0,
-      "invested": 20210.0,
-      "sl_price": 85.89,
-      "current_stop": 85.89,
-      "target_price": 131.37,
-      "entry_spot": 3935.6,
-      "entry_time": "11:30",
-      "reason": "Bullish Supertrend + EMA Channel + Bull Run Regime Alignment",
-      "status": "OPEN",
-      "price_source": "VERIFIED_MARKET_QUOTE",
-      "verified_market_data": true,
-      "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:41:37 IST",
-      "base_ltp": 100.85,
-      "bid": 0.0,
-      "ask": 0.0,
-      "slippage_applied": 0.2,
-      "contract_details": {
-        "exchange": "BFO",
-        "trading_symbol": "BSE26DEC3950CE",
-        "instrument_token": "2070306",
-        "underlying": "BSE",
-        "expiry": "29DEC2026",
-        "strike": 3950.0,
-        "option_type": "CE"
-      },
-      "unrealized_pnl": -40.0,
-      "unrealized_pnl_pct": -0.2
-    },
-    {
-      "id": "FILL-BUY-20261126-113116-DD38EF-ICICIBANK26NOV1620PE",
-      "order_id": "ORD-20261126-113114-57EE05-ICICIBANK26NOV1620PE",
-      "fill_id": "FILL-BUY-20261126-113116-DD38EF-ICICIBANK26NOV1620PE",
-      "symbol": "ICICIBANK26NOV1620PE",
-      "token": "827041",
-      "broker_order_id": null,
-      "broker_sl_order_id": null,
-      "underlying": "ICICIBANK",
-      "option_type": "PE",
-      "strike": 1620.0,
-      "expiry": "26NOV2026",
-      "exchange": "BFO",
-      "side": "BUY",
-      "qty": 700,
-      "quantity": 700,
-      "entry_price": 1.2,
-      "current_price": 1.2,
-      "peak_price": 1.2,
-      "amount": 840.0,
-      "invested": 840.0,
-      "sl_price": 1.02,
-      "current_stop": 1.02,
-      "target_price": 1.56,
-      "entry_spot": 1622.7,
-      "entry_time": "11:31",
-      "reason": "Bearish Supertrend + EMA Channel + Bear Run Regime Alignment",
-      "status": "OPEN",
-      "price_source": "VERIFIED_MARKET_QUOTE",
-      "verified_market_data": true,
-      "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:42:03 IST",
-      "base_ltp": 1.2,
-      "bid": 0.0,
-      "ask": 0.0,
-      "slippage_applied": 0.0,
-      "contract_details": {
-        "exchange": "BFO",
-        "trading_symbol": "ICICIBANK26NOV1620PE",
-        "instrument_token": "827041",
-        "underlying": "ICICIBANK",
-        "expiry": "26NOV2026",
-        "strike": 1620.0,
-        "option_type": "PE"
-      },
-      "unrealized_pnl": 0.0,
-      "unrealized_pnl_pct": 0.0
-    },
-    {
-      "id": "FILL-BUY-20261126-113139-41AE56-BHARTIARTL26NOV2100PE",
-      "order_id": "ORD-20261126-113138-B2F312-BHARTIARTL26NOV2100PE",
-      "fill_id": "FILL-BUY-20261126-113139-41AE56-BHARTIARTL26NOV2100PE",
-      "symbol": "BHARTIARTL26NOV2100PE",
-      "token": "1168809",
-      "broker_order_id": null,
-      "broker_sl_order_id": null,
-      "underlying": "BHARTIARTL",
-      "option_type": "PE",
-      "strike": 2100.0,
-      "expiry": "26NOV2026",
-      "exchange": "BFO",
-      "side": "BUY",
-      "qty": 475,
-      "quantity": 475,
-      "entry_price": 3.31,
-      "current_price": 3.3,
-      "peak_price": 3.31,
-      "amount": 1572.25,
-      "invested": 1572.25,
-      "sl_price": 2.81,
-      "current_stop": 2.81,
-      "target_price": 4.3,
-      "entry_spot": 2105.2,
-      "entry_time": "11:31",
-      "reason": "Bearish Supertrend + EMA Channel + Bear Run Regime Alignment",
-      "status": "OPEN",
-      "price_source": "VERIFIED_MARKET_QUOTE",
-      "verified_market_data": true,
-      "quote_source": "ANGEL_MARKET_DATA",
-      "quote_timestamp": "2026-11-26 12:42:19 IST",
-      "base_ltp": 3.3,
-      "bid": 0.0,
-      "ask": 0.0,
-      "slippage_applied": 0.01,
-      "contract_details": {
-        "exchange": "BFO",
-        "trading_symbol": "BHARTIARTL26NOV2100PE",
-        "instrument_token": "1168809",
-        "underlying": "BHARTIARTL",
-        "expiry": "26NOV2026",
-        "strike": 2100.0,
-        "option_type": "PE"
-      },
-      "unrealized_pnl": -4.75,
-      "unrealized_pnl_pct": -0.3
-    }
-  ],
+  "free_cash": 873190.34,
+  "deployed_cash": 0,
+  "realized_pnl": 673190.34,
+  "open_positions": [],
   "trade_history": [
     {
       "id": "OPT-1793601820925-NIFTY03NOV2623350CE",
@@ -165,7 +20,10 @@
       "pnl": -1382.53,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 59.20",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793601302522-BANKNIFTY23NOV2654800CE",
@@ -182,7 +40,10 @@
       "pnl": 1160.93,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 943.53",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793603026652-NIFTY03NOV2623300PE",
@@ -199,7 +60,10 @@
       "pnl": 1780.4,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 113.35",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793604857346-NIFTY03NOV2623250PE",
@@ -216,7 +80,10 @@
       "pnl": 2296.04,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 123.45",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793605378974-NIFTY03NOV2623250PE",
@@ -233,7 +100,10 @@
       "pnl": -1807.43,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 96.75",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793606316698-NIFTY03NOV2623250PE",
@@ -250,7 +120,10 @@
       "pnl": -41.06,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 106.68",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793603777947-BANKNIFTY23NOV2654900PE",
@@ -267,7 +140,10 @@
       "pnl": 1134.61,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 724.82",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793608147632-NIFTY03NOV2623250CE",
@@ -284,7 +160,10 @@
       "pnl": 2164.81,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 108.70",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793610310240-BANKNIFTY23NOV2654800CE",
@@ -301,7 +180,10 @@
       "pnl": 21953.16,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 955.00",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793610480508-NIFTY03NOV2623300CE",
@@ -318,7 +200,10 @@
       "pnl": -59.43,
       "reason": "EOD Mandatory Square-Off (15:20 IST reached)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793610897805-BANKNIFTY23NOV2654900CE",
@@ -335,7 +220,10 @@
       "pnl": -106.31,
       "reason": "EOD Mandatory Square-Off (15:20 IST reached)",
       "date": "2026-11-02",
-      "exit_date": "2026-11-02"
+      "exit_date": "2026-11-02",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793685807335-NIFTY03NOV2623650PE",
@@ -352,7 +240,10 @@
       "pnl": -3148.5,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 37.40",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793685270318-BANKNIFTY23NOV2655500CE",
@@ -369,7 +260,10 @@
       "pnl": 18805.16,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 849.90",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793688346487-BANKNIFTY23NOV2655500PE",
@@ -386,7 +280,10 @@
       "pnl": 15243.83,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 731.00",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793688523152-BANKNIFTY23NOV2655500PE",
@@ -403,7 +300,10 @@
       "pnl": 14854.46,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 718.00",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793688155085-NIFTY03NOV2623650PE",
@@ -420,7 +320,10 @@
       "pnl": -812.26,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 42.08",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793690051632-NIFTY03NOV2623650PE",
@@ -437,7 +340,10 @@
       "pnl": -2395.7,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 49.00",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793690167413-NIFTY03NOV2623650PE",
@@ -454,7 +360,10 @@
       "pnl": -758.37,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-15%) @ Rs 38.10",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793688638701-BANKNIFTY23NOV2655400PE",
@@ -471,7 +380,10 @@
       "pnl": -1435.19,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 628.20",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793690704436-BANKNIFTY23NOV2655500CE",
@@ -488,7 +400,10 @@
       "pnl": 19923.88,
       "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 887.25",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793691501946-NIFTY03NOV2623700CE",
@@ -505,7 +420,10 @@
       "pnl": -2957.04,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 40.35",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793691646235-NIFTY03NOV2623700CE",
@@ -522,7 +440,10 @@
       "pnl": 677.08,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 51.65",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793692018442-NIFTY03NOV2623700CE",
@@ -539,7 +460,10 @@
       "pnl": 904.3,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 99.85",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793692210407-NIFTY03NOV2623750CE",
@@ -556,7 +480,10 @@
       "pnl": -3878.58,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 26.15",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793692360244-NIFTY03NOV2623700CE",
@@ -573,7 +500,10 @@
       "pnl": -2149.09,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 52.80",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793692781275-NIFTY03NOV2623700CE",
@@ -590,7 +520,10 @@
       "pnl": 500.0,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 61.90",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793693425934-NIFTY03NOV2623750CE",
@@ -607,7 +540,10 @@
       "pnl": -3742.3,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 28.25",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793690769186-BANKNIFTY23NOV2655600CE",
@@ -624,7 +560,10 @@
       "pnl": 2168.23,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 904.70",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793694404561-NIFTY03NOV2623700PE",
@@ -641,7 +580,10 @@
       "pnl": 271.57,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 35.68",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793694531687-BANKNIFTY23NOV2655600PE",
@@ -658,7 +600,10 @@
       "pnl": -702.17,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 198.62",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793694593650-NIFTY03NOV2623700PE",
@@ -675,7 +620,10 @@
       "pnl": -584.51,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 27.75",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793694781730-NIFTY03NOV2623700PE",
@@ -692,7 +640,10 @@
       "pnl": -3930.51,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 25.35",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793697031236-NIFTY03NOV2623700CE",
@@ -709,7 +660,10 @@
       "pnl": -487.74,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 78.40",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793697604718-BANKNIFTY23NOV2655500PE",
@@ -726,7 +680,10 @@
       "pnl": 14851.46,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 717.90",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793697664193-BANKNIFTY23NOV2655500PE",
@@ -743,7 +700,10 @@
       "pnl": 16462.89,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 771.70",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793697980154-BANKNIFTY23NOV2655300PE",
@@ -760,7 +720,10 @@
       "pnl": -563.49,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 203.25",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698045645-BANKNIFTY23NOV2655400PE",
@@ -777,7 +740,10 @@
       "pnl": 15001.22,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 722.90",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698114153-BANKNIFTY23NOV2655400PE",
@@ -794,7 +760,10 @@
       "pnl": 15061.13,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 724.90",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698179847-BANKNIFTY23NOV2655300PE",
@@ -811,7 +780,10 @@
       "pnl": -488.61,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 205.75",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698775494-NIFTY03NOV2623700CE",
@@ -828,7 +800,10 @@
       "pnl": -3119.29,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 37.85",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698846408-NIFTY03NOV2623700CE",
@@ -845,7 +820,10 @@
       "pnl": -2869.44,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 41.70",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793698310981-BANKNIFTY23NOV2655400PE",
@@ -862,7 +840,10 @@
       "pnl": 14015.79,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 690.00",
       "date": "2026-11-03",
-      "exit_date": "2026-11-03"
+      "exit_date": "2026-11-03",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793769763161-BANKNIFTY23NOV2655700CE",
@@ -879,7 +860,10 @@
       "pnl": 14664.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 711.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793770177178-NIFTY09NOV2623800PE",
@@ -896,7 +880,10 @@
       "pnl": 984.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 101.08",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793770310240-BANKNIFTY23NOV2655600PE",
@@ -913,7 +900,10 @@
       "pnl": 15932.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793770509031-BANKNIFTY23NOV2655600PE",
@@ -930,7 +920,10 @@
       "pnl": 15366.64,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793770577991-BANKNIFTY23NOV2655500PE",
@@ -947,7 +940,10 @@
       "pnl": 13275.97,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 665.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793770369053-NIFTY09NOV2623800PE",
@@ -964,7 +960,10 @@
       "pnl": -914.4,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 196.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793771535591-NIFTY09NOV2623850CE",
@@ -981,7 +980,10 @@
       "pnl": -857.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 162.00",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793771189158-BANKNIFTY23NOV2655600CE",
@@ -998,7 +1000,10 @@
       "pnl": -347.53,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 794.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793772404937-NIFTY09NOV2623800PE",
@@ -1015,7 +1020,10 @@
       "pnl": 7199.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 196.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793772290014-BANKNIFTY23NOV2655600PE",
@@ -1032,7 +1040,10 @@
       "pnl": 1052.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793773057320-BANKNIFTY23NOV2655500PE",
@@ -1049,7 +1060,10 @@
       "pnl": -486.25,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 690.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793772584155-NIFTY09NOV2623800PE",
@@ -1066,7 +1080,10 @@
       "pnl": 644.98,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 207.25",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775368473-BANKNIFTY23NOV2655500CE",
@@ -1083,7 +1100,10 @@
       "pnl": 19146.62,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 861.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775567705-NIFTY09NOV2623800CE",
@@ -1100,7 +1120,10 @@
       "pnl": -335.23,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775702525-NIFTY09NOV2623800CE",
@@ -1117,7 +1140,10 @@
       "pnl": 4739.69,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.95",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775448277-BANKNIFTY23NOV2655600CE",
@@ -1134,7 +1160,10 @@
       "pnl": 16657.59,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 778.20",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775785716-NIFTY09NOV2623800CE",
@@ -1151,7 +1180,10 @@
       "pnl": -428.03,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 79.32",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775937853-BANKNIFTY23NOV2655600CE",
@@ -1168,7 +1200,10 @@
       "pnl": 17103.87,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 793.10",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793775996677-NIFTY09NOV2623800CE",
@@ -1185,7 +1220,10 @@
       "pnl": 5674.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 173.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793776012438-BANKNIFTY23NOV2655600CE",
@@ -1202,7 +1240,10 @@
       "pnl": 16918.17,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 786.90",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793776073026-NIFTY09NOV2623800CE",
@@ -1219,7 +1260,10 @@
       "pnl": 6193.37,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 181.35",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793776279831-NIFTY09NOV2623800CE",
@@ -1236,7 +1280,10 @@
       "pnl": -783.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 170.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777097899-NIFTY09NOV2623800CE",
@@ -1253,7 +1300,10 @@
       "pnl": 5511.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 170.85",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793776353680-BANKNIFTY23NOV2655600CE",
@@ -1270,7 +1320,10 @@
       "pnl": -1381.28,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 766.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777243964-NIFTY09NOV2623850CE",
@@ -1287,7 +1340,10 @@
       "pnl": 4687.78,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 158.15",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777376661-NIFTY09NOV2623850CE",
@@ -1304,7 +1360,10 @@
       "pnl": 4382.77,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 153.45",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777629848-NIFTY09NOV2623850CE",
@@ -1321,7 +1380,10 @@
       "pnl": 4979.81,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 162.65",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777849889-BANKNIFTY23NOV2655600CE",
@@ -1338,7 +1400,10 @@
       "pnl": 17941.04,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.05",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777773305-NIFTY09NOV2623850CE",
@@ -1355,7 +1420,10 @@
       "pnl": 1512.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 186.75",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793777918004-BANKNIFTY23NOV2655700CE",
@@ -1372,7 +1440,10 @@
       "pnl": 3614.82,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 886.55",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793779907240-BANKNIFTY23NOV2655900CE",
@@ -1389,7 +1460,10 @@
       "pnl": 15941.73,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 754.30",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793779441886-NIFTY09NOV2623900CE",
@@ -1406,7 +1480,10 @@
       "pnl": 1562.9,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 187.72",
       "date": "2026-11-04",
-      "exit_date": "2026-11-04"
+      "exit_date": "2026-11-04",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793855738732-BANKNIFTY23NOV2657000PE",
@@ -1423,7 +1500,10 @@
       "pnl": -481.72,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 205.98",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793855794222-NIFTY09NOV2624350PE",
@@ -1440,7 +1520,10 @@
       "pnl": -528.14,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 133.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793857875281-BANKNIFTY23NOV2657100CE",
@@ -1457,7 +1540,10 @@
       "pnl": 15703.6,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 746.35",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793858301024-NIFTY09NOV2624400CE",
@@ -1474,7 +1560,10 @@
       "pnl": 4265.95,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 151.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793860929728-BANKNIFTY23NOV2657300CE",
@@ -1491,7 +1580,10 @@
       "pnl": 15603.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 743.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793860918847-NIFTY09NOV2624400CE",
@@ -1508,7 +1600,10 @@
       "pnl": 4593.67,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 156.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793862430342-NIFTY09NOV2624450CE",
@@ -1525,7 +1620,10 @@
       "pnl": 2860.93,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 130.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793863506021-NIFTY09NOV2624450CE",
@@ -1542,7 +1640,10 @@
       "pnl": 2812.27,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 129.25",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793861992540-BANKNIFTY23NOV2657400CE",
@@ -1559,7 +1660,10 @@
       "pnl": 4302.2,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 842.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793864481048-NIFTY09NOV2624450CE",
@@ -1576,7 +1680,10 @@
       "pnl": 1327.74,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 163.00",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793865946851-BANKNIFTY23NOV2657600CE",
@@ -1593,7 +1700,10 @@
       "pnl": 15383.12,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 735.65",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793866616268-NIFTY09NOV2624550CE",
@@ -1610,7 +1720,10 @@
       "pnl": 5878.63,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 176.50",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793870309233-NIFTY09NOV2624550CE",
@@ -1627,7 +1740,10 @@
       "pnl": -676.9,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 150.20",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793866934718-BANKNIFTY23NOV2657800CE",
@@ -1644,7 +1760,10 @@
       "pnl": -1295.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 716.70",
       "date": "2026-11-05",
-      "exit_date": "2026-11-05"
+      "exit_date": "2026-11-05",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793940098835-NIFTY07NOV24C24000",
@@ -1661,7 +1780,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793940113487-NIFTY07NOV24C24000",
@@ -1678,7 +1800,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793940171310-NIFTY07NOV24C24000",
@@ -1695,7 +1820,10 @@
       "pnl": 321.68,
       "reason": "Target Hit",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793940977590-BANKNIFTY23NOV2657900CE",
@@ -1712,7 +1840,10 @@
       "pnl": 16030.08,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 757.25",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793941234806-NIFTY09NOV2624700CE",
@@ -1729,7 +1860,10 @@
       "pnl": -520.17,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 77.90",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793942028552-BANKNIFTY23NOV2657800PE",
@@ -1746,7 +1880,10 @@
       "pnl": 19173.58,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 862.20",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793943775057-BANKNIFTY23NOV2657800PE",
@@ -1763,7 +1900,10 @@
       "pnl": 17942.54,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 821.10",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793943831280-NIFTY09NOV2624600CE",
@@ -1780,7 +1920,10 @@
       "pnl": -698.83,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 167.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793945241417-NIFTY09NOV2624600CE",
@@ -1797,7 +1940,10 @@
       "pnl": 5330.26,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 168.05",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793944757720-BANKNIFTY23NOV2657800CE",
@@ -1814,7 +1960,10 @@
       "pnl": 25.97,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 775.40",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793946274939-NIFTY09NOV2624600PE",
@@ -1831,7 +1980,10 @@
       "pnl": -807.64,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 154.75",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793947629266-NIFTY09NOV2624650CE",
@@ -1848,7 +2000,10 @@
       "pnl": 5103.11,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 164.55",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793947287804-BANKNIFTY23NOV2657900CE",
@@ -1865,7 +2020,10 @@
       "pnl": 3553.13,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 888.95",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793948823482-NIFTY09NOV2624700CE",
@@ -1882,7 +2040,10 @@
       "pnl": 3724.06,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 143.30",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1793949078779-BANKNIFTY23NOV2658200CE",
@@ -1899,7 +2060,10 @@
       "pnl": 322.07,
       "reason": "Manual User Squareoff / Friday EOD Clear Holdings",
       "date": "2026-11-06",
-      "exit_date": "2026-11-06"
+      "exit_date": "2026-11-06",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794198390228-NIFTY09NOV2624900PE",
@@ -1916,7 +2080,10 @@
       "pnl": -802.48,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.55",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794200410430-NIFTY09NOV2624900PE",
@@ -1933,7 +2100,10 @@
       "pnl": -834.94,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 73.05",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794200347776-BANKNIFTY23NOV2659100PE",
@@ -1950,7 +2120,10 @@
       "pnl": -1657.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 785.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794202081477-BANKNIFTY23NOV2659100CE",
@@ -1967,7 +2140,10 @@
       "pnl": 15486.45,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 739.10",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794203470062-NIFTY09NOV2624900CE",
@@ -1984,7 +2160,10 @@
       "pnl": -657.77,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 75.78",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794203552637-BANKNIFTY23NOV2659200CE",
@@ -2001,7 +2180,10 @@
       "pnl": 6023.02,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 423.15",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794204491619-NIFTY09NOV2625050CE",
@@ -2018,7 +2200,10 @@
       "pnl": -1371.69,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 74.30",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794205889137-BANKNIFTY23NOV2659300PE",
@@ -2035,7 +2220,10 @@
       "pnl": -149.05,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 834.45",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794211914845-NIFTY09NOV2624900CE",
@@ -2052,7 +2240,10 @@
       "pnl": -370.92,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.20",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794211928747-BANKNIFTY23NOV2659200CE",
@@ -2069,7 +2260,10 @@
       "pnl": -519.46,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.72",
       "date": "2026-11-09",
-      "exit_date": "2026-11-09"
+      "exit_date": "2026-11-09",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794372924149-NIFTY23NOV2625350PE",
@@ -2086,7 +2280,10 @@
       "pnl": 12754.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 282.45",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794372869163-BANKNIFTY23NOV2660800CE",
@@ -2103,7 +2300,10 @@
       "pnl": 4774.25,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 907.62",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794374695331-NIFTY23NOV2625350CE",
@@ -2120,7 +2320,10 @@
       "pnl": 16116.07,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 334.25",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794375660493-BANKNIFTY23NOV2661100CE",
@@ -2137,7 +2340,10 @@
       "pnl": -523.96,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 204.57",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794379792361-NIFTY23NOV2625350PE",
@@ -2154,7 +2360,10 @@
       "pnl": 13049.7,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 287.00",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794386592368-NIFTY23NOV2625300PE",
@@ -2171,7 +2380,10 @@
       "pnl": 13990.71,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 301.50",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794386602452-BANKNIFTY23NOV2660900PE",
@@ -2188,7 +2400,10 @@
       "pnl": 431.99,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 876.90",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794387670534-BANKNIFTY23NOV2660700PE",
@@ -2205,7 +2420,10 @@
       "pnl": -1933.89,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 693.03",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794387795139-NIFTY23NOV2625250CE",
@@ -2222,7 +2440,10 @@
       "pnl": -357.95,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 80.40",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794388856528-BANKNIFTY23NOV2660800PE",
@@ -2239,7 +2460,10 @@
       "pnl": 18872.57,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 852.15",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794388920822-NIFTY17NOV2625200PE",
@@ -2256,7 +2480,10 @@
       "pnl": 2154.43,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 257.92",
       "date": "2026-11-11",
-      "exit_date": "2026-11-11"
+      "exit_date": "2026-11-11",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794389951117-BANKNIFTY23NOV2660500PE",
@@ -2273,7 +2500,10 @@
       "pnl": -8756.21,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 484.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794458391289-NIFTY23NOV2625350CE",
@@ -2290,7 +2520,10 @@
       "pnl": -860.71,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 297.90",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794460338908-BANKNIFTY23NOV2661300CE",
@@ -2307,7 +2540,10 @@
       "pnl": 15139.01,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 727.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794460530987-NIFTY23NOV2625350CE",
@@ -2324,7 +2560,10 @@
       "pnl": -898.97,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 292.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794461862147-NIFTY23NOV2625300PE",
@@ -2341,7 +2580,10 @@
       "pnl": 11232.6,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 259.00",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794461546280-BANKNIFTY23NOV2661300CE",
@@ -2358,7 +2600,10 @@
       "pnl": -1285.58,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 680.85",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794462973433-NIFTY23NOV2625300PE",
@@ -2375,7 +2620,10 @@
       "pnl": -1076.9,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 263.45",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794463173256-BANKNIFTY23NOV2661200PE",
@@ -2392,7 +2640,10 @@
       "pnl": -1439.07,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 799.90",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794465005318-NIFTY23NOV2625250PE",
@@ -2409,7 +2660,10 @@
       "pnl": 11920.52,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 269.60",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794465452658-BANKNIFTY23NOV2661200PE",
@@ -2426,7 +2680,10 @@
       "pnl": 19857.99,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 885.05",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794466599653-NIFTY23NOV2625250PE",
@@ -2443,7 +2700,10 @@
       "pnl": 12368.3,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 276.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794466903612-BANKNIFTY23NOV2661200CE",
@@ -2460,7 +2720,10 @@
       "pnl": 13416.75,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 670.00",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794467551793-BANKNIFTY23NOV2661200CE",
@@ -2477,7 +2740,10 @@
       "pnl": 13967.87,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 688.40",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794467350059-NIFTY17NOV2625200PE",
@@ -2494,7 +2760,10 @@
       "pnl": -581.83,
       "reason": "\ud83d\uded1 Stop-Loss Hit (-5%) @ Rs 76.95",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794468587816-BANKNIFTY23NOV2661300CE",
@@ -2511,7 +2780,10 @@
       "pnl": -228.53,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 697.50",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794468698149-NIFTY23NOV2625250CE",
@@ -2528,7 +2800,10 @@
       "pnl": -932.23,
       "reason": "\ud83d\udd04 Supertrend Reversal on Underlying Spot @ Rs 275.00",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794470725394-BANKNIFTY23NOV2661400CE",
@@ -2545,7 +2820,10 @@
       "pnl": 14283.87,
       "reason": "\ud83c\udfaf Target Hit (+15% R:R) @ Rs 698.95",
       "date": "2026-11-12",
-      "exit_date": "2026-11-12"
+      "exit_date": "2026-11-12",
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch",
+      "verified_market_data": false
     },
     {
       "id": "OPT-1794473084186-BANKNIFTY23NOV2661500CE",
@@ -2565,11 +2843,13 @@
       "date": "2026-11-12",
       "exit_date": "2026-11-12",
       "price_source": "VERIFIED_MARKET_QUOTE",
-      "verified_market_data": true,
+      "verified_market_data": false,
       "quote_source": "ANGEL_MARKET_DATA",
       "quote_timestamp": "2026-11-12 14:15:57 IST",
       "slippage_applied": 0.0,
-      "contract_details": {}
+      "contract_details": {},
+      "audit_status": "FLAGGED_FALLBACK_PRICE",
+      "audit_note": "Suspicious entry at unverified fallback premium (Rs 85/Rs 220) prior to Phase 3 patch"
     },
     {
       "id": "FILL-BUY-20261112-141543-7B0FFD-NIFTY23NOV2625250CE",
@@ -2601,7 +2881,9 @@
         "expiry": "23NOV2026",
         "strike": 25250.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261112-143203-3E4A27-BANKNIFTY23NOV2661400PE",
@@ -2633,7 +2915,9 @@
         "expiry": "23NOV2026",
         "strike": 61400.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-100921-603253-NIFTY17NOV2625200CE",
@@ -2665,7 +2949,9 @@
         "expiry": "17NOV2026",
         "strike": 25200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-101430-D02575-BANKNIFTY23NOV2661000PE",
@@ -2697,7 +2983,9 @@
         "expiry": "23NOV2026",
         "strike": 61000.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-105024-335E98-BANKNIFTY23NOV2661200CE",
@@ -2729,7 +3017,9 @@
         "expiry": "23NOV2026",
         "strike": 61200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-110019-59C92D-NIFTY17NOV2625200PE",
@@ -2761,7 +3051,9 @@
         "expiry": "17NOV2026",
         "strike": 25200.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-121223-C5F32B-NIFTY17NOV2625100PE",
@@ -2793,7 +3085,9 @@
         "expiry": "17NOV2026",
         "strike": 25100.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-120942-CD6AE8-BANKNIFTY23NOV2660900PE",
@@ -2825,7 +3119,9 @@
         "expiry": "23NOV2026",
         "strike": 60900.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-124414-CF6C52-BANKNIFTY23NOV2661000CE",
@@ -2857,7 +3153,9 @@
         "expiry": "23NOV2026",
         "strike": 61000.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-132001-5129DD-NIFTY17NOV2625150CE",
@@ -2889,7 +3187,9 @@
         "expiry": "17NOV2026",
         "strike": 25150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-141532-2AA64E-NIFTY17NOV2625050PE",
@@ -2921,7 +3221,9 @@
         "expiry": "17NOV2026",
         "strike": 25050.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-142940-2A6B1C-BANKNIFTY23NOV2660900CE",
@@ -2953,7 +3255,9 @@
         "expiry": "23NOV2026",
         "strike": 60900.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261113-144337-87B287-NIFTY17NOV2625100CE",
@@ -2985,7 +3289,9 @@
         "expiry": "17NOV2026",
         "strike": 25100.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-101352-CB467A-BANKNIFTY23NOV2661700CE",
@@ -3017,7 +3323,9 @@
         "expiry": "23NOV2026",
         "strike": 61700.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-101230-0882CA-NIFTY23NOV2625300PE",
@@ -3049,7 +3357,9 @@
         "expiry": "23NOV2026",
         "strike": 25300.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-104010-4AA552-BANKNIFTY23NOV2661300PE",
@@ -3081,7 +3391,9 @@
         "expiry": "23NOV2026",
         "strike": 61300.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-111937-578837-BANKNIFTY23NOV2661400CE",
@@ -3113,7 +3425,9 @@
         "expiry": "23NOV2026",
         "strike": 61400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-120235-6DD34B-BANKNIFTY23NOV2661500CE",
@@ -3145,7 +3459,9 @@
         "expiry": "23NOV2026",
         "strike": 61500.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-121021-E15942-NIFTY23NOV2625300CE",
@@ -3177,7 +3493,9 @@
         "expiry": "23NOV2026",
         "strike": 25300.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-123516-47885C-BANKNIFTY23NOV2661600CE",
@@ -3209,7 +3527,9 @@
         "expiry": "23NOV2026",
         "strike": 61600.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-125347-3081A1-BANKNIFTY23NOV2661500PE",
@@ -3241,7 +3561,9 @@
         "expiry": "23NOV2026",
         "strike": 61500.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261116-123934-AC27AF-NIFTY23NOV2625250PE",
@@ -3273,7 +3595,9 @@
         "expiry": "23NOV2026",
         "strike": 25250.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-FNO-1794819443868-HDFCBANK",
@@ -3290,7 +3614,10 @@
       "pnl": -214.34,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-FNO-1794821706470-HDFCBANK",
@@ -3307,7 +3634,10 @@
       "pnl": -189.31,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-16",
-      "exit_date": "2026-11-16"
+      "exit_date": "2026-11-16",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "FILL-BUY-20261117-102818-C9E969-NIFTY17NOV2625400CE",
@@ -3339,7 +3669,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-102835-E958B0-BANKNIFTY23NOV2662300CE",
@@ -3371,7 +3703,9 @@
         "expiry": "23NOV2026",
         "strike": 62300.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-102907-0EDFD1-BSE23NOV263950PE",
@@ -3403,7 +3737,9 @@
         "expiry": "23NOV2026",
         "strike": 3950.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-104717-27C26B-NIFTY17NOV2625400PE",
@@ -3435,7 +3771,9 @@
         "expiry": "17NOV2026",
         "strike": 25400.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-104238-5AD1AB-HDFCBANK23NOV26820PE",
@@ -3467,7 +3805,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-111029-317CC8-NIFTY17NOV2625450CE",
@@ -3499,7 +3839,9 @@
         "expiry": "17NOV2026",
         "strike": 25450.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-110321-EC4332-HDFCBANK23NOV26820CE",
@@ -3531,7 +3873,9 @@
         "expiry": "23NOV2026",
         "strike": 820.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-105408-87E624-BSE23NOV263950CE",
@@ -3563,7 +3907,9 @@
         "expiry": "23NOV2026",
         "strike": 3950.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-115753-3934F5-NIFTY17NOV2625500CE",
@@ -3595,7 +3941,9 @@
         "expiry": "17NOV2026",
         "strike": 25500.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-102849-6F23DE-IDEA23NOV2613PE",
@@ -3627,7 +3975,9 @@
         "expiry": "23NOV2026",
         "strike": 13.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-120205-14EE21-BSE23NOV264000CE",
@@ -3659,7 +4009,9 @@
         "expiry": "23NOV2026",
         "strike": 4000.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-112131-85D1C8-BANKNIFTY23NOV2662400CE",
@@ -3691,7 +4043,9 @@
         "expiry": "23NOV2026",
         "strike": 62400.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-123533-291EF0-IDEA23NOV2612PE",
@@ -3723,7 +4077,9 @@
         "expiry": "23NOV2026",
         "strike": 12.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-123856-760846-BSE23NOV263900PE",
@@ -3755,7 +4111,9 @@
         "expiry": "23NOV2026",
         "strike": 3900.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261117-130917-AED33C-BSE23NOV263850PE",
@@ -3787,7 +4145,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "POS-FNO-1794903251300-HDFCBANK",
@@ -3804,7 +4164,10 @@
       "pnl": -134.54,
       "reason": "Supertrend Bearish Reversal (Held 30 bars)",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "POS-FNO-1794906004897-HDFCBANK",
@@ -3821,7 +4184,10 @@
       "pnl": -219.58,
       "reason": "TICK_STOP_LOSS_HIT",
       "date": "2026-11-17",
-      "exit_date": "2026-11-17"
+      "exit_date": "2026-11-17",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
     },
     {
       "id": "FILL-BUY-20261118-104225-D6CE33-BANKNIFTY23NOV2662000PE",
@@ -3853,7 +4219,9 @@
         "expiry": "23NOV2026",
         "strike": 62000.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-104600-308C9E-HDFCBANK23NOV26810PE",
@@ -3885,7 +4253,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-104517-D7F85E-NIFTY23NOV2625200PE",
@@ -3917,7 +4287,9 @@
         "expiry": "23NOV2026",
         "strike": 25200.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-112307-102776-BSE23NOV263850CE",
@@ -3949,7 +4321,9 @@
         "expiry": "23NOV2026",
         "strike": 3850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-112956-99FD73-BANKNIFTY23NOV2662200CE",
@@ -3981,7 +4355,9 @@
         "expiry": "23NOV2026",
         "strike": 62200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-115546-4D5DA8-BSE23NOV263800PE",
@@ -4013,7 +4389,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-114734-F18BD4-TITAN23NOV264700PE",
@@ -4045,7 +4423,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-114627-490DB7-SBIN23NOV261120CE",
@@ -4077,7 +4457,9 @@
         "expiry": "23NOV2026",
         "strike": 1120.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-120832-80D8F3-BHARTIARTL23NOV262140PE",
@@ -4109,7 +4491,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-122905-7FC964-AXISBANK23NOV261370PE",
@@ -4141,7 +4525,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-130210-DDFEB6-SBIN23NOV261110CE",
@@ -4173,7 +4559,9 @@
         "expiry": "23NOV2026",
         "strike": 1110.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-122256-E4D69E-ICICIBANK23NOV261600PE",
@@ -4205,7 +4593,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-131117-F2F3D6-BHARTIARTL23NOV262120PE",
@@ -4237,7 +4627,9 @@
         "expiry": "23NOV2026",
         "strike": 2120.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-122507-0EBC15-LT23NOV264150PE",
@@ -4269,7 +4661,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-135826-2D9E06-RELIANCE23NOV261370CE",
@@ -4301,7 +4695,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-132921-55702E-AXISBANK23NOV261360PE",
@@ -4333,7 +4729,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-135452-47ACF0-TATASTEEL23NOV26180CE",
@@ -4365,7 +4763,9 @@
         "expiry": "23NOV2026",
         "strike": 180.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-141415-1B9A90-SBIN23NOV261130CE",
@@ -4397,7 +4797,9 @@
         "expiry": "23NOV2026",
         "strike": 1130.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-141611-BEE7A2-ICICIBANK23NOV261600CE",
@@ -4429,7 +4831,9 @@
         "expiry": "23NOV2026",
         "strike": 1600.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261118-142430-43E070-RELIANCE23NOV261370PE",
@@ -4461,7 +4865,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-101832-F42711-AXISBANK23NOV261370CE",
@@ -4493,7 +4899,9 @@
         "expiry": "23NOV2026",
         "strike": 1370.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-101840-B06B5C-TITAN23NOV264650CE",
@@ -4525,7 +4933,9 @@
         "expiry": "23NOV2026",
         "strike": 4650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-101000-A00AD6-HDFCBANK23NOV26810CE",
@@ -4557,7 +4967,9 @@
         "expiry": "23NOV2026",
         "strike": 810.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-102820-420D40-RELIANCE23NOV261360PE",
@@ -4589,7 +5001,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-104814-3DD677-BSE23NOV263800CE",
@@ -4621,7 +5035,9 @@
         "expiry": "23NOV2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-110703-02E0D5-SBIN23NOV261140PE",
@@ -4653,7 +5069,9 @@
         "expiry": "23NOV2026",
         "strike": 1140.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-102828-8A0AF7-ICICIBANK23NOV261590PE",
@@ -4685,7 +5103,9 @@
         "expiry": "23NOV2026",
         "strike": 1590.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-112432-AFF494-RELIANCE23NOV261360CE",
@@ -4717,7 +5137,9 @@
         "expiry": "23NOV2026",
         "strike": 1360.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-112747-7DD035-LT23NOV264150CE",
@@ -4749,7 +5171,9 @@
         "expiry": "23NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-115448-49FD6D-BHARTIARTL23NOV262140CE",
@@ -4781,7 +5205,9 @@
         "expiry": "23NOV2026",
         "strike": 2140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-122007-EBF5BB-TITAN23NOV264700CE",
@@ -4813,7 +5239,9 @@
         "expiry": "23NOV2026",
         "strike": 4700.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-124947-E8F96D-LT23NOV264200CE",
@@ -4845,7 +5273,9 @@
         "expiry": "23NOV2026",
         "strike": 4200.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-125142-84DC02-SBIN23NOV261150PE",
@@ -4877,7 +5307,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-122519-DDEDE1-BSE23NOV263750PE",
@@ -4909,7 +5341,9 @@
         "expiry": "23NOV2026",
         "strike": 3750.0,
         "option_type": "PE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-134000-08BCA3-AXISBANK23NOV261380CE",
@@ -4941,7 +5375,9 @@
         "expiry": "23NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261119-134303-2BFEA3-SBIN23NOV261150CE",
@@ -4973,7 +5409,9 @@
         "expiry": "23NOV2026",
         "strike": 1150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-102710-653EA0-RELIANCE26NOV1380CE",
@@ -5005,7 +5443,9 @@
         "expiry": "26NOV2026",
         "strike": 1380.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-103052-5950B6-TATASTEEL26NOV162.5CE",
@@ -5037,7 +5477,9 @@
         "expiry": "26NOV2026",
         "strike": 162.5,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-102732-1839C7-ICICIBANK26NOV1650CE",
@@ -5069,7 +5511,9 @@
         "expiry": "26NOV2026",
         "strike": 1650.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-111618-28719A-SBIN26NOV1140CE",
@@ -5101,7 +5545,9 @@
         "expiry": "26NOV2026",
         "strike": 1140.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-113549-CAE8CD-LT26NOV4150CE",
@@ -5133,7 +5579,9 @@
         "expiry": "26NOV2026",
         "strike": 4150.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-112337-0C9A16-AXISBANK26NOV1440CE",
@@ -5165,7 +5613,9 @@
         "expiry": "26NOV2026",
         "strike": 1440.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-114434-36CDB5-BSE26DEC3800CE",
@@ -5197,7 +5647,9 @@
         "expiry": "29DEC2026",
         "strike": 3800.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     },
     {
       "id": "FILL-BUY-20261125-115942-6A6020-HDFCBANK26NOV850CE",
@@ -5229,8 +5681,178 @@
         "expiry": "26NOV2026",
         "strike": 850.0,
         "option_type": "CE"
-      }
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "POS-FNO-1795756165618-HDFCBANK",
+      "symbol": "HDFCBANK",
+      "side": "BUY",
+      "qty": 100,
+      "quantity": 100,
+      "entry_price": 864.2,
+      "exit_price": 860.25,
+      "entry_time": "10:39",
+      "exit_time": "11:23:00 IST",
+      "gross_pnl": -395.0,
+      "fees": 112.99,
+      "pnl": -507.99,
+      "reason": "Stop Loss Hit (Gapped Below SL)",
+      "date": "2026-11-27",
+      "exit_date": "2026-11-27",
+      "audit_status": "UNVERIFIED_HISTORICAL_PRICE",
+      "audit_note": "Historical execution record retained; lacks raw tick/depth quote telemetry",
+      "verified_market_data": false
+    },
+    {
+      "id": "FILL-BUY-20261127-102321-5AA94C-BHARTIARTL29DEC262080PE",
+      "fill_id": "FILL-EXIT-SELL-20261127-122223-70FFDC-BHARTIARTL29DEC262080PE",
+      "symbol": "BHARTIARTL29DEC262080PE",
+      "side": "BUY",
+      "position_direction": "LONG",
+      "position_effect": "CLOSE",
+      "exit_side": "SELL",
+      "qty": 475,
+      "quantity": 475,
+      "entry_price": 38.8,
+      "exit_price": 50.55,
+      "entry_time": "10:23",
+      "exit_time": "12:22:23 IST",
+      "gross_pnl": 5581.25,
+      "fees": 96.85,
+      "pnl": 5484.4,
+      "reason": "\ud83c\udfaf Target Hit (+30% R:R) @ Rs 50.55",
+      "date": "2026-11-27",
+      "exit_date": "2026-11-27",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-27 12:22:21 IST",
+      "slippage_applied": 0.9,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "BHARTIARTL29DEC262080PE",
+        "instrument_token": "89920",
+        "underlying": "BHARTIARTL",
+        "expiry": "29DEC2026",
+        "strike": 2080.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "FILL-BUY-20261127-101947-80E27E-RELIANCE29DEC261390PE",
+      "fill_id": "FILL-EXIT-SELL-20261127-152141-93CD4F-RELIANCE29DEC261390PE",
+      "symbol": "RELIANCE29DEC261390PE",
+      "side": "BUY",
+      "position_direction": "LONG",
+      "position_effect": "CLOSE",
+      "exit_side": "SELL",
+      "qty": 500,
+      "quantity": 500,
+      "entry_price": 37.0,
+      "exit_price": 40.65,
+      "entry_time": "10:19",
+      "exit_time": "15:21:41 IST",
+      "gross_pnl": 1825.0,
+      "fees": 91.03,
+      "pnl": 1733.97,
+      "reason": "EOD Mandatory Square-Off (15:20 IST reached)",
+      "date": "2026-11-27",
+      "exit_date": "2026-11-27",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-27 15:20:05 IST",
+      "slippage_applied": 0.0,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "RELIANCE29DEC261390PE",
+        "instrument_token": "132717",
+        "underlying": "RELIANCE",
+        "expiry": "29DEC2026",
+        "strike": 1390.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "FILL-BUY-20261127-102745-A31EB6-AXISBANK29DEC261400PE",
+      "fill_id": "FILL-EXIT-SELL-20261127-152145-66C7D2-AXISBANK29DEC261400PE",
+      "symbol": "AXISBANK29DEC261400PE",
+      "side": "BUY",
+      "position_direction": "LONG",
+      "position_effect": "CLOSE",
+      "exit_side": "SELL",
+      "qty": 625,
+      "quantity": 625,
+      "entry_price": 37.75,
+      "exit_price": 42.37,
+      "entry_time": "10:27",
+      "exit_time": "15:21:45 IST",
+      "gross_pnl": 2887.5,
+      "fees": 104.0,
+      "pnl": 2783.5,
+      "reason": "EOD Mandatory Square-Off (15:20 IST reached)",
+      "date": "2026-11-27",
+      "exit_date": "2026-11-27",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-27 15:20:44 IST",
+      "slippage_applied": 0.15,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "AXISBANK29DEC261400PE",
+        "instrument_token": "84094",
+        "underlying": "AXISBANK",
+        "expiry": "29DEC2026",
+        "strike": 1400.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
+    },
+    {
+      "id": "FILL-BUY-20261127-122242-42156A-TATASTEEL29DEC26165PE",
+      "fill_id": "FILL-EXIT-SELL-20261127-152148-500CC4-TATASTEEL29DEC26165PE",
+      "symbol": "TATASTEEL29DEC26165PE",
+      "side": "BUY",
+      "position_direction": "LONG",
+      "position_effect": "CLOSE",
+      "exit_side": "SELL",
+      "qty": 2750,
+      "quantity": 2750,
+      "entry_price": 6.41,
+      "exit_price": 6.96,
+      "entry_time": "12:22",
+      "exit_time": "15:21:48 IST",
+      "gross_pnl": 1512.5,
+      "fees": 88.61,
+      "pnl": 1423.89,
+      "reason": "EOD Mandatory Square-Off (15:20 IST reached)",
+      "date": "2026-11-27",
+      "exit_date": "2026-11-27",
+      "price_source": "VERIFIED_MARKET_QUOTE",
+      "verified_market_data": true,
+      "quote_source": "ANGEL_MARKET_DATA",
+      "quote_timestamp": "2026-11-27 15:20:34 IST",
+      "slippage_applied": 0.02,
+      "contract_details": {
+        "exchange": "NFO",
+        "trading_symbol": "TATASTEEL29DEC26165PE",
+        "instrument_token": "147234",
+        "underlying": "TATASTEEL",
+        "expiry": "29DEC2026",
+        "strike": 165.0,
+        "option_type": "PE"
+      },
+      "audit_status": "VERIFIED_WITH_SOURCE_EVIDENCE",
+      "audit_note": "Verified against real-time broker market quote telemetry"
     }
   ],
-  "last_updated": "2026-11-26 12:42:22 IST"
+  "last_updated": "2026-11-27 15:21:48 IST"
 }
